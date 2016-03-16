@@ -641,12 +641,6 @@ AUI.add(
 								);
 							}
 						);
-
-						if (instance._bindSearchHandle) {
-							instance._bindSearchHandle.detach();
-						}
-
-						instance._bindSearchHandle = popup.searchField.once('focus', instance._initSearch, instance);
 					},
 
 					_vocabulariesIterator: function(item, index) {
