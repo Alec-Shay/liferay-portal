@@ -420,7 +420,7 @@ AUI.add(
 							}
 						}
 
-						popup.entriesNode.append(searchResults);
+						popup.entriesNode.placeAfter(searchResults);
 
 						instance._searchBuffer = [];
 					},
@@ -591,6 +591,9 @@ AUI.add(
 
 							searchResults.addClass('loading-animation');
 
+							searchResults.show();
+							instance._popup.entriesNode.hide();
+
 							Liferay.Service(
 								{
 									'$display = /assetcategory/search-categories-display': {
@@ -607,17 +610,10 @@ AUI.add(
 								callback
 							);
 						}
-
-						searchResults.toggle(!!searchValue);
-
-						var treeViews = instance.TREEVIEWS;
-
-						AObject.each(
-							treeViews,
-							function(item, index) {
-								item.toggle(!searchValue);
-							}
-						);
+						else {
+							searchResults.hide();
+							instance._popup.entriesNode.show();
+						}
 					},
 
 					_showSelectPopup: function(event) {
