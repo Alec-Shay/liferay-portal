@@ -14,7 +14,6 @@
 
 package com.liferay.portal.template.freemarker;
 
-import com.liferay.portal.kernel.template.StringTemplateResource;
 import com.liferay.portal.kernel.template.TemplateConstants;
 import com.liferay.portal.kernel.template.TemplateException;
 import com.liferay.portal.kernel.template.TemplateResource;
@@ -22,11 +21,10 @@ import com.liferay.portal.template.AbstractSingleResourceTemplate;
 import com.liferay.portal.template.TemplateContextHelper;
 import com.liferay.portal.template.TemplateResourceThreadLocal;
 
-import freemarker.core.ParseException;
-
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 
+import java.io.IOException;
 import java.io.Writer;
 
 import java.security.AccessController;
@@ -60,36 +58,14 @@ public class FreeMarkerTemplate extends AbstractSingleResourceTemplate {
 	protected void handleException(Exception exception, Writer writer)
 		throws TemplateException {
 
-		if ((exception instanceof ParseException) ||
-			(exception instanceof freemarker.template.TemplateException)) {
-
-			put("exception", exception.getMessage());
-
-			if (templateResource instanceof StringTemplateResource) {
-				StringTemplateResource stringTemplateResource =
-					(StringTemplateResource)templateResource;
-
-				put("script", stringTemplateResource.getContent());
-			}
-
-			if (exception instanceof ParseException) {
-				ParseException pe = (ParseException)exception;
-
-				put("column", pe.getColumnNumber());
-				put("line", pe.getLineNumber());
-			}
-
-			try {
-				processTemplate(errorTemplateResource, writer);
-			}
-			catch (Exception e) {
-				throw new TemplateException(
-					"Unable to process FreeMarker template " +
-						errorTemplateResource.getTemplateId(),
-					e);
-			}
+		try {
+			writer.write(
+				"<div class=\"journal-template-error\">\n\t" +
+				"<span class=\"alert alert-error\">\n\t\t" +
+				"An error occurred while processing the template.\t</span>" +
+				"\n</div>");
 		}
-		else {
+		catch (IOException ioe) {
 			throw new TemplateException(
 				"Unable to process FreeMarker template " +
 					templateResource.getTemplateId(),
