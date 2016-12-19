@@ -217,7 +217,7 @@ if (portletTitleBasedNavigation) {
 
 							<%
 							try {
-								if (wikiPage.isNew() && (templatePage != null)) {
+								if ((wikiPage != null) && wikiPage.isNew() && (templatePage != null)) {
 									wikiEngineRenderer.renderEditPageHTML(selectedFormat, pageContext, node, templatePage);
 								}
 								else {
