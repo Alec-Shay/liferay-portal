@@ -15,7 +15,7 @@ dependencies {
 }
 
 dependencyChecker {
-	maxAge configuration: configurations.sourceFormatter.name, group: "com.liferay", name: "com.liferay.source.formatter", maxAge: TimeCategory.getDays(1)
+	maxAge configuration: configurations.sourceFormatter.name, group: "com.liferay", name: "com.liferay.source.formatter", maxAge: TimeCategory.getDays(1), throwError: false
 }
 
 repositories {

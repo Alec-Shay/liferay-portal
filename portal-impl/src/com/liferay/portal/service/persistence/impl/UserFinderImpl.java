@@ -38,6 +38,7 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.TableNameOrderByComparator;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.model.impl.UserImpl;
@@ -323,10 +324,16 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 
 			String sql = CustomSQLUtil.get(COUNT_BY_SOCIAL_USERS);
 
-			sql = StringUtil.replace(
-				sql, "[$SOCIAL_RELATION_TYPE_COMPARATOR$]",
-				socialRelationTypeComparator.equals(StringPool.EQUAL) ?
-					StringPool.EQUAL : StringPool.NOT_EQUAL);
+			if (socialRelationTypeComparator.equals(StringPool.EQUAL)) {
+				sql = StringUtil.replace(
+					sql, "[$SOCIAL_RELATION_TYPE_COMPARATOR$]",
+					StringPool.EQUAL);
+			}
+			else {
+				sql = StringUtil.replace(
+					sql, "[$SOCIAL_RELATION_TYPE_COMPARATOR$]",
+					StringPool.NOT_EQUAL);
+			}
 
 			SQLQuery q = session.createSynchronizedSQLQuery(sql);
 
@@ -452,6 +459,9 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 			session = openSession();
 
 			String sql = CustomSQLUtil.get(FIND_BY_C_FN_MN_LN_SN_EA_S);
+
+			sql = StringUtil.replace(
+				sql, "[$COLUMN_NAMES$]", getColumnNames(null));
 
 			sql = replaceKeywords(
 				sql, firstNames, middleNames, lastNames, screenNames,
@@ -667,12 +677,21 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 
 			String sql = CustomSQLUtil.get(FIND_BY_SOCIAL_USERS);
 
-			sql = StringUtil.replace(
-				sql, "[$SOCIAL_RELATION_TYPE_COMPARATOR$]",
-				socialRelationTypeComparator.equals(StringPool.EQUAL) ?
-					StringPool.EQUAL : StringPool.NOT_EQUAL);
+			if (socialRelationTypeComparator.equals(StringPool.EQUAL)) {
+				sql = StringUtil.replace(
+					sql, "[$SOCIAL_RELATION_TYPE_COMPARATOR$]",
+					StringPool.EQUAL);
+			}
+			else {
+				sql = StringUtil.replace(
+					sql, "[$SOCIAL_RELATION_TYPE_COMPARATOR$]",
+					StringPool.NOT_EQUAL);
+			}
 
-			sql = CustomSQLUtil.replaceOrderBy(sql, obc);
+			if (obc != null) {
+				sql = CustomSQLUtil.replaceOrderBy(
+					sql, new TableNameOrderByComparator<>(obc, "User_"));
+			}
 
 			SQLQuery q = session.createSynchronizedSQLQuery(sql);
 
@@ -776,6 +795,9 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 
 			String sql = CustomSQLUtil.get(FIND_BY_C_FN_MN_LN_SN_EA_S);
 
+			sql = StringUtil.replace(
+				sql, "[$COLUMN_NAMES$]", getColumnNames(obc));
+
 			sql = replaceKeywords(
 				sql, firstNames, middleNames, lastNames, screenNames,
 				emailAddresses);
@@ -837,6 +859,27 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 		finally {
 			closeSession(session);
 		}
+	}
+
+	protected String getColumnNames(OrderByComparator obc) {
+		if (obc == null) {
+			return "User_.userId AS userId";
+		}
+
+		String[] orderByFields = obc.getOrderByFields();
+
+		StringBundler sb = new StringBundler(orderByFields.length * 4 + 1);
+
+		sb.append("User_.userId AS userId");
+
+		for (String field : orderByFields) {
+			sb.append(", User_.");
+			sb.append(field);
+			sb.append(" AS ");
+			sb.append(field);
+		}
+
+		return sb.toString();
 	}
 
 	protected String getJoin(LinkedHashMap<String, Object> params) {
