@@ -43,7 +43,7 @@ import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -107,11 +107,11 @@ public class EditFileEntryTypeMVCActionCommand extends BaseMVCActionCommand {
 			if (SessionErrors.isEmpty(actionRequest)) {
 				SessionMessages.add(
 					actionRequest,
-					PortalUtil.getPortletId(actionRequest) +
+					_portal.getPortletId(actionRequest) +
 						SessionMessages.KEY_SUFFIX_REFRESH_PORTLET,
 					DLPortletKeys.DOCUMENT_LIBRARY);
 
-				String redirect = PortalUtil.escapeRedirect(
+				String redirect = _portal.escapeRedirect(
 					ParamUtil.getString(actionRequest, "redirect"));
 
 				if (Validator.isNotNull(redirect)) {
@@ -119,30 +119,19 @@ public class EditFileEntryTypeMVCActionCommand extends BaseMVCActionCommand {
 				}
 			}
 		}
-		catch (Exception e) {
-			if (e instanceof DuplicateFileEntryTypeException ||
-				e instanceof NoSuchMetadataSetException ||
-				e instanceof StructureDefinitionException ||
-				e instanceof StructureDuplicateElementException ||
-				e instanceof StructureNameException) {
+		catch (DuplicateFileEntryTypeException | NoSuchMetadataSetException |
+			   RequiredStructureException | StructureDefinitionException |
+			   StructureDuplicateElementException | StructureNameException e) {
 
-				SessionErrors.add(actionRequest, e.getClass());
-			}
-			else if (e instanceof NoSuchFileEntryTypeException ||
-					 e instanceof NoSuchStructureException ||
-					 e instanceof PrincipalException) {
+			SessionErrors.add(actionRequest, e.getClass());
+		}
+		catch (NoSuchFileEntryTypeException | NoSuchStructureException |
+			   PrincipalException e) {
 
-				SessionErrors.add(actionRequest, e.getClass());
+			SessionErrors.add(actionRequest, e.getClass());
 
-				actionResponse.setRenderParameter(
-					"mvcPath", "/document_library/error.jsp");
-			}
-			else if (e instanceof RequiredStructureException) {
-				SessionErrors.add(actionRequest, e.getClass());
-			}
-			else {
-				throw e;
-			}
+			actionResponse.setRenderParameter(
+				"mvcPath", "/document_library/error.jsp");
 		}
 	}
 
@@ -154,33 +143,6 @@ public class EditFileEntryTypeMVCActionCommand extends BaseMVCActionCommand {
 		}
 
 		return StringUtil.split(GetterUtil.getString(value), 0L);
-	}
-
-	@Reference(unbind = "-")
-	protected void setDDM(DDM ddm) {
-		_ddm = ddm;
-	}
-
-	@Reference(unbind = "-")
-	protected void setDDMBeanTranslator(DDMBeanTranslator ddmBeanTranslator) {
-		_ddmBeanTranslator = ddmBeanTranslator;
-	}
-
-	@Reference(unbind = "-")
-	protected void setDLAppService(DLAppService dlAppService) {
-		_dlAppService = dlAppService;
-	}
-
-	@Reference(unbind = "-")
-	protected void setDLFileEntryTypeService(
-		DLFileEntryTypeService dlFileEntryTypeService) {
-
-		_dlFileEntryTypeService = dlFileEntryTypeService;
-	}
-
-	@Reference(unbind = "-")
-	protected void setGroupLocalService(GroupLocalService groupLocalService) {
-		_groupLocalService = groupLocalService;
 	}
 
 	protected void subscribeFileEntryType(ActionRequest actionRequest)
@@ -261,10 +223,22 @@ public class EditFileEntryTypeMVCActionCommand extends BaseMVCActionCommand {
 		}
 	}
 
+	@Reference
 	private DDM _ddm;
+
+	@Reference
 	private DDMBeanTranslator _ddmBeanTranslator;
+
+	@Reference
 	private DLAppService _dlAppService;
+
+	@Reference
 	private DLFileEntryTypeService _dlFileEntryTypeService;
+
+	@Reference
 	private GroupLocalService _groupLocalService;
+
+	@Reference
+	private Portal _portal;
 
 }

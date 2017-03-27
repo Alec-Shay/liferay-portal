@@ -19,6 +19,7 @@ import com.liferay.portal.kernel.util.CookieKeys;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.TextFormatter;
 import com.liferay.portal.kernel.util.Time;
 
 /**
@@ -143,6 +144,8 @@ public class PropsValues {
 	public static final int AUTH_TOKEN_LENGTH = GetterUtil.getInteger(PropsUtil.get(PropsKeys.AUTH_TOKEN_LENGTH));
 
 	public static final String AUTH_TOKEN_SHARED_SECRET = PropsUtil.get(PropsKeys.AUTH_TOKEN_SHARED_SECRET);
+
+	public static final boolean AUTH_USER_UUID_STORE_ENABLED = GetterUtil.getBoolean(PropsUtil.get(PropsKeys.AUTH_USER_UUID_STORE_ENABLED));
 
 	public static final boolean AUTO_DEPLOY_COPY_COMMONS_LOGGING = GetterUtil.getBoolean(PropsUtil.get(PropsKeys.AUTO_DEPLOY_COPY_COMMONS_LOGGING));
 
@@ -1394,6 +1397,8 @@ public class PropsValues {
 
 	public static final boolean SESSION_TIMEOUT_AUTO_EXTEND = GetterUtil.getBoolean(PropsUtil.get(PropsKeys.SESSION_TIMEOUT_AUTO_EXTEND));
 
+	public static final int SESSION_TIMEOUT_AUTO_EXTEND_OFFSET = GetterUtil.getInteger(PropsUtil.get(PropsKeys.SESSION_TIMEOUT_AUTO_EXTEND_OFFSET));
+
 	public static final boolean SESSION_TIMEOUT_REDIRECT_ON_EXPIRE = GetterUtil.getBoolean(PropsUtil.get(PropsKeys.SESSION_TIMEOUT_REDIRECT_ON_EXPIRE));
 
 	public static final int SESSION_TIMEOUT_WARNING = GetterUtil.getInteger(PropsUtil.get(PropsKeys.SESSION_TIMEOUT_WARNING));
@@ -1574,10 +1579,22 @@ public class PropsValues {
 
 	public static final String[] USERS_EXPORT_CSV_FIELDS = PropsUtil.getArray(PropsKeys.USERS_EXPORT_CSV_FIELDS);
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final boolean USERS_IMAGE_CHECK_TOKEN = GetterUtil.getBoolean(PropsUtil.get(PropsKeys.USERS_IMAGE_CHECK_TOKEN));
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static int USERS_IMAGE_MAX_HEIGHT = GetterUtil.getInteger(PropsUtil.get(PropsKeys.USERS_IMAGE_MAX_HEIGHT));
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static int USERS_IMAGE_MAX_WIDTH = GetterUtil.getInteger(PropsUtil.get(PropsKeys.USERS_IMAGE_MAX_WIDTH));
 
 	public static final String[] USERS_LIST_VIEWS = PropsUtil.getArray(PropsKeys.USERS_LIST_VIEWS);
@@ -1693,6 +1710,16 @@ public class PropsValues {
 
 		if (!LAYOUT_USER_PUBLIC_LAYOUTS_ENABLED) {
 			LAYOUT_USER_PUBLIC_LAYOUTS_AUTO_CREATE = false;
+		}
+
+		for (int i = 0; i < LOGIN_FORM_NAVIGATION_POST.length; i++) {
+			LOGIN_FORM_NAVIGATION_POST[i] = TextFormatter.format(
+				LOGIN_FORM_NAVIGATION_POST[i], TextFormatter.N);
+		}
+
+		for (int i = 0; i < LOGIN_FORM_NAVIGATION_PRE.length; i++) {
+			LOGIN_FORM_NAVIGATION_PRE[i] = TextFormatter.format(
+				LOGIN_FORM_NAVIGATION_PRE[i], TextFormatter.N);
 		}
 	}
 

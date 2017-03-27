@@ -103,6 +103,46 @@ AUI.add(
 						}
 					},
 
+					addRule: function(fieldName, validatorName, errorMessage, body, custom) {
+						var instance = this;
+
+						var fieldRules = instance.get('fieldRules');
+
+						var ruleIndex = instance._findRuleIndex(fieldRules, fieldName, validatorName);
+
+						if (ruleIndex == -1) {
+							fieldRules.push(
+								{
+									body: body || '',
+									custom: custom || false,
+									errorMessage: errorMessage || '',
+									fieldName: fieldName,
+									validatorName: validatorName
+								}
+							);
+
+							instance._processFieldRules(fieldRules);
+						}
+					},
+
+					removeRule: function(fieldName, validatorName) {
+						var instance = this;
+
+						var fieldRules = instance.get('fieldRules');
+
+						var ruleIndex = instance._findRuleIndex(fieldRules, fieldName, validatorName);
+
+						if (ruleIndex != -1) {
+							var rule = fieldRules[ruleIndex];
+
+							instance.formValidator.resetField(rule.fieldName);
+
+							fieldRules.splice(ruleIndex, 1);
+
+							instance._processFieldRules(fieldRules);
+						}
+					},
+
 					_bindForm: function() {
 						var instance = this;
 
@@ -121,6 +161,15 @@ AUI.add(
 						if (!event.stopped) {
 							submitForm(instance.form);
 						}
+					},
+
+					_findRuleIndex: function(fieldRules, fieldName, validatorName) {
+						return fieldRules.findIndex(
+							function(element) {
+								return element.fieldName === fieldName &&
+									element.validatorName === validatorName;
+							}
+						);
 					},
 
 					_onFieldFocusChange: function(event) {
