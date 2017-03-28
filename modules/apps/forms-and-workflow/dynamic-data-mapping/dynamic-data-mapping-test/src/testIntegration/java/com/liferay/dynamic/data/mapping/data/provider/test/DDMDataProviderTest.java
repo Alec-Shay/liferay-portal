@@ -77,7 +77,7 @@ public class DDMDataProviderTest {
 			_ddmDataProviderTracker.getDDMDataProviderByInstanceId("test");
 
 		DDMDataProviderRequest ddmDataProviderRequest =
-			new DDMDataProviderRequest(null);
+			new DDMDataProviderRequest(null, null);
 
 		DDMDataProviderResponse ddmDataProviderResponse =
 			testDataProvider.getData(ddmDataProviderRequest);
@@ -85,7 +85,7 @@ public class DDMDataProviderTest {
 		List<Map<Object, Object>> data = ddmDataProviderResponse.getData();
 
 		Assert.assertNotNull(data);
-		Assert.assertEquals(2, data.size());
+		Assert.assertEquals(data.toString(), 2, data.size());
 	}
 
 	protected static void setUpDDMDataProviderTracker() {

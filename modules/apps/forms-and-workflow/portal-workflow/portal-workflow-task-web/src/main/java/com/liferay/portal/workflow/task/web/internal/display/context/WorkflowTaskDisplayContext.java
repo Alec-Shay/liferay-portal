@@ -384,14 +384,6 @@ public class WorkflowTaskDisplayContext {
 		return _orderByType;
 	}
 
-	public long[] getPooledActorsIds(WorkflowTask workflowTask)
-		throws PortalException {
-
-		return WorkflowTaskManagerUtil.getPooledActorsIds(
-			_workflowTaskRequestHelper.getCompanyId(),
-			workflowTask.getWorkflowTaskId());
-	}
-
 	public PortletURL getPortletURL() {
 		PortletURL portletURL = _liferayPortletResponse.createRenderURL();
 
@@ -797,23 +789,13 @@ public class WorkflowTaskDisplayContext {
 	public boolean hasOtherAssignees(WorkflowTask workflowTask)
 		throws PortalException {
 
-		long[] pooledActorsIds = getPooledActorsIds(workflowTask);
-
-		if (pooledActorsIds.length == 0) {
-			return false;
-		}
-
 		if (workflowTask.isCompleted()) {
 			return false;
 		}
 
-		if ((pooledActorsIds.length == 1) &&
-			(pooledActorsIds[0] == _workflowTaskRequestHelper.getUserId())) {
-
-			return false;
-		}
-
-		return true;
+		return WorkflowTaskManagerUtil.hasOtherAssignees(
+			workflowTask.getWorkflowTaskId(),
+			_workflowTaskRequestHelper.getUserId());
 	}
 
 	public boolean hasViewDiffsPortletURL(WorkflowTask workflowTask)
@@ -989,6 +971,14 @@ public class WorkflowTaskDisplayContext {
 		}
 
 		return curParam;
+	}
+
+	protected long[] getPooledActorsIds(WorkflowTask workflowTask)
+		throws PortalException {
+
+		return WorkflowTaskManagerUtil.getPooledActorsIds(
+			_workflowTaskRequestHelper.getCompanyId(),
+			workflowTask.getWorkflowTaskId());
 	}
 
 	protected Role getRole(long roleId) throws PortalException {

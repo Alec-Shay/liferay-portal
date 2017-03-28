@@ -66,6 +66,35 @@ and the `npm-shrinkwrap.json` file from the project, if present.
 - [LPS-69802]: Execute the `cleanNPM` task before generating the
 `npm-shrinkwrap.json` file via the `npmShrinkwrap` task.
 
+## 1.5.1 - 2016-12-29
+
+### Added
+- [LPS-69920]: Retry `npm install` automatically if it fails.
+
+## 1.5.2 - 2017-02-09
+
+### Removed
+- [LPS-69920]: Remove up-to-date check from all tasks that extend
+`NpmInstallTask`.
+
+## 2.0.0 - 2017-02-23
+
+### Fixed
+- [LPS-69920]: Fix duplicated NPM arguments while retrying `npm install` in case
+of failure.
+- [LPS-70870]: Fix Node.js download with authenticated proxies.
+
+## 2.0.1 - 2017-03-09
+
+### Changed
+- [LPS-70634]: Reuse the `package.json` file of a project, if it exists, while
+executing the `PublishNodeModuleTask`.
+
+## 2.0.2 - 2017-03-13
+
+### Changed
+- [LPS-71222]: Always sort the generated `npm-shrinkwrap.json` files.
+
 [LPS-66906]: https://issues.liferay.com/browse/LPS-66906
 [LPS-67023]: https://issues.liferay.com/browse/LPS-67023
 [LPS-67573]: https://issues.liferay.com/browse/LPS-67573
@@ -74,3 +103,7 @@ and the `npm-shrinkwrap.json` file from the project, if present.
 [LPS-69618]: https://issues.liferay.com/browse/LPS-69618
 [LPS-69677]: https://issues.liferay.com/browse/LPS-69677
 [LPS-69802]: https://issues.liferay.com/browse/LPS-69802
+[LPS-69920]: https://issues.liferay.com/browse/LPS-69920
+[LPS-70634]: https://issues.liferay.com/browse/LPS-70634
+[LPS-70870]: https://issues.liferay.com/browse/LPS-70870
+[LPS-71222]: https://issues.liferay.com/browse/LPS-71222

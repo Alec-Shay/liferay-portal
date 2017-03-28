@@ -2,8 +2,10 @@
 ; Do not manually edit this file.
 ;
 [subrepo]
+	autopull = false
 	cmdver = liferay
-	commit = 1c4ded5c5aae81d89f677f4586ad14adf9db57c7
+	commit = 7ced90d268b61e376826f3e8b83ebf98272d4f7f
+	mergebuttonmergecommits = false
 	mode = push
-	parent = f6399f9f257692ea5532e6dc831bd57ee8be6806
+	parent = 771812bc652c338055b9ff4d74d0731c9a088970
 	remote = git@github.com:liferay/com-liferay-export-import.git
