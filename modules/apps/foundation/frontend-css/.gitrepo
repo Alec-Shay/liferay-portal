@@ -2,8 +2,10 @@
 ; Do not manually edit this file.
 ;
 [subrepo]
+	autopull = false
 	cmdver = liferay
-	commit = 50f1c9bb057c8b3dce3fb8d022637b3efbd6e27f
+	commit = 4018c230ec023d0aa4d445d305110c8a5c3f1dc9
+	mergebuttonmergecommits = false
 	mode = push
-	parent = df96aff278e373db51b8a1cb9566cb36e3914b0e
+	parent = 393bfdb4c958a86ccc3b1ce2343f3b6d3e9d9ddf
 	remote = git@github.com:liferay/com-liferay-frontend-css.git

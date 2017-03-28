@@ -531,7 +531,7 @@ public class JspServlet extends HttpServlet {
 		catch (NoSuchMethodException nsme) {
 		}
 
-		return Collections.unmodifiableMap(methods);
+		return methods;
 	}
 
 	private void _deleteOutdatedJspFiles(String dir, List<Path> paths) {
@@ -820,7 +820,7 @@ public class JspServlet extends HttpServlet {
 					}
 				}
 
-				return _jspBundle.getEntry(path);
+				return _jspBundle.getResource(path);
 			}
 			catch (MalformedURLException murle) {
 			}

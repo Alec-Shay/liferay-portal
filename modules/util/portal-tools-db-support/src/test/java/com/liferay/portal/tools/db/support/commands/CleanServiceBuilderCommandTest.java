@@ -28,13 +28,10 @@ import java.sql.SQLException;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 /**
  * @author Andrea Di Giorgi
  */
-@RunWith(Parameterized.class)
 public class CleanServiceBuilderCommandTest extends BaseCommandTestCase {
 
 	public CleanServiceBuilderCommandTest(String mode) throws IOException {
@@ -137,7 +134,7 @@ public class CleanServiceBuilderCommandTest extends BaseCommandTestCase {
 					connection.prepareStatement(sql)) {
 
 				for (int buildNumber = 1; buildNumber <= _BUILD_NUMBER;
-						buildNumber++) {
+					buildNumber++) {
 
 					_addServiceComponentRow(
 						preparedStatement, buildNumber, _NAMESPACE,
