@@ -40,6 +40,7 @@ import com.liferay.exportimport.kernel.lar.ExportImportPathUtil;
 import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataException;
+import com.liferay.exportimport.kernel.lar.PortletDataHandlerControl;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelModifiedDateComparator;
@@ -62,6 +63,7 @@ import com.liferay.portal.kernel.trash.TrashHandlerRegistryUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.repository.liferayrepository.model.LiferayFileEntry;
@@ -400,6 +402,23 @@ public class FileEntryStagedModelDataHandler
 
 			FileEntry importedFileEntry = null;
 
+			Map<String, String[]> parameterMap =
+				portletDataContext.getParameterMap();
+			String rootPortletId = portletDataContext.getRootPortletId();
+
+			String newModelParameterName =
+				PortletDataHandlerControl.getNamespacedControlName(
+					rootPortletId, "new-model");
+
+			String[] newModelParameter = parameterMap.get(
+				newModelParameterName);
+
+			if (Validator.isNull(newModelParameter)) {
+				newModelParameter = new String[4];
+
+				parameterMap.put(newModelParameterName, newModelParameter);
+			}
+
 			if (portletDataContext.isDataStrategyMirror()) {
 				FileEntry existingFileEntry = fetchStagedModelByUuidAndGroupId(
 					fileEntry.getUuid(), portletDataContext.getScopeGroupId());
@@ -442,6 +461,26 @@ public class FileEntryStagedModelDataHandler
 						fileEntry.getFileName(), fileEntry.getMimeType(),
 						fileEntryTitle, fileEntry.getDescription(), null, is,
 						fileEntry.getSize(), serviceContext);
+
+					newModelParameter[0] = StringPool.TRUE;
+					newModelParameter[1] =
+						"" + importedFileEntry.getCompanyId();
+					newModelParameter[2] =
+						"" + importedFileEntry.getRepositoryId();
+
+					// TODO: need a more general way to get the name -- this way
+					// might only work for default LiferayFileEntries
+
+					DLFileEntry importedDLFileEntry =
+						_dlFileEntryLocalService.fetchDLFileEntry(
+							importedFileEntry.getFileEntryId());
+
+					if (importedDLFileEntry == null) {
+						newModelParameter[3] = importedFileEntry.getFileName();
+					}
+					else {
+						newModelParameter[3] = importedDLFileEntry.getName();
+					}
 
 					if (fileEntry.isInTrash()) {
 						importedFileEntry =
@@ -559,6 +598,13 @@ public class FileEntryStagedModelDataHandler
 								latestExistingFileVersion.getFileEntryId(),
 								latestExistingFileVersion.getVersion());
 						}
+
+						newModelParameter[0] = StringPool.FALSE;
+						newModelParameter[1] =
+							"" + importedFileEntry.getFileEntryId();
+
+						// any other params needed?
+
 					}
 					finally {
 						serviceContext.setIndexingEnabled(indexEnabled);
@@ -575,6 +621,23 @@ public class FileEntryStagedModelDataHandler
 					fileEntry.getFileName(), fileEntry.getMimeType(),
 					fileEntryTitle, fileEntry.getDescription(), null, is,
 					fileEntry.getSize(), serviceContext);
+
+				newModelParameter[0] = StringPool.TRUE;
+				newModelParameter[1] = "" + importedFileEntry.getCompanyId();
+				newModelParameter[2] = "" + importedFileEntry.getRepositoryId();
+
+				// TODO: get name a better way
+
+				DLFileEntry importedDLFileEntry =
+					_dlFileEntryLocalService.fetchDLFileEntry(
+						importedFileEntry.getFileEntryId());
+
+				if (importedDLFileEntry == null) {
+					newModelParameter[3] = importedFileEntry.getFileName();
+				}
+				else {
+					newModelParameter[3] = importedDLFileEntry.getName();
+				}
 			}
 
 			for (DLPluggableContentDataHandler dlPluggableContentDataHandler :
