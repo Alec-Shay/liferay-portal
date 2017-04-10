@@ -91,6 +91,13 @@ public class StagingServiceWrapper implements StagingService,
 	}
 
 	@Override
+	public void propagateExportImportLifecycleEvent(
+		com.liferay.exportimport.kernel.lifecycle.ExportImportLifecycleEvent exportImportLifecycleEvent)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		_stagingService.propagateExportImportLifecycleEvent(exportImportLifecycleEvent);
+	}
+
+	@Override
 	public void updateStagingRequest(long stagingRequestId,
 		java.lang.String fileName, byte[] bytes)
 		throws com.liferay.portal.kernel.exception.PortalException {

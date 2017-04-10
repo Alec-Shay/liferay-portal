@@ -17,6 +17,7 @@ package com.liferay.exportimport.kernel.service;
 import aQute.bnd.annotation.ProviderType;
 
 import com.liferay.exportimport.kernel.lar.MissingReferences;
+import com.liferay.exportimport.kernel.lifecycle.ExportImportLifecycleEvent;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 
 import com.liferay.portal.kernel.exception.PortalException;
@@ -86,6 +87,10 @@ public interface StagingService extends BaseService {
 		throws PortalException;
 
 	public void cleanUpStagingRequest(long stagingRequestId)
+		throws PortalException;
+
+	public void propagateExportImportLifecycleEvent(
+		ExportImportLifecycleEvent exportImportLifecycleEvent)
 		throws PortalException;
 
 	public void updateStagingRequest(long stagingRequestId,
