@@ -97,6 +97,13 @@ public class StagingServiceUtil {
 		getService().cleanUpStagingRequest(stagingRequestId);
 	}
 
+	public static void propagateExportImportLifecycleEvent(
+		com.liferay.exportimport.kernel.lifecycle.ExportImportLifecycleEvent exportImportLifecycleEvent)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		getService()
+			.propagateExportImportLifecycleEvent(exportImportLifecycleEvent);
+	}
+
 	public static void updateStagingRequest(long stagingRequestId,
 		java.lang.String fileName, byte[] bytes)
 		throws com.liferay.portal.kernel.exception.PortalException {
