@@ -14,11 +14,19 @@
 
 package com.liferay.journal.content.web.internal.portlet.configuration.icon;
 
+import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.journal.content.web.constants.JournalContentPortletKeys;
 import com.liferay.journal.content.web.internal.display.context.JournalContentDisplayContext;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.portlet.configuration.icon.PortletConfigurationIcon;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.PropsKeys;
+import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
+import com.liferay.portal.kernel.util.WebKeys;
 
 import java.util.ResourceBundle;
 
@@ -63,8 +71,18 @@ public class EditJournalArticlePortletConfigurationIcon
 
 	@Override
 	public boolean isShow(PortletRequest portletRequest) {
+		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		Group group = themeDisplay.getScopeGroup();
+
+		if (group.hasStagingGroup() && _STAGING_LIVE_GROUP_LOCKING_ENABLED) {
+			return false;
+		}
+
 		JournalContentDisplayContext journalContentDisplayContext =
-			getJournalContentDisplayContext(portletRequest, null);
+			getJournalContentDisplayContext(
+				portletRequest, null, _ddmStructureClassNameId);
 
 		if (journalContentDisplayContext.isShowEditArticleIcon()) {
 			return true;
@@ -81,5 +99,16 @@ public class EditJournalArticlePortletConfigurationIcon
 	public void setServletContext(ServletContext servletContext) {
 		super.setServletContext(servletContext);
 	}
+
+	@Reference(unbind = "-")
+	protected void setPortal(Portal portal) {
+		_ddmStructureClassNameId = portal.getClassNameId(DDMStructure.class);
+	}
+
+	private static final boolean _STAGING_LIVE_GROUP_LOCKING_ENABLED =
+		GetterUtil.getBoolean(
+			PropsUtil.get(PropsKeys.STAGING_LIVE_GROUP_LOCKING_ENABLED));
+
+	private long _ddmStructureClassNameId;
 
 }
