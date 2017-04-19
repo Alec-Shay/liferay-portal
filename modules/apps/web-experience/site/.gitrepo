@@ -2,8 +2,10 @@
 ; Do not manually edit this file.
 ;
 [subrepo]
+	autopull = false
 	cmdver = liferay
-	commit = 1934cd8dccd1405f41825ff412c1d4e9270cb765
+	commit = 7697239e64e10315937d679c4fb24c19cacd3c0a
+	mergebuttonmergecommits = false
 	mode = push
-	parent = beb1d5e1c74374aaa232daace0f97e51b947453e
+	parent = df37fb61d4ac2ddcc2c9577c3bd0e22a9234c2ca
 	remote = git@github.com:liferay/com-liferay-site.git

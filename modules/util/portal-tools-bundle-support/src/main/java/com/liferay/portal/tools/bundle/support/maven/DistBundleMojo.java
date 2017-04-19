@@ -34,7 +34,7 @@ import org.apache.maven.project.MavenProject;
 /**
  * @author David Truong
  */
-@Mojo(name = "dist-bundle")
+@Mojo(name = "dist")
 public class DistBundleMojo extends AbstractBundleMojo {
 
 	@Override
@@ -51,30 +51,28 @@ public class DistBundleMojo extends AbstractBundleMojo {
 
 		setLiferayHome(archiveLocation);
 
-		File archive = new File(archiveLocation + "." + format);
+		File archiveFile = new File(archiveLocation + "." + format);
 
 		String packaging = project.getPackaging();
 
 		if (packaging.equals("jar") || packaging.equals("war")) {
 			try {
-				String extension = FileUtil.getExtension(deployFile.getName());
-
-				String deployFolder = BundleSupportUtil.getDeployFolder(
-					extension);
+				String deployDirName = BundleSupportUtil.getDeployDirName(
+					deployFile.getName());
 
 				if (includeFolder) {
-					deployFolder = archiveFileName + "/" + deployFolder;
+					deployDirName = archiveFileName + "/" + deployDirName;
 				}
 
-				Path entryPath = Paths.get(deployFolder, outputFileName);
+				Path entryPath = Paths.get(deployDirName, outputFileName);
 
 				if (format.equals("zip")) {
-					FileUtil.appendZip(deployFile, entryPath, archive);
+					FileUtil.appendZip(deployFile, entryPath, archiveFile);
 				}
 				else if (format.equals("gz") || format.equals("tar") ||
 						 format.equals("tar.gz") || format.equals("tgz")) {
 
-					FileUtil.appendTar(deployFile, entryPath, archive);
+					FileUtil.appendTar(deployFile, entryPath, archiveFile);
 				}
 				else {
 					throw new IllegalArgumentException(
@@ -88,7 +86,7 @@ public class DistBundleMojo extends AbstractBundleMojo {
 		}
 		else if (!project.hasParent()) {
 			try {
-				archive.delete();
+				archiveFile.delete();
 
 				File liferayHomeDir = getLiferayHomeDir();
 
@@ -99,14 +97,9 @@ public class DistBundleMojo extends AbstractBundleMojo {
 				initBundleCommand.setEnvironment(environment);
 				initBundleCommand.setLiferayHomeDir(liferayHomeDir);
 				initBundleCommand.setPassword(password);
-				initBundleCommand.setProxyHost(proxyHost);
-				initBundleCommand.setProxyPassword(proxyPassword);
-				initBundleCommand.setProxyPort(proxyPort);
-				initBundleCommand.setProxyProtocol(proxyProtocol);
-				initBundleCommand.setProxyUsername(proxyUsername);
 				initBundleCommand.setStripComponents(stripComponents);
-				initBundleCommand.setUrl(url.toString());
-				initBundleCommand.setUsername(username);
+				initBundleCommand.setUrl(url);
+				initBundleCommand.setUserName(userName);
 
 				initBundleCommand.execute();
 
@@ -115,7 +108,7 @@ public class DistBundleMojo extends AbstractBundleMojo {
 				distBundleCommand.setFormat(format);
 				distBundleCommand.setIncludeFolder(includeFolder);
 				distBundleCommand.setLiferayHomeDir(getLiferayHomeDir());
-				distBundleCommand.setOutputFile(archive);
+				distBundleCommand.setOutputFile(archiveFile);
 
 				distBundleCommand.execute();
 
