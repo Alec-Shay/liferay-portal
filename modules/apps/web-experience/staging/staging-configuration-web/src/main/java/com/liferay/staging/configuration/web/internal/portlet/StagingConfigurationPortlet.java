@@ -30,7 +30,7 @@ import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.servlet.SessionMessages;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.staging.constants.StagingConfigurationPortletKeys;
 import com.liferay.staging.constants.StagingProcessesPortletKeys;
@@ -123,15 +123,9 @@ public class StagingConfigurationPortlet extends MVCPortlet {
 		ServiceContext serviceContext = ServiceContextFactory.getInstance(
 			actionRequest);
 
-		boolean forceDisable = ParamUtil.getBoolean(
-			actionRequest, "forceDisable");
-
 		boolean stagedGroup = true;
 
-		if (forceDisable) {
-			_groupLocalService.disableStaging(liveGroupId);
-		}
-		else if (stagingType == StagingConstants.TYPE_LOCAL_STAGING) {
+		if (stagingType == StagingConstants.TYPE_LOCAL_STAGING) {
 			stagedGroup = liveGroup.hasStagingGroup();
 
 			_stagingLocalService.enableLocalStaging(
@@ -169,13 +163,13 @@ public class StagingConfigurationPortlet extends MVCPortlet {
 			PortletURL portletURL = null;
 
 			if (stagingType == StagingConstants.TYPE_LOCAL_STAGING) {
-				portletURL = PortalUtil.getControlPanelPortletURL(
+				portletURL = _portal.getControlPanelPortletURL(
 					actionRequest, liveGroup.getStagingGroup(),
 					StagingProcessesPortletKeys.STAGING_PROCESSES, 0, 0,
 					PortletRequest.RENDER_PHASE);
 			}
 			else if (stagingType == StagingConstants.TYPE_REMOTE_STAGING) {
-				portletURL = PortalUtil.getControlPanelPortletURL(
+				portletURL = _portal.getControlPanelPortletURL(
 					actionRequest, liveGroup,
 					StagingProcessesPortletKeys.STAGING_PROCESSES, 0, 0,
 					PortletRequest.RENDER_PHASE);
@@ -191,7 +185,7 @@ public class StagingConfigurationPortlet extends MVCPortlet {
 			// Staging was turned off or remote staging configuration was
 			// modified
 
-			PortletURL portletURL = PortalUtil.getControlPanelPortletURL(
+			PortletURL portletURL = _portal.getControlPanelPortletURL(
 				actionRequest, liveGroup,
 				StagingProcessesPortletKeys.STAGING_PROCESSES, 0, 0,
 				PortletRequest.RENDER_PHASE);
@@ -211,7 +205,7 @@ public class StagingConfigurationPortlet extends MVCPortlet {
 
 			// Local staging configuration was modified
 
-			PortletURL portletURL = PortalUtil.getControlPanelPortletURL(
+			PortletURL portletURL = _portal.getControlPanelPortletURL(
 				actionRequest, liveGroup.getStagingGroup(),
 				StagingProcessesPortletKeys.STAGING_PROCESSES, 0, 0,
 				PortletRequest.RENDER_PHASE);
@@ -252,6 +246,10 @@ public class StagingConfigurationPortlet extends MVCPortlet {
 	}
 
 	private GroupLocalService _groupLocalService;
+
+	@Reference
+	private Portal _portal;
+
 	private StagingLocalService _stagingLocalService;
 
 }

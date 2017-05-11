@@ -38,17 +38,17 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.staging.constants.StagingProcessesPortletKeys;
 import com.liferay.taglib.ui.util.SessionTreeJSClicks;
 import com.liferay.trash.kernel.service.TrashEntryService;
-import com.liferay.trash.kernel.util.TrashUtil;
 
 import java.io.Serializable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -115,9 +115,11 @@ public class EditPublishConfigurationMVCActionCommand
 		}
 
 		if (moveToTrash && !trashedModels.isEmpty()) {
-			TrashUtil.addTrashSessionMessages(actionRequest, trashedModels);
+			Map<String, Object> data = new HashMap<>();
 
-			hideDefaultSuccessMessage(actionRequest);
+			data.put("trashedModels", trashedModels);
+
+			addDeleteSuccessData(actionRequest, data);
 		}
 	}
 
@@ -231,7 +233,7 @@ public class EditPublishConfigurationMVCActionCommand
 	}
 
 	protected void setLayoutIdMap(ActionRequest actionRequest) {
-		HttpServletRequest portletRequest = PortalUtil.getHttpServletRequest(
+		HttpServletRequest portletRequest = _portal.getHttpServletRequest(
 			actionRequest);
 
 		long groupId = ParamUtil.getLong(actionRequest, "groupId");
@@ -306,6 +308,10 @@ public class EditPublishConfigurationMVCActionCommand
 		_exportImportConfigurationLocalService;
 	private ExportImportConfigurationService _exportImportConfigurationService;
 	private GroupLocalService _groupLocalService;
+
+	@Reference
+	private Portal _portal;
+
 	private TrashEntryService _trashEntryService;
 
 }

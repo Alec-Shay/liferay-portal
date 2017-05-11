@@ -218,6 +218,7 @@ public class StagedLayoutSetStagedModelDataHandler
 			updateLastPublishDate) {
 
 			ExportImportProcessCallbackRegistryUtil.registerCallback(
+				portletDataContext.getExportImportProcessId(),
 				new UpdateLayoutSetLastPublishDateCallable(
 					portletDataContext.getDateRange(),
 					portletDataContext.getGroupId(),
@@ -333,7 +334,7 @@ public class StagedLayoutSetStagedModelDataHandler
 				if (!LayoutStagingUtil.prepareLayoutStagingHandler(
 						portletDataContext, layout)) {
 
-					return;
+					continue;
 				}
 
 				StagedModelDataHandlerUtil.exportReferenceStagedModel(
@@ -567,9 +568,7 @@ public class StagedLayoutSetStagedModelDataHandler
 		String mergeFailFriendlyURLLayouts = settingsProperties.getProperty(
 			Sites.MERGE_FAIL_FRIENDLY_URL_LAYOUTS);
 
-		if (Validator.isNull(mergeFailFriendlyURLLayouts) &&
-			modifiedLayouts.isEmpty()) {
-
+		if (Validator.isNull(mergeFailFriendlyURLLayouts)) {
 			settingsProperties.setProperty(
 				Sites.LAST_MERGE_TIME, String.valueOf(lastMergeTime));
 
