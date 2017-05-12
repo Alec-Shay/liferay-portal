@@ -63,12 +63,6 @@ public class WorkflowPermissionImpl implements WorkflowPermission {
 			return Boolean.TRUE;
 		}
 
-		if (!WorkflowDefinitionLinkLocalServiceUtil.hasWorkflowDefinitionLink(
-				companyId, groupId, className)) {
-
-			return null;
-		}
-
 		if (WorkflowInstanceLinkLocalServiceUtil.hasWorkflowInstanceLink(
 				companyId, groupId, className, classPK)) {
 
