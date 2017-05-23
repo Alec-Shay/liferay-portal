@@ -33,6 +33,7 @@ import com.thoughtworks.qdox.model.DefaultDocletTagFactory;
 import com.thoughtworks.qdox.model.JavaClass;
 import com.thoughtworks.qdox.model.JavaPackage;
 import com.thoughtworks.qdox.model.JavaSource;
+import com.thoughtworks.qdox.parser.ParseException;
 
 import java.util.HashSet;
 import java.util.List;
@@ -48,7 +49,13 @@ public class UnprocessedExceptionCheck extends AbstractCheck {
 
 	@Override
 	public int[] getDefaultTokens() {
-		return new int[] {TokenTypes.LITERAL_CATCH};
+		return new int[] {TokenTypes.LITERAL_CATCH, TokenTypes.LITERAL_NEW};
+	}
+
+	public void setCheckUnprocessedThrownExceptions(
+		boolean checkUnprocessedThrownExceptions) {
+
+		_checkUnprocessedThrownExceptions = checkUnprocessedThrownExceptions;
 	}
 
 	@Override
@@ -64,12 +71,19 @@ public class UnprocessedExceptionCheck extends AbstractCheck {
 			return;
 		}
 
+		if (detailAST.getType() == TokenTypes.LITERAL_CATCH) {
+			_checkUnprocessedException(detailAST);
+		}
+		else {
+			_checkUnprocessedThrownException(detailAST);
+		}
+	}
+
+	private void _checkUnprocessedException(DetailAST detailAST) {
 		DetailAST parameterDefAST = detailAST.findFirstToken(
 			TokenTypes.PARAMETER_DEF);
 
 		String exceptionVariableName = _getName(parameterDefAST);
-
-		_checkUnthrownException(detailAST, exceptionVariableName);
 
 		if (_containsVariable(
 				detailAST.findFirstToken(TokenTypes.SLIST),
@@ -144,32 +158,57 @@ public class UnprocessedExceptionCheck extends AbstractCheck {
 		}
 	}
 
-	private void _checkUnthrownException(
-		DetailAST detailAST, String variableName) {
+	private void _checkUnprocessedThrownException(DetailAST detailAST) {
+		if (!_checkUnprocessedThrownExceptions) {
+			return;
+		}
 
-		List<DetailAST> literalNewASTList = DetailASTUtil.getAllChildTokens(
-			detailAST, true, TokenTypes.LITERAL_NEW);
+		String name = _getName(detailAST);
 
-		for (DetailAST literalNewAST : literalNewASTList) {
-			String name = _getName(literalNewAST);
+		if ((name == null) || !name.endsWith("Exception")) {
+			return;
+		}
 
-			if ((name == null) || !name.endsWith("Exception")) {
-				continue;
+		DetailAST parentAST = detailAST.getParent();
+
+		if (parentAST.getType() != TokenTypes.EXPR) {
+			return;
+		}
+
+		DetailAST exprAST = parentAST;
+
+		while (true) {
+			if (parentAST == null) {
+				return;
 			}
 
-			DetailAST parentAST = literalNewAST.getParent();
-
-			if (parentAST.getType() != TokenTypes.EXPR) {
-				continue;
+			if (parentAST.getType() == TokenTypes.LITERAL_CATCH) {
+				break;
 			}
 
 			parentAST = parentAST.getParent();
+		}
 
-			if (parentAST.getType() == TokenTypes.SLIST) {
-				log(
-					literalNewAST.getLineNo(), MSG_UNPROCESSED_EXCEPTION,
-					variableName);
-			}
+		DetailAST parameterDefAST = parentAST.findFirstToken(
+			TokenTypes.PARAMETER_DEF);
+
+		String exceptionVariableName = _getName(parameterDefAST);
+
+		if (_containsVariable(
+				parentAST.findFirstToken(TokenTypes.SLIST),
+				exceptionVariableName)) {
+
+			return;
+		}
+
+		parentAST = exprAST.getParent();
+
+		if ((parentAST.getType() == TokenTypes.LITERAL_THROW) ||
+			(parentAST.getType() == TokenTypes.SLIST)) {
+
+			log(
+				detailAST.getLineNo(), MSG_UNPROCESSED_EXCEPTION,
+				exceptionVariableName);
 		}
 	}
 
@@ -222,8 +261,12 @@ public class UnprocessedExceptionCheck extends AbstractCheck {
 
 		FileText fileText = fileContents.getText();
 
-		javaDocBuilder.addSource(
-			new UnsyncStringReader((String)fileText.getFullText()));
+		try {
+			javaDocBuilder.addSource(
+				new UnsyncStringReader((String)fileText.getFullText()));
+		}
+		catch (ParseException pe) {
+		}
 
 		return javaDocBuilder;
 	}
@@ -251,5 +294,7 @@ public class UnprocessedExceptionCheck extends AbstractCheck {
 
 		return javaPackage.getName();
 	}
+
+	private boolean _checkUnprocessedThrownExceptions;
 
 }

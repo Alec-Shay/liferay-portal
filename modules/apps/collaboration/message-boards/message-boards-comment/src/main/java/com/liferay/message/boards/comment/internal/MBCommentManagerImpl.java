@@ -35,8 +35,9 @@ import com.liferay.portal.kernel.comment.DuplicateCommentException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Function;
-import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.ratings.kernel.model.RatingsEntry;
@@ -45,8 +46,8 @@ import com.liferay.ratings.kernel.service.RatingsEntryLocalService;
 import com.liferay.ratings.kernel.service.RatingsStatsLocalService;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -197,7 +198,7 @@ public class MBCommentManagerImpl implements CommentManager {
 
 	@Override
 	public int getCommentsCount(String className, long classPK) {
-		long classNameId = PortalUtil.getClassNameId(className);
+		long classNameId = _portal.getClassNameId(className);
 
 		return _mbMessageLocalService.getDiscussionMessagesCount(
 			classNameId, classPK, WorkflowConstants.STATUS_APPROVED);
@@ -344,23 +345,25 @@ public class MBCommentManagerImpl implements CommentManager {
 
 		List<MBMessage> messages = treeWalker.getMessages();
 
-		List<RatingsEntry> ratingsEntries = Collections.emptyList();
-		List<RatingsStats> ratingsStats = Collections.emptyList();
+		List<Long> classPKs = new ArrayList<>();
 
 		if (messages.size() > 1) {
-			List<Long> classPKs = new ArrayList<>();
-
 			for (MBMessage curMessage : messages) {
 				if (!curMessage.isRoot()) {
 					classPKs.add(curMessage.getMessageId());
 				}
 			}
-
-			ratingsEntries = _ratingsEntryLocalService.getEntries(
-				userId, CommentConstants.getDiscussionClassName(), classPKs);
-			ratingsStats = _ratingsStatsLocalService.getStats(
-				CommentConstants.getDiscussionClassName(), classPKs);
 		}
+
+		long[] classPKsArray = ArrayUtil.toLongArray(classPKs);
+
+		Map<Long, RatingsEntry> ratingsEntries =
+			_ratingsEntryLocalService.getEntries(
+				userId, CommentConstants.getDiscussionClassName(),
+				classPKsArray);
+		Map<Long, RatingsStats> ratingsStats =
+			_ratingsStatsLocalService.getStats(
+				CommentConstants.getDiscussionClassName(), classPKsArray);
 
 		return new MBDiscussionCommentImpl(
 			treeWalker.getRoot(), treeWalker, ratingsEntries, ratingsStats);
@@ -376,6 +379,10 @@ public class MBCommentManagerImpl implements CommentManager {
 	private MBDiscussionLocalService _mbDiscussionLocalService;
 	private MBMessageLocalService _mbMessageLocalService;
 	private MBThreadLocalService _mbThreadLocalService;
+
+	@Reference
+	private Portal _portal;
+
 	private RatingsEntryLocalService _ratingsEntryLocalService;
 	private RatingsStatsLocalService _ratingsStatsLocalService;
 
