@@ -63,15 +63,11 @@ public class ASMWrapperUtil {
 						asmWrapperClassName);
 				}
 				catch (ClassNotFoundException cnfe) {
-					Method defineClassMethod = ReflectionUtil.getDeclaredMethod(
-						ClassLoader.class, "defineClass", String.class,
-						byte[].class, int.class, int.class);
-
 					byte[] classData = _generateASMWrapperClassData(
 						asmWrapperClassName.replace('.', '/'), interfaceClass,
 						delegateObject, defaultObject);
 
-					asmWrapperClass = (Class<?>)defineClassMethod.invoke(
+					asmWrapperClass = (Class<?>)_defineClassMethod.invoke(
 						classLoader, asmWrapperClassName, classData, 0,
 						classData.length);
 				}
@@ -184,6 +180,19 @@ public class ASMWrapperUtil {
 			}
 		}
 
+		_generateMethod(
+			classWriter, _equalsMethod, asmWrapperClassBinaryName, "_delegate",
+			delegateObjectClassDescriptor,
+			_getClassBinaryName(delegateObjectClass));
+		_generateMethod(
+			classWriter, _hashCodeMethod, asmWrapperClassBinaryName,
+			"_delegate", delegateObjectClassDescriptor,
+			_getClassBinaryName(delegateObjectClass));
+		_generateMethod(
+			classWriter, _toStringMethod, asmWrapperClassBinaryName,
+			"_delegate", delegateObjectClassDescriptor,
+			_getClassBinaryName(delegateObjectClass));
+
 		classWriter.visitEnd();
 
 		return classWriter.toByteArray();
@@ -244,6 +253,28 @@ public class ASMWrapperUtil {
 	}
 
 	private ASMWrapperUtil() {
+	}
+
+	private static final Method _defineClassMethod;
+	private static final Method _equalsMethod;
+	private static final Method _hashCodeMethod;
+	private static final Method _toStringMethod;
+
+	static {
+		try {
+			_defineClassMethod = ReflectionUtil.getDeclaredMethod(
+				ClassLoader.class, "defineClass", String.class, byte[].class,
+				int.class, int.class);
+			_equalsMethod = ReflectionUtil.getDeclaredMethod(
+				Object.class, "equals", Object.class);
+			_hashCodeMethod = ReflectionUtil.getDeclaredMethod(
+				Object.class, "hashCode");
+			_toStringMethod = ReflectionUtil.getDeclaredMethod(
+				Object.class, "toString");
+		}
+		catch (Throwable t) {
+			throw new ExceptionInInitializerError(t);
+		}
 	}
 
 }

@@ -14,7 +14,7 @@
 
 package com.liferay.hello.soy.web.internal.portlet;
 
-import com.liferay.portal.kernel.service.LayoutService;
+import com.liferay.portal.kernel.template.Template;
 import com.liferay.portal.kernel.util.ReleaseInfo;
 import com.liferay.portal.portlet.bridge.soy.SoyPortlet;
 
@@ -27,7 +27,6 @@ import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Bruno Basto
@@ -65,6 +64,8 @@ public class HelloSoyPortlet extends SoyPortlet {
 			RenderRequest renderRequest, RenderResponse renderResponse)
 		throws IOException, PortletException {
 
+		Template template = getTemplate(renderRequest);
+
 		PortletURL navigationURL = renderResponse.createRenderURL();
 
 		navigationURL.setParameter("mvcRenderCommandName", "Navigation");
@@ -75,8 +76,5 @@ public class HelloSoyPortlet extends SoyPortlet {
 
 		super.render(renderRequest, renderResponse);
 	}
-
-	@Reference
-	protected LayoutService layoutService;
 
 }

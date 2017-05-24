@@ -44,8 +44,7 @@ String viewCalendarBookingURL = ParamUtil.getString(request, "viewCalendarBookin
 
 	var showMoreStrings = {
 		close: '<liferay-ui:message key="close" />',
-		more: '<%= StringUtil.toLowerCase(LanguageUtil.get(request, "more")) %>',
-		show: '<liferay-ui:message key="show" />'
+		showMore: '<liferay-ui:message key="show-x-more" />'
 	};
 
 	<c:if test="<%= !hideDayView %>">
@@ -173,14 +172,16 @@ String viewCalendarBookingURL = ParamUtil.getString(request, "viewCalendarBookin
 			currentTimeFn: A.bind(remoteServices.getCurrentTime, remoteServices),
 			date: new Date(<%= dateYear %>, <%= dateMonth %>, <%= dateDay %>),
 
-			<c:if test="<%= !themeDisplay.isSignedIn() %>">
+			<c:if test="<%= !themeDisplay.isSignedIn() || ((defaultCalendar != null) && !CalendarPermission.contains(themeDisplay.getPermissionChecker(), defaultCalendar, CalendarActionKeys.MANAGE_BOOKINGS)) %>">
 				disabled: true,
 			</c:if>
 
 			eventRecorder: window.<portlet:namespace />eventRecorder,
+			eventsPerPage: <%= eventsPerPage %>,
 			filterCalendarBookings: window['<%= HtmlUtil.escapeJS(filterCalendarBookings) %>'],
 			firstDayOfWeek: <%= weekStartsOn %>,
 			items: A.Object.values(calendarContainer.get('availableCalendars')),
+			maxDaysDisplayed: <%= maxDaysDisplayed %>,
 			portletNamespace: '<portlet:namespace />',
 			preventPersistence: <%= preventPersistence %>,
 			remoteServices: remoteServices,

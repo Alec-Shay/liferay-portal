@@ -302,7 +302,7 @@ public class DLWebDAVStorageImpl extends BaseWebDAVStorageImpl {
 				long folderId = folder.getFolderId();
 
 				if ((folder.getModel() instanceof DLFolder) &&
-					DLTrashUtil.isTrashEnabled(
+					_dlTrashUtil.isTrashEnabled(
 						folder.getGroupId(), folder.getRepositoryId())) {
 
 					_dlTrashService.moveFolderToTrash(folderId);
@@ -323,7 +323,7 @@ public class DLWebDAVStorageImpl extends BaseWebDAVStorageImpl {
 				long fileEntryId = fileEntry.getFileEntryId();
 
 				if ((fileEntry.getModel() instanceof DLFileEntry) &&
-					DLTrashUtil.isTrashEnabled(
+					_dlTrashUtil.isTrashEnabled(
 						fileEntry.getGroupId(), fileEntry.getRepositoryId())) {
 
 					_dlTrashService.moveFileEntryToTrash(fileEntryId);
@@ -951,7 +951,8 @@ public class DLWebDAVStorageImpl extends BaseWebDAVStorageImpl {
 
 				ServiceContext serviceContext = new ServiceContext();
 
-				serviceContext.setAttribute(DL.WEBDAV_CHECK_IN_MODE, true);
+				serviceContext.setAttribute(
+					DL.WEBDAV_CHECK_IN_MODE, Boolean.TRUE);
 
 				_dlAppService.checkInFileEntry(
 					fileEntry.getFileEntryId(), token, serviceContext);
@@ -1174,6 +1175,8 @@ public class DLWebDAVStorageImpl extends BaseWebDAVStorageImpl {
 	protected void populateServiceContext(
 		ServiceContext serviceContext, FileEntry fileEntry) {
 
+		serviceContext.setScopeGroupId(fileEntry.getGroupId());
+
 		String className = DLFileEntryConstants.getClassName();
 
 		long[] assetCategoryIds = _assetCategoryLocalService.getCategoryIds(
@@ -1279,5 +1282,8 @@ public class DLWebDAVStorageImpl extends BaseWebDAVStorageImpl {
 	private AssetTagLocalService _assetTagLocalService;
 	private DLAppService _dlAppService;
 	private DLTrashService _dlTrashService;
+
+	@Reference
+	private DLTrashUtil _dlTrashUtil;
 
 }

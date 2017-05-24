@@ -31,11 +31,17 @@ AssetEntryServiceUtil.incrementViewCounter(BlogsEntry.class.getName(), entry.get
 
 AssetUtil.addLayoutTags(request, AssetTagLocalServiceUtil.getTags(BlogsEntry.class.getName(), entry.getEntryId()));
 
+RatingsEntry ratingsEntry = RatingsEntryLocalServiceUtil.fetchEntry(themeDisplay.getUserId(), BlogsEntry.class.getName(), entry.getEntryId());
+RatingsStats ratingsStats = RatingsStatsLocalServiceUtil.fetchStats(BlogsEntry.class.getName(), entry.getEntryId());
+
 request.setAttribute(WebKeys.LAYOUT_ASSET_ENTRY, assetEntry);
 
 request.setAttribute("view_entry_content.jsp-entry", entry);
 
 request.setAttribute("view_entry_content.jsp-assetEntry", assetEntry);
+
+request.setAttribute("view_entry_content.jsp-ratingsEntry", ratingsEntry);
+request.setAttribute("view_entry_content.jsp-ratingsStats", ratingsStats);
 
 portletDisplay.setShowBackIcon(true);
 portletDisplay.setURLBack(redirect);
@@ -76,6 +82,7 @@ if (portletTitleBasedNavigation) {
 							<aui:col cssClass="entry-navigation-item" md="4" sm="6">
 								<portlet:renderURL var="previousEntryURL">
 									<portlet:param name="mvcRenderCommandName" value="/blogs/view_entry" />
+									<portlet:param name="redirect" value="<%= redirect %>" />
 									<portlet:param name="urlTitle" value="<%= previousEntry.getUrlTitle() %>" />
 								</portlet:renderURL>
 
@@ -118,6 +125,7 @@ if (portletTitleBasedNavigation) {
 							<aui:col cssClass="entry-navigation-item" md="4" sm="6">
 								<portlet:renderURL var="nextEntryURL">
 									<portlet:param name="mvcRenderCommandName" value="/blogs/view_entry" />
+									<portlet:param name="redirect" value="<%= redirect %>" />
 									<portlet:param name="urlTitle" value="<%= nextEntry.getUrlTitle() %>" />
 								</portlet:renderURL>
 
@@ -168,15 +176,20 @@ if (portletTitleBasedNavigation) {
 	<div class="row">
 		<div class="col-md-8 col-md-offset-2">
 			<c:if test="<%= (discussion != null) && blogsPortletInstanceConfiguration.enableComments() %>">
+
+				<%
+				int commentsCount = CommentManagerUtil.getCommentsCount(BlogsEntry.class.getName(), entry.getEntryId());
+				%>
+
 				<h2>
-					<strong><liferay-ui:message arguments="<%= CommentManagerUtil.getCommentsCount(BlogsEntry.class.getName(), entry.getEntryId()) %>" key="x-comments" /></strong>
+					<strong><liferay-ui:message arguments="<%= commentsCount %>" key='<%= commentsCount == 1 ? "x-comment" : "x-comments" %>' /></strong>
 				</h2>
 
 				<c:if test="<%= PropsValues.BLOGS_TRACKBACK_ENABLED && entry.isAllowTrackbacks() && Validator.isNotNull(entry.getUrlTitle()) %>">
 					<aui:input inlineLabel="left" name="trackbackURL" type="resource" value='<%= PortalUtil.getLayoutFullURL(themeDisplay) + Portal.FRIENDLY_URL_SEPARATOR + "blogs/trackback/" + entry.getUrlTitle() %>' />
 				</c:if>
 
-				<liferay-ui:discussion
+				<liferay-comment:discussion
 					className="<%= BlogsEntry.class.getName() %>"
 					classPK="<%= entry.getEntryId() %>"
 					formName="fm2"
