@@ -14,11 +14,11 @@
 
 package com.liferay.document.library.item.selector.web.internal;
 
+import com.liferay.document.library.item.selector.web.internal.constants.DLItemSelectorWebKeys;
 import com.liferay.document.library.item.selector.web.internal.display.context.DLItemSelectorViewDisplayContext;
 import com.liferay.item.selector.ItemSelectorCriterion;
 import com.liferay.item.selector.ItemSelectorReturnTypeResolverHandler;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ResourceBundleLoader;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.language.LanguageResources;
@@ -45,6 +45,11 @@ public abstract class BaseDLItemSelectorView<T extends ItemSelectorCriterion>
 	implements DLItemSelectorView<T> {
 
 	@Override
+	public String[] getExtensions() {
+		return new String[0];
+	}
+
+	@Override
 	public String[] getMimeTypes() {
 		return new String[0];
 	}
@@ -58,7 +63,7 @@ public abstract class BaseDLItemSelectorView<T extends ItemSelectorCriterion>
 		ResourceBundleLoader resourceBundleLoader = getResourceBundleLoader();
 
 		ResourceBundle resourceBundle = resourceBundleLoader.loadResourceBundle(
-			LocaleUtil.toLanguageId(locale));
+			locale);
 
 		return ResourceBundleUtil.getString(
 			resourceBundle, "documents-and-media");
@@ -91,7 +96,7 @@ public abstract class BaseDLItemSelectorView<T extends ItemSelectorCriterion>
 				itemSelectedEventName, search, portletURL);
 
 		request.setAttribute(
-			DL_ITEM_SELECTOR_VIEW_DISPLAY_CONTEXT,
+			DLItemSelectorWebKeys.DL_ITEM_SELECTOR_VIEW_DISPLAY_CONTEXT,
 			dlItemSelectorViewDisplayContext);
 
 		requestDispatcher.include(request, response);

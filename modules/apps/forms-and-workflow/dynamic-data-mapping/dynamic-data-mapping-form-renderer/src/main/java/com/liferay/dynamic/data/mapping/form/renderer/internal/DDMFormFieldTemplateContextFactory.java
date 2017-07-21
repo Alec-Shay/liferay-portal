@@ -22,12 +22,16 @@ import com.liferay.dynamic.data.mapping.form.renderer.DDMFormRendererConstants;
 import com.liferay.dynamic.data.mapping.form.renderer.DDMFormRenderingContext;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMFormFieldOptions;
+import com.liferay.dynamic.data.mapping.model.DDMFormFieldValidation;
 import com.liferay.dynamic.data.mapping.model.LocalizedValue;
 import com.liferay.dynamic.data.mapping.model.Value;
 import com.liferay.dynamic.data.mapping.render.DDMFormFieldRenderingContext;
 import com.liferay.dynamic.data.mapping.storage.DDMFormFieldValue;
 import com.liferay.portal.kernel.language.LanguageConstants;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.KeyValuePair;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
@@ -49,13 +53,14 @@ public class DDMFormFieldTemplateContextFactory {
 		Map<String, DDMFormField> ddmFormFieldsMap,
 		DDMFormEvaluationResult ddmFormEvaluationResult,
 		List<DDMFormFieldValue> ddmFormFieldValues,
-		DDMFormRenderingContext ddmFormRenderingContext) {
+		DDMFormRenderingContext ddmFormRenderingContext, boolean pageEnabled) {
 
 		_ddmFormFieldsMap = ddmFormFieldsMap;
 
 		_ddmFormEvaluationResult = ddmFormEvaluationResult;
 		_ddmFormFieldValues = ddmFormFieldValues;
 		_ddmFormRenderingContext = ddmFormRenderingContext;
+		_pageEnabled = pageEnabled;
 
 		_locale = ddmFormRenderingContext.getLocale();
 	}
@@ -107,9 +112,22 @@ public class DDMFormFieldTemplateContextFactory {
 		setDDMFormFieldTemplateContextDataType(
 			ddmFormFieldTemplateContext, ddmFormField.getDataType());
 
+		setDDMFormFieldTemplateContextDataProviderSettings(
+			ddmFormFieldTemplateContext,
+			_ddmFormRenderingContext.getProperty("dataProviderSettings"),
+			ddmFormFieldValue.getName());
 		setDDMFormFieldTemplateContextDir(ddmFormFieldTemplateContext);
+		setDDMFormFieldTemplateContextEvaluable(
+			ddmFormFieldTemplateContext, ddmFormFieldEvaluationResult,
+			ddmFormField.getProperty("evaluable"));
+		setDDMFormFieldTemplateContextFieldName(
+			ddmFormFieldTemplateContext, ddmFormFieldValue.getName());
+		setDDMFormFieldTemplateContextInstanceId(
+			ddmFormFieldTemplateContext, ddmFormFieldValue.getInstanceId());
 		setDDMFormFieldTemplateContextLocalizedValue(
 			ddmFormFieldTemplateContext, "label", ddmFormField.getLabel());
+		setDDMFormFieldTemplateContextLocalizable(
+			ddmFormFieldTemplateContext, ddmFormField.isLocalizable());
 		setDDMFormFieldTemplateContextLocalizedValue(
 			ddmFormFieldTemplateContext, "tip", ddmFormField.getTip());
 
@@ -120,16 +138,16 @@ public class DDMFormFieldTemplateContextFactory {
 		setDDMFormFieldTemplateContextName(
 			ddmFormFieldTemplateContext, ddmFormFieldParameterName);
 
-		List<Object> nestedDDMFormFieldTemplateContext =
+		Map<String, Object> nestedDDMFormFieldTemplateContext =
 			createNestedDDMFormFieldTemplateContext(
 				ddmFormFieldValue, ddmFormFieldParameterName);
 
-		setDDMFormFieldTemplateContextEvaluable(
-			ddmFormFieldTemplateContext, ddmFormFieldEvaluationResult,
-			ddmFormField.getProperty("evaluable"));
 		setDDMFormFieldTemplateContextNestedTemplateContexts(
 			ddmFormFieldTemplateContext, nestedDDMFormFieldTemplateContext);
 
+		setDDMFormFieldTemplateContextOptions(
+			ddmFormFieldTemplateContext, ddmFormFieldEvaluationResult,
+			ddmFormField.getDDMFormFieldOptions());
 		setDDMFormFieldTemplateContextReadOnly(
 			ddmFormFieldTemplateContext, ddmFormFieldEvaluationResult);
 		setDDMFormFieldTemplateContextRepeatable(
@@ -143,12 +161,18 @@ public class DDMFormFieldTemplateContextFactory {
 		setDDMFormFieldTemplateContextValid(
 			ddmFormFieldEvaluationResult, ddmFormFieldTemplateContext);
 		setDDMFormFieldTemplateContextValue(
-			ddmFormFieldEvaluationResult, ddmFormFieldTemplateContext,
-			ddmFormFieldValue.getValue());
+			ddmFormField, ddmFormFieldEvaluationResult,
+			ddmFormFieldTemplateContext, ddmFormFieldValue.getValue());
+		setDDMFormFieldTemplateContextValueLocalizableValue(
+			ddmFormFieldTemplateContext, ddmFormFieldValue.getValue());
+		setDDMFormFieldTemplateContextValidation(
+			ddmFormFieldTemplateContext,
+			ddmFormField.getDDMFormFieldValidation());
+		setDDMFormFieldTemplateContextVisibilityExpression(
+			ddmFormFieldTemplateContext,
+			ddmFormField.getVisibilityExpression());
 		setDDMFormFieldTemplateContextVisible(
 			ddmFormFieldTemplateContext, ddmFormFieldEvaluationResult);
-		setDDMFormFieldTemplateContextOptions(
-			ddmFormFieldTemplateContext, ddmFormField.getDDMFormFieldOptions());
 
 		// Contributed template parameters
 
@@ -170,6 +194,10 @@ public class DDMFormFieldTemplateContextFactory {
 			DDMFormFieldEvaluationResult ddmFormFieldEvaluationResult =
 				_getDDMFormFieldEvaluationResult(ddmFormFieldValue);
 
+			if (!_pageEnabled) {
+				ddmFormFieldEvaluationResult.setRequired(false);
+			}
+
 			Object ddmFormFieldTemplateContext =
 				createDDMFormFieldTemplateContext(
 					ddmFormFieldValue, ddmFormFieldEvaluationResult, index++,
@@ -181,15 +209,14 @@ public class DDMFormFieldTemplateContextFactory {
 		return ddmFormFieldTemplateContexts;
 	}
 
-	protected List<Object> createNestedDDMFormFieldTemplateContext(
+	protected Map<String, Object> createNestedDDMFormFieldTemplateContext(
 		DDMFormFieldValue parentDDMFormFieldValue,
 		String parentDDMFormFieldParameterName) {
 
+		Map<String, Object> nestedDDMFormFieldTemplateContext = new HashMap<>();
+
 		Map<String, List<DDMFormFieldValue>> nestedDDMFormFieldValuesMap =
 			parentDDMFormFieldValue.getNestedDDMFormFieldValuesMap();
-
-		List<Object> nestedDDMFormFieldTemplateContext = new ArrayList<>(
-			nestedDDMFormFieldValuesMap.size());
 
 		for (DDMFormFieldValue nestedDDMFormFieldValue :
 				parentDDMFormFieldValue.getNestedDDMFormFieldValues()) {
@@ -198,12 +225,53 @@ public class DDMFormFieldTemplateContextFactory {
 				nestedDDMFormFieldValuesMap.get(
 					nestedDDMFormFieldValue.getName());
 
-			nestedDDMFormFieldTemplateContext.addAll(
+			nestedDDMFormFieldTemplateContext.put(
+				nestedDDMFormFieldValue.getName(),
 				createDDMFormFieldTemplateContexts(
 					nestedDDMFormFieldValues, parentDDMFormFieldParameterName));
 		}
 
 		return nestedDDMFormFieldTemplateContext;
+	}
+
+	protected List<Map<String, String>> createOptions(
+		DDMFormFieldOptions ddmFormFieldOptions) {
+
+		List<Map<String, String>> list = new ArrayList<>();
+
+		Map<String, LocalizedValue> options = ddmFormFieldOptions.getOptions();
+
+		for (Entry<String, LocalizedValue> entry : options.entrySet()) {
+			Map<String, String> option = new HashMap<>();
+
+			LocalizedValue localizedValue = entry.getValue();
+
+			option.put("label", localizedValue.getString(_locale));
+
+			option.put("value", entry.getKey());
+
+			list.add(option);
+		}
+
+		return list;
+	}
+
+	protected List<Map<String, String>> createOptions(
+		List<KeyValuePair> keyValuePairs) {
+
+		List<Map<String, String>> list = new ArrayList<>();
+
+		for (KeyValuePair keyValuePair : keyValuePairs) {
+			Map<String, String> option = new HashMap<>();
+
+			option.put("label", keyValuePair.getValue());
+
+			option.put("value", keyValuePair.getKey());
+
+			list.add(option);
+		}
+
+		return list;
 	}
 
 	protected String getAffixedDDMFormFieldParameterName(
@@ -271,6 +339,21 @@ public class DDMFormFieldTemplateContextFactory {
 		ddmFormFieldTemplateContext.putAll(contributedParameters);
 	}
 
+	protected void setDDMFormFieldTemplateContextDataProviderSettings(
+		Map<String, Object> ddmFormFieldTemplateContext,
+		Map<String, Map<String, Object>> dataProviderSettings,
+		String fieldName) {
+
+		if ((dataProviderSettings == null) ||
+			!dataProviderSettings.containsKey(fieldName)) {
+
+			return;
+		}
+
+		ddmFormFieldTemplateContext.put(
+			"dataProviderSettings", dataProviderSettings.get(fieldName));
+	}
+
 	protected void setDDMFormFieldTemplateContextDataType(
 		Map<String, Object> ddmFormFieldTemplateContext, String dataType) {
 
@@ -302,6 +385,24 @@ public class DDMFormFieldTemplateContextFactory {
 		ddmFormFieldTemplateContext.put("evaluable", evaluable);
 	}
 
+	protected void setDDMFormFieldTemplateContextFieldName(
+		Map<String, Object> ddmFormFieldTemplateContext, String fieldName) {
+
+		ddmFormFieldTemplateContext.put("fieldName", fieldName);
+	}
+
+	protected void setDDMFormFieldTemplateContextInstanceId(
+		Map<String, Object> ddmFormFieldTemplateContext, String instanceId) {
+
+		ddmFormFieldTemplateContext.put("instanceId", instanceId);
+	}
+
+	protected void setDDMFormFieldTemplateContextLocalizable(
+		Map<String, Object> ddmFormFieldTemplateContext, boolean localizable) {
+
+		ddmFormFieldTemplateContext.put("localizable", localizable);
+	}
+
 	protected void setDDMFormFieldTemplateContextLocalizedValue(
 		Map<String, Object> ddmFormFieldTemplateContext, String propertyName,
 		LocalizedValue localizedValue) {
@@ -328,7 +429,7 @@ public class DDMFormFieldTemplateContextFactory {
 
 	protected void setDDMFormFieldTemplateContextNestedTemplateContexts(
 		Map<String, Object> ddmFormFieldRenderingContext,
-		List<Object> nestedDDMFormFieldTemplateContexts) {
+		Map<String, Object> nestedDDMFormFieldTemplateContexts) {
 
 		if (nestedDDMFormFieldTemplateContexts.isEmpty()) {
 			return;
@@ -340,25 +441,20 @@ public class DDMFormFieldTemplateContextFactory {
 
 	protected void setDDMFormFieldTemplateContextOptions(
 		Map<String, Object> ddmFormFieldTemplateContext,
+		DDMFormFieldEvaluationResult ddmFormFieldEvaluationResult,
 		DDMFormFieldOptions ddmFormFieldOptions) {
 
-		Map<String, LocalizedValue> options = ddmFormFieldOptions.getOptions();
+		List<KeyValuePair> keyValuePairs =
+			ddmFormFieldEvaluationResult.getProperty("options");
 
-		List<Map<String, String>> list = new ArrayList<>();
-
-		for (Entry<String, LocalizedValue> entry : options.entrySet()) {
-			Map<String, String> option = new HashMap<>();
-
-			LocalizedValue localizedValue = entry.getValue();
-
-			option.put("label", localizedValue.getString(_locale));
-
-			option.put("value", entry.getKey());
-
-			list.add(option);
+		if (ListUtil.isNotEmpty(keyValuePairs)) {
+			ddmFormFieldTemplateContext.put(
+				"options", createOptions(keyValuePairs));
 		}
-
-		ddmFormFieldTemplateContext.put("options", list);
+		else {
+			ddmFormFieldTemplateContext.put(
+				"options", createOptions(ddmFormFieldOptions));
+		}
 	}
 
 	protected void setDDMFormFieldTemplateContextReadOnly(
@@ -410,18 +506,66 @@ public class DDMFormFieldTemplateContextFactory {
 			"valid", ddmFormFieldEvaluationResult.isValid());
 	}
 
+	protected void setDDMFormFieldTemplateContextValidation(
+		Map<String, Object> ddmFormFieldTemplateContext,
+		DDMFormFieldValidation ddmFormFieldValidation) {
+
+		if (ddmFormFieldValidation == null) {
+			return;
+		}
+
+		Map<String, String> validation = new HashMap<>();
+
+		validation.put(
+			"errorMessage",
+			GetterUtil.getString(ddmFormFieldValidation.getErrorMessage()));
+		validation.put(
+			"expression",
+			GetterUtil.getString(ddmFormFieldValidation.getExpression()));
+
+		ddmFormFieldTemplateContext.put("validation", validation);
+	}
+
 	protected void setDDMFormFieldTemplateContextValue(
+		DDMFormField ddmFormField,
 		DDMFormFieldEvaluationResult ddmFormFieldEvaluationResult,
 		Map<String, Object> ddmFormFieldTemplateContext, Value value) {
 
 		if (ddmFormFieldEvaluationResult.getValue() != null) {
-			ddmFormFieldTemplateContext.put(
-				"value",
-				String.valueOf(ddmFormFieldEvaluationResult.getValue()));
+			Object evaluationResultValue =
+				ddmFormFieldEvaluationResult.getValue();
+
+			ddmFormFieldTemplateContext.put("value", evaluationResultValue);
 		}
 		else if (value != null) {
 			ddmFormFieldTemplateContext.put("value", value.getString(_locale));
 		}
+	}
+
+	protected void setDDMFormFieldTemplateContextValueLocalizableValue(
+		Map<String, Object> ddmFormFieldTemplateContext, Value value) {
+
+		if ((value == null) || !(value instanceof LocalizedValue)) {
+			return;
+		}
+
+		Map<String, String> localizedValue = new HashMap<>();
+
+		for (Locale availableLocale : value.getAvailableLocales()) {
+			localizedValue.put(
+				LanguageUtil.getLanguageId(availableLocale),
+				value.getString(availableLocale));
+		}
+
+		ddmFormFieldTemplateContext.put("localizedValue", localizedValue);
+	}
+
+	protected void setDDMFormFieldTemplateContextVisibilityExpression(
+		Map<String, Object> ddmFormFieldTemplateContext,
+		String visibilityExpression) {
+
+		ddmFormFieldTemplateContext.put(
+			"visibilityExpression", visibilityExpression);
 	}
 
 	protected void setDDMFormFieldTemplateContextVisible(
@@ -451,5 +595,6 @@ public class DDMFormFieldTemplateContextFactory {
 	private final List<DDMFormFieldValue> _ddmFormFieldValues;
 	private final DDMFormRenderingContext _ddmFormRenderingContext;
 	private final Locale _locale;
+	private final boolean _pageEnabled;
 
 }

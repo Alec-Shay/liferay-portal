@@ -31,7 +31,9 @@
 	</command>
 
 	<command name="_editName">
-		<execute function="Type" locator1="TextInput#NAME" value1="${calendarName}" />
+		<execute macro="PortletEntry#inputName">
+			<var name="name" value="${calendarName}" />
+		</execute>
 	</command>
 
 	<command name="_gotoMenulistOption">
@@ -240,7 +242,9 @@
 
 				<execute function="SelectFrame" locator1="CalendarEditCalendar#EDIT_CALENDAR_IFRAME" />
 
-				<execute function="Type" locator1="TextInput#NAME" value1="${calendarNameEdit}" />
+				<execute macro="PortletEntry#inputName">
+					<var name="name" value="${calendarNameEdit}" />
+				</execute>
 
 				<execute macro="Button#clickSave" />
 
@@ -262,7 +266,9 @@
 
 					<execute function="SelectFrame" locator1="CalendarEditCalendar#EDIT_CALENDAR_IFRAME" />
 
-					<execute function="Type" locator1="TextInput#NAME" value1="${calendarNameEdit}" />
+					<execute macro="PortletEntry#inputName">
+						<var name="name" value="${calendarNameEdit}" />
+					</execute>
 
 					<execute macro="Button#clickSave" />
 
@@ -281,7 +287,9 @@
 
 					<execute function="SelectFrame" locator1="CalendarEditCalendar#EDIT_CALENDAR_IFRAME" />
 
-					<execute function="Type" locator1="TextInput#NAME" value1="${calendarNameEdit}" />
+					<execute macro="PortletEntry#inputName">
+						<var name="name" value="${calendarNameEdit}" />
+					</execute>
 
 					<execute macro="Button#clickSave" />
 
@@ -888,14 +896,14 @@
 		it reaches ${dateMonth}.
 		-->
 
-		<while>
+		<while max-iterations="100">
 			<condition function="IsTextNotEqual" locator1="Calendar#SCHEDULER_VIEW_MONTH_DATE" value1="February 2016" />
 			<then>
 				<execute function="Click" locator1="Calendar#VIEW_PREVIOUS_BUTTON" />
 			</then>
 		</while>
 
-		<while>
+		<while max-iterations="100">
 			<condition function="IsTextNotEqual" locator1="Calendar#SCHEDULER_VIEW_MONTH_DATE" value1="${dateMonth}" />
 			<then>
 				<execute function="Click" locator1="Calendar#VIEW_NEXT_BUTTON" />
@@ -911,14 +919,14 @@
 		it reaches ${dateMonth}.
 		-->
 
-		<while>
+		<while max-iterations="100">
 			<condition function="IsTextNotEqual" locator1="Calendar#SMALL_CALENDAR_DATE" value1="February 2016" />
 			<then>
 				<execute function="Click" locator1="Calendar#SMALL_CALENDAR_PREVIOUS" />
 			</then>
 		</while>
 
-		<while>
+		<while max-iterations="100">
 			<condition function="IsTextNotEqual" locator1="Calendar#SMALL_CALENDAR_DATE" value1="${dateMonth}" />
 			<then>
 				<execute function="Click" locator1="Calendar#SMALL_CALENDAR_NEXT" />

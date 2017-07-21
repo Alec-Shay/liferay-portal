@@ -19,6 +19,7 @@ import com.liferay.dynamic.data.lists.form.web.internal.display.context.DDLFormD
 import com.liferay.dynamic.data.lists.model.DDLRecordSet;
 import com.liferay.dynamic.data.lists.model.DDLRecordSetSettings;
 import com.liferay.dynamic.data.lists.service.DDLRecordSetService;
+import com.liferay.dynamic.data.lists.service.DDLRecordVersionLocalService;
 import com.liferay.dynamic.data.mapping.form.renderer.DDMFormRenderer;
 import com.liferay.dynamic.data.mapping.form.values.factory.DDMFormValuesFactory;
 import com.liferay.dynamic.data.mapping.validator.DDMFormValuesValidationException;
@@ -33,7 +34,7 @@ import com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalService;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.io.IOException;
@@ -91,7 +92,7 @@ public class DDLFormPortlet extends MVCPortlet {
 			super.processAction(actionRequest, actionResponse);
 		}
 		catch (Exception e) {
-			PortalUtil.copyRequestParameters(actionRequest, actionResponse);
+			_portal.copyRequestParameters(actionRequest, actionResponse);
 
 			Throwable cause = getRootCause(e);
 
@@ -210,7 +211,7 @@ public class DDLFormPortlet extends MVCPortlet {
 			PortletSession portletSession = actionRequest.getPortletSession();
 
 			portletSession.setAttribute("recordSetId", recordSetId);
-			portletSession.setAttribute("shared", true);
+			portletSession.setAttribute("shared", Boolean.TRUE);
 		}
 	}
 
@@ -220,8 +221,8 @@ public class DDLFormPortlet extends MVCPortlet {
 
 		DDLFormDisplayContext ddlFormDisplayContext = new DDLFormDisplayContext(
 			renderRequest, renderResponse, _ddlRecordSetService,
-			_ddmFormRenderer, _ddmFormValuesFactory,
-			_workflowDefinitionLinkLocalService);
+			_ddlRecordVersionLocalService, _ddmFormRenderer,
+			_ddmFormValuesFactory, _workflowDefinitionLinkLocalService);
 
 		renderRequest.setAttribute(
 			WebKeys.PORTLET_DISPLAY_CONTEXT, ddlFormDisplayContext);
@@ -233,10 +234,16 @@ public class DDLFormPortlet extends MVCPortlet {
 	private DDLRecordSetService _ddlRecordSetService;
 
 	@Reference
+	private DDLRecordVersionLocalService _ddlRecordVersionLocalService;
+
+	@Reference
 	private DDMFormRenderer _ddmFormRenderer;
 
 	@Reference
 	private DDMFormValuesFactory _ddmFormValuesFactory;
+
+	@Reference
+	private Portal _portal;
 
 	@Reference
 	private WorkflowDefinitionLinkLocalService

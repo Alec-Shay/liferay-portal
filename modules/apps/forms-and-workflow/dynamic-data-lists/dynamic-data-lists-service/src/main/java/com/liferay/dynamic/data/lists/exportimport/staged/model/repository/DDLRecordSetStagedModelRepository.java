@@ -52,9 +52,8 @@ import org.osgi.service.component.annotations.Reference;
 	property = {
 		"model.class.name=com.liferay.dynamic.data.lists.model.DDLRecordSet"
 	},
-	service = {
-		DDLRecordSetStagedModelRepository.class, StagedModelRepository.class
-	}
+	service =
+		{DDLRecordSetStagedModelRepository.class, StagedModelRepository.class}
 )
 public class DDLRecordSetStagedModelRepository
 	extends BaseStagedModelRepository<DDLRecordSet> {
@@ -71,6 +70,9 @@ public class DDLRecordSetStagedModelRepository
 
 		if (portletDataContext.isDataStrategyMirror()) {
 			serviceContext.setUuid(ddlRecordSet.getUuid());
+		}
+		else {
+			ddlRecordSet.setRecordSetKey(null);
 		}
 
 		return _ddlRecordSetLocalService.addRecordSet(

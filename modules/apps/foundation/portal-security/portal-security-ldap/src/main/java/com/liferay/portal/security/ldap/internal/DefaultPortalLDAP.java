@@ -61,6 +61,7 @@ import javax.naming.ldap.PagedResultsResponseControl;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferencePolicyOption;
 
 /**
  * @author Michael Young
@@ -412,9 +413,8 @@ public class DefaultPortalLDAP implements PortalLDAP {
 		SystemLDAPConfiguration systemLDAPConfiguration =
 			_systemLDAPConfigurationProvider.getConfiguration(companyId);
 
-		String[] attributeIds = {
-			_getNextRange(systemLDAPConfiguration, attribute.getID())
-		};
+		String[] attributeIds =
+			{_getNextRange(systemLDAPConfiguration, attribute.getID())};
 
 		while (true) {
 			List<SearchResult> searchResults = new ArrayList<>();
@@ -964,7 +964,7 @@ public class DefaultPortalLDAP implements PortalLDAP {
 		return null;
 	}
 
-	@Reference(unbind = "-")
+	@Reference(policyOption = ReferencePolicyOption.GREEDY, unbind = "-")
 	protected void setLdapFilterValidator(
 		LDAPFilterValidator ldapFilterValidator) {
 

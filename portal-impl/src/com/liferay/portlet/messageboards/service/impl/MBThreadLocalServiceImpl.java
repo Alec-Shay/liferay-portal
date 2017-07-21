@@ -162,12 +162,6 @@ public class MBThreadLocalServiceImpl extends MBThreadLocalServiceBaseImpl {
 			PortletFileRepositoryUtil.deletePortletFolder(folderId);
 		}
 
-		// Subscriptions
-
-		subscriptionLocalService.deleteSubscriptions(
-			thread.getCompanyId(), MBThread.class.getName(),
-			thread.getThreadId());
-
 		// Thread flags
 
 		mbThreadFlagLocalService.deleteThreadFlagsByThreadId(
@@ -253,17 +247,6 @@ public class MBThreadLocalServiceImpl extends MBThreadLocalServiceBaseImpl {
 
 		assetEntryLocalService.deleteEntry(
 			MBThread.class.getName(), thread.getThreadId());
-
-		// Trash
-
-		if (thread.isInTrashExplicitly()) {
-			trashEntryLocalService.deleteEntry(
-				MBThread.class.getName(), thread.getThreadId());
-		}
-		else {
-			trashVersionLocalService.deleteTrashVersion(
-				MBThread.class.getName(), thread.getThreadId());
-		}
 
 		// Indexer
 

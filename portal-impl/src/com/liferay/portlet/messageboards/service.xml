@@ -128,7 +128,6 @@
 
 		<reference entity="Group" package-path="com.liferay.portal" />
 		<reference entity="Resource" package-path="com.liferay.portal" />
-		<reference entity="Subscription" package-path="com.liferay.portal" />
 		<reference entity="SystemEvent" package-path="com.liferay.portal" />
 		<reference entity="User" package-path="com.liferay.portal" />
 		<reference entity="AssetEntry" package-path="com.liferay.portlet.asset" />
@@ -182,7 +181,6 @@
 		<!-- References -->
 
 		<reference entity="ClassName" package-path="com.liferay.portal" />
-		<reference entity="Subscription" package-path="com.liferay.portal" />
 		<reference entity="User" package-path="com.liferay.portal" />
 		<reference entity="MBMailingList" package-path="com.liferay.portlet.messageboards" />
 		<reference entity="MBMessage" package-path="com.liferay.portlet.messageboards" />
@@ -340,6 +338,10 @@
 			<finder-column name="threadId" />
 			<finder-column name="status" />
 		</finder>
+		<finder name="T_notS" return-type="Collection">
+			<finder-column name="threadId" />
+			<finder-column comparator="!=" name="status" />
+		</finder>
 		<finder db-index="false" name="TR_S" return-type="Collection" where="parentMessageId != 0">
 			<finder-column name="threadId" />
 			<finder-column name="status" />
@@ -401,7 +403,6 @@
 		<reference entity="Group" package-path="com.liferay.portal" />
 		<reference entity="PortletPreferences" package-path="com.liferay.portal" />
 		<reference entity="Resource" package-path="com.liferay.portal" />
-		<reference entity="Subscription" package-path="com.liferay.portal" />
 		<reference entity="User" package-path="com.liferay.portal" />
 		<reference entity="WorkflowInstanceLink" package-path="com.liferay.portal" />
 		<reference entity="AssetEntry" package-path="com.liferay.portlet.asset" />
@@ -565,7 +566,6 @@
 
 		<reference entity="Group" package-path="com.liferay.portal" />
 		<reference entity="Resource" package-path="com.liferay.portal" />
-		<reference entity="Subscription" package-path="com.liferay.portal" />
 		<reference entity="User" package-path="com.liferay.portal" />
 		<reference entity="WorkflowInstanceLink" package-path="com.liferay.portal" />
 		<reference entity="AssetEntry" package-path="com.liferay.portlet.asset" />

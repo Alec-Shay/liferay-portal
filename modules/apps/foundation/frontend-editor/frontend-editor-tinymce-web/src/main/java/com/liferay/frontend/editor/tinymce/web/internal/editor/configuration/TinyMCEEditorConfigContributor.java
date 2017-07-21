@@ -20,14 +20,12 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactory;
-import com.liferay.portal.kernel.servlet.BrowserSnifferUtil;
+import com.liferay.portal.kernel.servlet.BrowserSniffer;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.AggregateResourceBundleLoader;
 import com.liferay.portal.kernel.util.HtmlUtil;
-import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ResourceBundleLoader;
 import com.liferay.portal.kernel.util.ResourceBundleLoaderUtil;
-import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.TextFormatter;
 
 import java.util.Locale;
@@ -105,8 +103,7 @@ public class TinyMCEEditorConfigContributor
 		JSONArray jsonArray = JSONFactoryUtil.createJSONArray();
 
 		ResourceBundle resourceBundle =
-			_resourceBundleLoader.loadResourceBundle(
-				LocaleUtil.toLanguageId(locale));
+			_resourceBundleLoader.loadResourceBundle(locale);
 
 		jsonArray.put(
 			getStyleFormatJSONObject(
@@ -169,7 +166,7 @@ public class TinyMCEEditorConfigContributor
 		String currentToolbarSet = TextFormatter.format(
 			HtmlUtil.escapeJS(toolbarSet), TextFormatter.M);
 
-		if (BrowserSnifferUtil.isMobile(themeDisplay.getRequest())) {
+		if (_browserSniffer.isMobile(themeDisplay.getRequest())) {
 			currentToolbarSet = "phone";
 		}
 
@@ -309,15 +306,13 @@ public class TinyMCEEditorConfigContributor
 	protected void setResourceBundleLoader(
 		ResourceBundleLoader resourceBundleLoader) {
 
-		ClassLoader classLoader =
-			TinyMCEEditorConfigContributor.class.getClassLoader();
-
 		_resourceBundleLoader = new AggregateResourceBundleLoader(
-			ResourceBundleUtil.getResourceBundleLoader(
-				"content.Language", classLoader),
 			resourceBundleLoader,
 			ResourceBundleLoaderUtil.getPortalResourceBundleLoader());
 	}
+
+	@Reference
+	private BrowserSniffer _browserSniffer;
 
 	private volatile ResourceBundleLoader _resourceBundleLoader;
 

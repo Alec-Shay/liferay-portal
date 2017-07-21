@@ -15,16 +15,15 @@
 package com.liferay.portal.kernel.upgrade;
 
 import com.liferay.exportimport.kernel.staging.StagingUtil;
+import com.liferay.layouts.admin.kernel.model.LayoutTypePortletConstants;
 import com.liferay.portal.kernel.dao.jdbc.AutoBatchPreparedStatementUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.LayoutTypePortletConstants;
 import com.liferay.portal.kernel.model.PortletConstants;
-import com.liferay.portal.kernel.model.PortletInstance;
 import com.liferay.portal.kernel.model.ResourceConstants;
+import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.service.permission.PortletPermissionUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LoggingTimer;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
@@ -36,9 +35,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 /**
  * @author Brian Wing Shun Chan
@@ -83,17 +81,18 @@ public abstract class BaseUpgradePortletId extends UpgradeProcess {
 
 		typeSettingsProperties.fastLoad(typeSettings);
 
-		List<String> columnIds = _getLayoutColumnIds(typeSettingsProperties);
+		for (Map.Entry<String, String> entry :
+				typeSettingsProperties.entrySet()) {
 
-		columnIds.addAll(_getNestedPortletColumnIds(typeSettingsProperties));
+			String typeSettingId = entry.getKey();
 
-		for (String columnId : columnIds) {
-			if (!typeSettingsProperties.containsKey(columnId)) {
+			if (!LayoutTypePortletConstants.isLayoutTemplateColumnName(
+					typeSettingId)) {
+
 				continue;
 			}
 
-			String[] portletIds = StringUtil.split(
-				typeSettingsProperties.getProperty(columnId));
+			String[] portletIds = StringUtil.split(entry.getValue());
 
 			for (int j = 0; j < portletIds.length; j++) {
 				String portletId = portletIds[j];
@@ -106,23 +105,24 @@ public abstract class BaseUpgradePortletId extends UpgradeProcess {
 					continue;
 				}
 
-				String rootPortletId = PortletConstants.getRootPortletId(
+				String rootPortletId = PortletIdCodec.decodePortletName(
 					portletId);
 
 				if (!rootPortletId.equals(oldRootPortletId)) {
 					continue;
 				}
 
-				long userId = PortletConstants.getUserId(portletId);
-				String instanceId = PortletConstants.getInstanceId(portletId);
+				long userId = PortletIdCodec.decodeUserId(portletId);
+				String instanceId = PortletIdCodec.decodeInstanceId(portletId);
 
-				portletIds[j] = PortletConstants.assemblePortletId(
+				portletIds[j] = PortletIdCodec.encode(
 					newRootPortletId, userId, instanceId);
 			}
 
+			String portletIdsString = StringUtil.merge(portletIds);
+
 			typeSettingsProperties.setProperty(
-				columnId,
-				StringUtil.merge(portletIds).concat(StringPool.COMMA));
+				typeSettingId, portletIdsString.concat(StringPool.COMMA));
 		}
 
 		return typeSettingsProperties.toString();
@@ -249,7 +249,7 @@ public abstract class BaseUpgradePortletId extends UpgradeProcess {
 				long portletPreferencesId = rs.getLong("portletPreferencesId");
 				String portletId = rs.getString("portletId");
 
-				String newPortletId = StringUtil.replace(
+				String newPortletId = StringUtil.replaceFirst(
 					portletId, oldRootPortletId, newRootPortletId);
 
 				ps2.setString(1, newPortletId);
@@ -411,9 +411,48 @@ public abstract class BaseUpgradePortletId extends UpgradeProcess {
 	protected void updateResourceAction(String oldName, String newName)
 		throws Exception {
 
-		runSQL(
-			"update ResourceAction set name = '" + newName +
-				"' where name = '" + oldName + "'");
+		List<String> actionIds = new ArrayList<>();
+
+		try (PreparedStatement ps = connection.prepareStatement(
+				"select actionId from ResourceAction where name = '" + newName +
+					"'");
+			ResultSet rs = ps.executeQuery()) {
+
+			while (rs.next()) {
+				actionIds.add(rs.getString("actionId"));
+			}
+		}
+
+		if (actionIds.isEmpty()) {
+			runSQL(
+				"update ResourceAction set name = '" + newName +
+					"' where name = '" + oldName + "'");
+		}
+		else {
+			StringBundler sb = new StringBundler(5 + 3 * actionIds.size());
+
+			sb.append("update ResourceAction set name = '");
+			sb.append(newName);
+			sb.append("' where name = '");
+			sb.append(oldName);
+			sb.append("' and actionId not in (");
+
+			for (int i = 0; i < actionIds.size(); i++) {
+				sb.append("'");
+				sb.append(actionIds.get(i));
+
+				if (i == (actionIds.size() - 1)) {
+					sb.append("')");
+				}
+				else {
+					sb.append("', ");
+				}
+			}
+
+			runSQL(sb.toString());
+
+			runSQL("delete from ResourceAction where name = '" + oldName + "'");
+		}
 	}
 
 	protected void updateResourcePermission(
@@ -421,62 +460,50 @@ public abstract class BaseUpgradePortletId extends UpgradeProcess {
 			boolean updateName)
 		throws Exception {
 
-		try (PreparedStatement ps1 = connection.prepareStatement(
-				"select resourcePermissionId, name, scope, primKey from " +
-					"ResourcePermission where name = '" + oldRootPortletId +
-						"'");
+		StringBundler sb = new StringBundler(5);
+
+		sb.append("select distinct primKey from ResourcePermission where ");
+		sb.append("name = '");
+		sb.append(oldRootPortletId);
+		sb.append("' and scope = ");
+		sb.append(ResourceConstants.SCOPE_INDIVIDUAL);
+
+		try (PreparedStatement ps1 = connection.prepareStatement(sb.toString());
 			PreparedStatement ps2 =
 				AutoBatchPreparedStatementUtil.concurrentAutoBatch(
 					connection,
-					"update ResourcePermission set name = ?, primKey = ? " +
-						"where resourcePermissionId = ?");
+					"update ResourcePermission set primKey = ? where primKey " +
+						"= ?");
 			ResultSet rs = ps1.executeQuery()) {
 
 			while (rs.next()) {
-				long resourcePermissionId = rs.getLong("resourcePermissionId");
-				String name = rs.getString("name");
-				int scope = rs.getInt("scope");
-				String primKey = rs.getString("primKey");
+				String oldPrimKey = rs.getString("primKey");
 
-				String newName = name;
+				int pos = oldPrimKey.indexOf(PortletConstants.LAYOUT_SEPARATOR);
 
-				if (updateName) {
-					newName = newRootPortletId;
+				if (pos != -1) {
+					long plid = GetterUtil.getLong(
+						oldPrimKey.substring(0, pos));
+
+					String portletId = oldPrimKey.substring(
+						pos + PortletConstants.LAYOUT_SEPARATOR.length());
+
+					String instanceId = PortletIdCodec.decodeInstanceId(
+						portletId);
+					long userId = PortletIdCodec.decodeUserId(portletId);
+
+					String newPortletId = PortletIdCodec.encode(
+						newRootPortletId, userId, instanceId);
+
+					String newPrimKey = PortletPermissionUtil.getPrimaryKey(
+						plid, newPortletId);
+
+					ps2.setString(1, newPrimKey);
+
+					ps2.setString(2, oldPrimKey);
+
+					ps2.addBatch();
 				}
-
-				if (scope == ResourceConstants.SCOPE_INDIVIDUAL) {
-					int pos = primKey.indexOf(
-						PortletConstants.LAYOUT_SEPARATOR);
-
-					if (pos != -1) {
-						long plid = GetterUtil.getLong(
-							primKey.substring(0, pos));
-
-						String portletId = primKey.substring(
-							pos + PortletConstants.LAYOUT_SEPARATOR.length());
-
-						String instanceId = PortletConstants.getInstanceId(
-							portletId);
-						long userId = PortletConstants.getUserId(portletId);
-
-						String newPortletId =
-							PortletConstants.assemblePortletId(
-								newRootPortletId, userId, instanceId);
-
-						primKey = PortletPermissionUtil.getPrimaryKey(
-							plid, newPortletId);
-					}
-
-					if (name.equals(primKey)) {
-						primKey = newName;
-					}
-				}
-
-				ps2.setString(1, newName);
-				ps2.setString(2, primKey);
-				ps2.setLong(3, resourcePermissionId);
-
-				ps2.addBatch();
 			}
 
 			ps2.executeBatch();
@@ -485,6 +512,17 @@ public abstract class BaseUpgradePortletId extends UpgradeProcess {
 			if (_log.isWarnEnabled()) {
 				_log.warn(sqle, sqle);
 			}
+		}
+
+		if (updateName) {
+			runSQL(
+				"update ResourcePermission set primKey = '" + newRootPortletId +
+					"' where primKey = '" + oldRootPortletId + "' and name = " +
+						"'" + oldRootPortletId + "'");
+
+			runSQL(
+				"update ResourcePermission set name = '" + newRootPortletId +
+					"' where name = '" + oldRootPortletId + "'");
 		}
 	}
 
@@ -535,10 +573,7 @@ public abstract class BaseUpgradePortletId extends UpgradeProcess {
 			String[] uninstanceablePortletIds = getUninstanceablePortletIds();
 
 			for (String portletId : uninstanceablePortletIds) {
-				PortletInstance portletInstance =
-					PortletInstance.fromPortletInstanceKey(portletId);
-
-				if (portletInstance.hasInstanceId()) {
+				if (PortletIdCodec.hasInstanceId(portletId)) {
 					if (_log.isWarnEnabled()) {
 						_log.warn(
 							"Portlet " + portletId +
@@ -548,11 +583,9 @@ public abstract class BaseUpgradePortletId extends UpgradeProcess {
 					continue;
 				}
 
-				PortletInstance newPortletInstance = new PortletInstance(
-					portletId);
+				PortletIdCodec.validatePortletName(portletId);
 
-				String newPortletInstanceKey =
-					newPortletInstance.getPortletInstanceKey();
+				String newPortletInstanceKey = PortletIdCodec.encode(portletId);
 
 				updateGroup(portletId, newPortletInstanceKey);
 				updateInstanceablePortletPreferences(
@@ -563,37 +596,6 @@ public abstract class BaseUpgradePortletId extends UpgradeProcess {
 				updateLayouts(portletId, newPortletInstanceKey, true);
 			}
 		}
-	}
-
-	private List<String> _getLayoutColumnIds(
-		UnicodeProperties typeSettingsProperties) {
-
-		List<String> columnIds = new ArrayList<>();
-
-		Set<String> keys = typeSettingsProperties.keySet();
-
-		for (String key : keys) {
-			if (StringUtil.startsWith(
-					key, LayoutTypePortletConstants.COLUMN_PREFIX)) {
-
-				columnIds.add(key);
-			}
-		}
-
-		return columnIds;
-	}
-
-	private List<String> _getNestedPortletColumnIds(
-		UnicodeProperties typeSettingsProperties) {
-
-		if (!typeSettingsProperties.containsKey("nested-column-ids")) {
-			return Collections.emptyList();
-		}
-
-		String[] nestedPortletColumnIds = StringUtil.split(
-			typeSettingsProperties.getProperty("nested-column-ids"));
-
-		return ListUtil.fromArray(nestedPortletColumnIds);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

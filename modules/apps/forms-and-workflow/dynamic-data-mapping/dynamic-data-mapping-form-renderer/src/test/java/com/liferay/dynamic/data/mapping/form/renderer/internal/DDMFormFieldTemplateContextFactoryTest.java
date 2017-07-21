@@ -110,7 +110,7 @@ public class DDMFormFieldTemplateContextFactoryTest {
 
 		List<Object> fields = ddmFormFieldTemplateContextFactory.create();
 
-		Assert.assertEquals(1, fields.size());
+		Assert.assertEquals(fields.toString(), 1, fields.size());
 
 		Map<String, Object> fieldTemplateContext =
 			(Map<String, Object>)fields.get(0);
@@ -168,7 +168,7 @@ public class DDMFormFieldTemplateContextFactoryTest {
 
 		List<Object> fields = ddmFormFieldTemplateContextFactory.create();
 
-		Assert.assertEquals(1, fields.size());
+		Assert.assertEquals(fields.toString(), 1, fields.size());
 
 		Map<String, Object> fieldTemplateContext =
 			(Map<String, Object>)fields.get(0);
@@ -234,7 +234,7 @@ public class DDMFormFieldTemplateContextFactoryTest {
 
 		List<Object> fields = ddmFormFieldTemplateContextFactory.create();
 
-		Assert.assertEquals(1, fields.size());
+		Assert.assertEquals(fields.toString(), 1, fields.size());
 
 		Map<String, Object> fieldTemplateContext =
 			(Map<String, Object>)fields.get(0);
@@ -287,7 +287,7 @@ public class DDMFormFieldTemplateContextFactoryTest {
 		DDMFormFieldTemplateContextFactory ddmFormFieldTemplateContextFactory =
 			new DDMFormFieldTemplateContextFactory(
 				ddmForm.getDDMFormFieldsMap(true), ddmFormEvaluationResult,
-				ddmFormFieldValues, ddmFormRenderingContext);
+				ddmFormFieldValues, ddmFormRenderingContext, true);
 
 		DDMFormFieldTypeServicesTracker ddmFormFieldTypeServicesTracker =
 			mockDDMFormFieldTypeServicesTracker(

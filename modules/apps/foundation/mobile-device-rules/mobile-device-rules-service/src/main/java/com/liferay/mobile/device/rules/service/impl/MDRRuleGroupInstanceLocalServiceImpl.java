@@ -14,8 +14,6 @@
 
 package com.liferay.mobile.device.rules.service.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.mobile.device.rules.exception.DuplicateRuleGroupInstanceException;
 import com.liferay.mobile.device.rules.model.MDRRuleGroupInstance;
 import com.liferay.mobile.device.rules.service.base.MDRRuleGroupInstanceLocalServiceBaseImpl;
@@ -34,7 +32,6 @@ import java.util.List;
 /**
  * @author Edward C. Han
  */
-@ProviderType
 public class MDRRuleGroupInstanceLocalServiceImpl
 	extends MDRRuleGroupInstanceLocalServiceBaseImpl {
 
@@ -135,6 +132,25 @@ public class MDRRuleGroupInstanceLocalServiceImpl
 
 		mdrActionLocalService.deleteActions(
 			ruleGroupInstance.getRuleGroupInstanceId());
+
+		// Rule group instance priorities
+
+		List<MDRRuleGroupInstance> mdrRuleGroupInstances =
+			getRuleGroupInstances(
+				ruleGroupInstance.getClassName(),
+				ruleGroupInstance.getClassPK(), QueryUtil.ALL_POS,
+				QueryUtil.ALL_POS, new RuleGroupInstancePriorityComparator());
+
+		for (int i = 0; i < mdrRuleGroupInstances.size(); i++) {
+			MDRRuleGroupInstance mdrRuleGroupInstance =
+				mdrRuleGroupInstances.get(i);
+
+			if (mdrRuleGroupInstance.getPriority() != i) {
+				mdrRuleGroupInstance.setPriority(i);
+
+				mdrRuleGroupInstancePersistence.update(mdrRuleGroupInstance);
+			}
+		}
 	}
 
 	@Override

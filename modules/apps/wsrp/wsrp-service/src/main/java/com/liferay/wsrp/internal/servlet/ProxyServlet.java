@@ -19,9 +19,9 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.servlet.ServletResponseUtil;
 import com.liferay.portal.kernel.util.CharPool;
-import com.liferay.portal.kernel.util.HttpUtil;
+import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.wsrp.configuration.WSRPGroupServiceConfiguration;
@@ -96,7 +96,7 @@ public class ProxyServlet extends HttpServlet {
 			return true;
 		}
 
-		String domain = HttpUtil.getDomain(url);
+		String domain = _http.getDomain(url);
 
 		int pos = domain.indexOf(CharPool.COLON);
 
@@ -108,7 +108,7 @@ public class ProxyServlet extends HttpServlet {
 
 		String hostAddress = inetAddress.getHostAddress();
 
-		Set<String> computerAddresses = PortalUtil.getComputerAddresses();
+		Set<String> computerAddresses = _portal.getComputerAddresses();
 
 		boolean serverIpIsHostAddress = computerAddresses.contains(hostAddress);
 
@@ -200,6 +200,12 @@ public class ProxyServlet extends HttpServlet {
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(ProxyServlet.class);
+
+	@Reference
+	private Http _http;
+
+	@Reference
+	private Portal _portal;
 
 	@Reference
 	private WSRPConfigurationUtil _wsrpConfigurationUtil;

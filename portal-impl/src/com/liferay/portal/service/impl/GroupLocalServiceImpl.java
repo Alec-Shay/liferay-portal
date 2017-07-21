@@ -74,6 +74,7 @@ import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.ResourceActionsUtil;
 import com.liferay.portal.kernel.security.permission.RolePermissions;
+import com.liferay.portal.kernel.security.permission.UserBag;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.spring.aop.Skip;
 import com.liferay.portal.kernel.transaction.Propagation;
@@ -104,6 +105,7 @@ import com.liferay.portal.kernel.util.comparator.GroupNameComparator;
 import com.liferay.portal.kernel.workflow.WorkflowHandler;
 import com.liferay.portal.kernel.workflow.WorkflowHandlerRegistryUtil;
 import com.liferay.portal.model.impl.LayoutImpl;
+import com.liferay.portal.security.permission.PermissionCacheUtil;
 import com.liferay.portal.service.base.GroupLocalServiceBaseImpl;
 import com.liferay.portal.theme.ThemeLoader;
 import com.liferay.portal.theme.ThemeLoaderFactory;
@@ -137,18 +139,18 @@ import java.util.Set;
  * Groups are also the entity to which LayoutSets are generally associated.
  * Since LayoutSets are the parent entities of Layouts (i.e. pages), no entity
  * can have associated pages without also having an associated Group. This
- * relationship can be depicted as ... Layout -> LayoutSet -> Group[type] [->
- * Entity]. Note, the Entity part is optional.
+ * relationship can be depicted as ... Layout -> LayoutSet -> Group[type] ->
+ * [Entity]. Note, the Entity part is optional.
  * </p>
  *
  * <p>
  * Group has a "type" definition that is typically identified by two fields of
- * the entity - <code>String className</code>, and <code>int type </code>.
+ * the entity - <code>String className</code>, and <code>int type</code>.
  * </p>
  *
  * <p>
  * The <code>className</code> field helps create the group's association with
- * other entities (e.g. Organization, User, Company, UserGroup, ... etc.). The
+ * other entities (e.g. Organization, User, Company, UserGroup, etc.). The
  * value of <code>className</code> is the full name of the entity's class and
  * the primary key of the associated entity instance. A site has
  * <code>className="Group"</code> and has no associated entity.
@@ -161,7 +163,7 @@ import java.util.Set;
  * </p>
  *
  * <p>
- * Here is a listing of how Group is related to some portal entities ...
+ * Here is a listing of how Group is related to some portal entities:
  * </p>
  *
  * <ul>
@@ -169,28 +171,28 @@ import java.util.Set;
  * Site is a Group with <code>className="Group"</code>
  * </li>
  * <li>
- * Company has 1 Group (this is the global scope, but never has pages)
+ * Company has one Group (this is the global scope, but never has pages)
  * </li>
  * <li>
- * User has 1 Group (pages are optional based on the behavior configuration for
+ * User has one Group (pages are optional based on the behavior configuration for
  * personal pages)
  * </li>
  * <li>
- * Layout Template (<code>LayoutPrototype</code>) has 1 Group which uses only 1
- * of it's 2 LayoutSets to store a single page which can later be used to
+ * Layout Template (<code>LayoutPrototype</code>) has 1 Group which uses only one
+ * of its two LayoutSets to store a single page which can later be used to
  * derive a single page in any Site
  * </li>
  * <li>
  * Site Template (<code>LayoutSetPrototype</code>) has 1 Group which uses only
- * 1 of it's 2 LayoutSets to store many pages which can later be used to derive
+ * one of its two LayoutSets to store many pages which can later be used to derive
  * entire Sites or pulled into an existing Site
  * </li>
  * <li>
- * Organization has 1 Group, but can also be associated to a Site at any point
- * in it's life cycle in order to support having pages
+ * Organization has one Group, but can also be associated to a Site at any point
+ * in its life cycle in order to support having pages
  * </li>
  * <li>
- * UserGroup has 1 Group that can have pages in both of the group's LayoutSets
+ * UserGroup has one Group that can have pages in both of the group's LayoutSets
  * which are later inherited by users assigned to the UserGroup
  * </li>
  * </ul>
@@ -798,10 +800,6 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 					resourcePermission);
 			}
 
-			// Trash
-
-			trashEntryLocalService.deleteEntries(group.getGroupId());
-
 			// Workflow
 
 			List<WorkflowHandler<?>> scopeableWorkflowHandlers =
@@ -1017,6 +1015,11 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		}
 
 		return groupLocalService.loadFetchGroup(companyId, groupKey);
+	}
+
+	@Override
+	public Group fetchStagingGroup(long liveGroupId) {
+		return groupPersistence.fetchByLiveGroupId(liveGroupId);
 	}
 
 	@Override
@@ -1805,17 +1808,35 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 
 	@Override
 	public List<Group> getUserSitesGroups(long userId) throws PortalException {
-		User user = userPersistence.findByPrimaryKey(userId);
+		UserBag userBag = PermissionCacheUtil.getUserBag(userId);
 
-		LinkedHashMap<String, Object> groupParams = new LinkedHashMap<>();
+		if (userBag == null) {
+			User user = userPersistence.findByPrimaryKey(userId);
 
-		groupParams.put("inherit", Boolean.TRUE);
-		groupParams.put("site", Boolean.TRUE);
-		groupParams.put("usersGroups", userId);
+			LinkedHashMap<String, Object> groupParams = new LinkedHashMap<>();
 
-		return groupFinder.findByCompanyId(
-			user.getCompanyId(), groupParams, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, new GroupNameComparator(true));
+			groupParams.put("inherit", Boolean.TRUE);
+			groupParams.put("site", Boolean.TRUE);
+			groupParams.put("usersGroups", userId);
+
+			return groupFinder.findByCompanyId(
+				user.getCompanyId(), groupParams, QueryUtil.ALL_POS,
+				QueryUtil.ALL_POS, new GroupNameComparator(true));
+		}
+
+		Collection<Group> userGroups = userBag.getUserGroups();
+
+		List<Group> userSiteGroups = new ArrayList<>(userGroups.size());
+
+		for (Group group : userGroups) {
+			if (group.isSite()) {
+				userSiteGroups.add(group);
+			}
+		}
+
+		userSiteGroups.sort(new GroupNameComparator(true));
+
+		return userSiteGroups;
 	}
 
 	@Override
@@ -1906,6 +1927,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	}
 
 	@Override
+	@Skip
 	public boolean isLiveGroupActive(Group group) {
 		if (group == null) {
 			return false;
@@ -3527,7 +3549,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 							group.getGroupId());
 
 				if (portletDataHandler.isRollbackOnException()) {
-					throw new SystemException(e);
+					throw e;
 				}
 			}
 		}
@@ -3583,11 +3605,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 
 			long groupParentGroupId = group.getParentGroupId();
 
-			if ((parentGroupIdEquals &&
-				 (groupParentGroupId != parentGroupId)) ||
-				(!parentGroupIdEquals &&
-				 (groupParentGroupId == parentGroupId))) {
-
+			if (parentGroupIdEquals && (groupParentGroupId != parentGroupId)) {
 				iterator.remove();
 
 				continue;

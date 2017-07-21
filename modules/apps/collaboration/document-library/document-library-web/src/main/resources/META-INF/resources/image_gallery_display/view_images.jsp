@@ -135,7 +135,7 @@ DLPortletInstanceSettingsHelper dlPortletInstanceSettingsHelper = new DLPortletI
 						actionJsp='<%= dlPortletInstanceSettingsHelper.isShowActions() ? "/document_library/folder_action.jsp" : StringPool.BLANK %>'
 						actionJspServletContext="<%= application %>"
 						resultRow="<%= row %>"
-						text="<%= HtmlUtil.escape(curFolder.getName()) %>"
+						text="<%= curFolder.getName() %>"
 						url="<%= viewFolderURL %>"
 					>
 						<liferay-frontend:horizontal-card-col>
@@ -164,6 +164,8 @@ embeddedPlayerURL.setWindowState(LiferayWindowState.POP_UP);
 
 	var maxHeight = (viewportRegion.height);
 	var maxWidth = (viewportRegion.width);
+
+	var playingMediaIndex = -1;
 
 	var imageViewer = new A.ImageViewer(
 		{
@@ -195,6 +197,22 @@ embeddedPlayerURL.setWindowState(LiferayWindowState.POP_UP);
 			links: '#<portlet:namespace />imageGalleryAssetInfo .image-link.preview',
 			maxHeight: maxHeight,
 			maxWidth: maxWidth,
+			on: {
+				'currentIndexChange': function() {
+					if (playingMediaIndex != -1) {
+						Liferay.fire('<portlet:namespace />ImageViewer:currentIndexChange');
+
+						playingMediaIndex = -1;
+					}
+				},
+				'visibleChange': function(event) {
+					if (!event.newVal && playingMediaIndex != -1) {
+						Liferay.fire('<portlet:namespace />ImageViewer:close');
+
+						playingMediaIndex = -1;
+					}
+				}
+			},
 			playingLabel: '(<liferay-ui:message key="playing" />)',
 			plugins: [
 				{
@@ -221,6 +239,24 @@ embeddedPlayerURL.setWindowState(LiferayWindowState.POP_UP);
 			zIndex: ++Liferay.zIndex.WINDOW
 		}
 	).render();
+
+	Liferay.on(
+		'<portlet:namespace />Video:play',
+		function() {
+			imageViewer.pause();
+
+			playingMediaIndex = this.get('currentIndex');
+		}
+	);
+
+	Liferay.on(
+		'<portlet:namespace />Audio:play',
+		function() {
+			imageViewer.pause();
+
+			playingMediaIndex = this.get('currentIndex');
+		}
+	);
 
 	var onClickLinksDefaultFn = imageViewer._onClickLinks;
 

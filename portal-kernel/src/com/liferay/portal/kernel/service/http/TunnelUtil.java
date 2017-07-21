@@ -17,14 +17,15 @@ package com.liferay.portal.kernel.service.http;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.HttpPrincipal;
-import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.auth.tunnel.TunnelAuthenticationManagerUtil;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.servlet.HttpMethods;
+import com.liferay.portal.kernel.util.AggregateClassLoader;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MethodHandler;
 import com.liferay.portal.kernel.util.ObjectValuePair;
+import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.ProtectedClassLoaderObjectInputStream;
 
@@ -34,6 +35,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 
 import javax.net.ssl.HostnameVerifier;
@@ -61,6 +63,14 @@ public class TunnelUtil {
 				new ObjectValuePair<HttpPrincipal, MethodHandler>(
 					httpPrincipal, methodHandler));
 		}
+		catch (SocketTimeoutException ste) {
+			_log.error(
+				"Tunnel connection timed out in TunnelUtil (timeout length " +
+					"in ms is set with with tunneling.servlet.timeout in " +
+						"portal-ext.properties)");
+
+			throw ste;
+		}
 
 		Object returnObject = null;
 
@@ -69,26 +79,15 @@ public class TunnelUtil {
 		try (ObjectInputStream objectInputStream =
 				new ProtectedClassLoaderObjectInputStream(
 					httpURLConnection.getInputStream(),
-					thread.getContextClassLoader())) {
+					AggregateClassLoader.getAggregateClassLoader(
+						TunnelUtil.class.getClassLoader(),
+						thread.getContextClassLoader()))) {
 
 			returnObject = objectInputStream.readObject();
 		}
 		catch (EOFException eofe) {
 			if (_log.isDebugEnabled()) {
 				_log.debug("Unable to read object", eofe);
-			}
-		}
-		catch (IOException ioe) {
-			String ioeMessage = ioe.getMessage();
-
-			if ((ioeMessage != null) &&
-				ioeMessage.contains("HTTP response code: 401")) {
-
-				throw new PrincipalException.MustBeAuthenticated(
-					httpPrincipal.getLogin());
-			}
-			else {
-				throw ioe;
 			}
 		}
 
@@ -135,6 +134,13 @@ public class TunnelUtil {
 			HttpHeaders.CONTENT_TYPE,
 			ContentTypes.APPLICATION_X_JAVA_SERIALIZED_OBJECT);
 		httpURLConnection.setUseCaches(false);
+
+		int connectTimeout = GetterUtil.getInteger(
+			PropsUtil.get(PropsKeys.TUNNELING_SERVLET_TIMEOUT));
+
+		if (connectTimeout > 0) {
+			httpURLConnection.setConnectTimeout(connectTimeout);
+		}
 
 		httpURLConnection.setRequestMethod(HttpMethods.POST);
 

@@ -14,6 +14,7 @@
 
 package com.liferay.dynamic.data.lists.form.web.internal.portlet.action;
 
+import com.liferay.captcha.util.CaptchaUtil;
 import com.liferay.dynamic.data.lists.form.web.constants.DDLFormPortletKeys;
 import com.liferay.dynamic.data.lists.form.web.internal.notification.DDLFormEmailNotificationSender;
 import com.liferay.dynamic.data.lists.model.DDLRecord;
@@ -24,10 +25,10 @@ import com.liferay.dynamic.data.lists.service.DDLRecordService;
 import com.liferay.dynamic.data.lists.service.DDLRecordSetService;
 import com.liferay.dynamic.data.mapping.form.values.factory.DDMFormValuesFactory;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
+import com.liferay.dynamic.data.mapping.model.DDMFormSuccessPageSettings;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
 import com.liferay.portal.kernel.captcha.CaptchaTextException;
-import com.liferay.portal.kernel.captcha.CaptchaUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
@@ -35,9 +36,11 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.servlet.SessionMessages;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.util.WebKeys;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -75,6 +78,12 @@ public class AddRecordMVCActionCommand extends BaseMVCActionCommand {
 		DDMFormValues ddmFormValues = _ddmFormValuesFactory.create(
 			actionRequest, ddmForm);
 
+		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		_addRecordMVCCommandHelper.updateRequiredFieldsAccordingToVisibility(
+			actionRequest, ddmForm, ddmFormValues, themeDisplay.getLocale());
+
 		ServiceContext serviceContext = ServiceContextFactory.getInstance(
 			DDLRecord.class.getName(), actionRequest);
 
@@ -87,20 +96,29 @@ public class AddRecordMVCActionCommand extends BaseMVCActionCommand {
 				actionRequest, ddlRecord);
 		}
 
-		DDLRecordSetSettings recordSetSettings = recordSet.getSettingsModel();
+		if (SessionErrors.isEmpty(actionRequest)) {
+			DDLRecordSetSettings recordSetSettings =
+				recordSet.getSettingsModel();
 
-		String redirectURL = recordSetSettings.redirectURL();
+			String redirectURL = recordSetSettings.redirectURL();
 
-		if (SessionErrors.isEmpty(actionRequest) &&
-			Validator.isNotNull(redirectURL)) {
+			if (Validator.isNotNull(redirectURL)) {
+				sendRedirect(actionRequest, actionResponse, redirectURL);
+			}
+			else {
+				DDMFormSuccessPageSettings ddmFormSuccessPageSettings =
+					ddmForm.getDDMFormSuccessPageSettings();
 
-			String portletId = PortalUtil.getPortletId(actionRequest);
+				if (ddmFormSuccessPageSettings.isEnabled()) {
+					String portletId = _portal.getPortletId(actionRequest);
 
-			SessionMessages.add(
-				actionRequest, portletId,
-				SessionMessages.KEY_SUFFIX_HIDE_DEFAULT_SUCCESS_MESSAGE);
-
-			actionResponse.sendRedirect(redirectURL);
+					SessionMessages.add(
+						actionRequest,
+						portletId.concat(
+							SessionMessages.
+								KEY_SUFFIX_HIDE_DEFAULT_SUCCESS_MESSAGE));
+				}
+			}
 		}
 	}
 
@@ -165,9 +183,15 @@ public class AddRecordMVCActionCommand extends BaseMVCActionCommand {
 		}
 	}
 
+	@Reference
+	private AddRecordMVCCommandHelper _addRecordMVCCommandHelper;
+
 	private DDLFormEmailNotificationSender _ddlFormEmailNotificationSender;
 	private DDLRecordService _ddlRecordService;
 	private DDLRecordSetService _ddlRecordSetService;
 	private DDMFormValuesFactory _ddmFormValuesFactory;
+
+	@Reference
+	private Portal _portal;
 
 }
