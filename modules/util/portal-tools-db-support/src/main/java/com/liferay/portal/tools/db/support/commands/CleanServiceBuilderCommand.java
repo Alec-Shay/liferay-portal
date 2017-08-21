@@ -115,6 +115,10 @@ public class CleanServiceBuilderCommand extends BaseCommand {
 			}
 
 			_dropTable(connection, tableName);
+
+			if (_hasLocalizationTable(entityElement)) {
+				_dropTable(connection, tableName + "Localization");
+			}
 		}
 
 		_deleteReleaseRows(connection);
@@ -152,8 +156,24 @@ public class CleanServiceBuilderCommand extends BaseCommand {
 		throws SQLException {
 
 		try (Statement statement = connection.createStatement()) {
-			statement.executeUpdate("DROP TABLE " + tableName);
+			statement.executeUpdate("DROP TABLE IF EXISTS " + tableName);
 		}
+	}
+
+	private boolean _hasLocalizationTable(Element entityElement) {
+		NodeList columnNodeList = entityElement.getElementsByTagName("column");
+
+		for (int i = 0; i < columnNodeList.getLength(); i++) {
+			Element columnElement = (Element)columnNodeList.item(i);
+
+			String localized = columnElement.getAttribute("localized");
+
+			if ("extra-table".equals(localized)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private static final Set<String> _badTableNames = new HashSet<>();
@@ -167,7 +187,7 @@ public class CleanServiceBuilderCommand extends BaseCommand {
 					classLoader.getResourceAsStream(
 						"com/liferay/portal/tools/service/builder" +
 							"/dependencies/bad_table_names.txt"),
-						StandardCharsets.UTF_8))) {
+					StandardCharsets.UTF_8))) {
 
 			String line = null;
 

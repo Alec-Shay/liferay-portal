@@ -63,7 +63,7 @@ public class ParamUtil {
 	 *
 	 * @param  request the servlet request from which to read the parameter
 	 * @param  param the name of the parameter
-	 * @param  dateFormat the format used to parse date
+	 * @param  dateFormat the format used to parse the date
 	 * @param  defaultValue a default value
 	 * @return the request parameter value as a Date
 	 */
@@ -181,7 +181,7 @@ public class ParamUtil {
 			request.getParameter(param), defaultValue);
 
 		if (returnValue != null) {
-			return returnValue.trim();
+			return StringUtil.trim(returnValue);
 		}
 
 		return null;
@@ -215,7 +215,7 @@ public class ParamUtil {
 	 * @param  portletRequest the portlet request from which to read the
 	 *         parameter
 	 * @param  param the name of the parameter
-	 * @param  dateFormat the format used to parse date
+	 * @param  dateFormat the format used to parse the date
 	 * @param  defaultValue a default value
 	 * @return the portlet request parameter value as a Date
 	 */
@@ -341,7 +341,7 @@ public class ParamUtil {
 			portletRequest.getParameter(param), defaultValue);
 
 		if (returnValue != null) {
-			return returnValue.trim();
+			return StringUtil.trim(returnValue);
 		}
 
 		return null;
@@ -375,7 +375,7 @@ public class ParamUtil {
 	 * @param  serviceContext the service context from which to read the
 	 *         parameter
 	 * @param  param the name of the parameter
-	 * @param  dateFormat the format used to parse date
+	 * @param  dateFormat the format used to parse the date
 	 * @param  defaultValue a default value
 	 * @return the service context parameter value as a Date
 	 */
@@ -501,7 +501,7 @@ public class ParamUtil {
 			serviceContext.getAttribute(param), defaultValue);
 
 		if (returnValue != null) {
-			return returnValue.trim();
+			return StringUtil.trim(returnValue);
 		}
 
 		return null;

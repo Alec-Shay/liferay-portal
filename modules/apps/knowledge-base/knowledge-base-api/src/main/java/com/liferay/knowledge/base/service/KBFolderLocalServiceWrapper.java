@@ -194,9 +194,8 @@ public class KBFolderLocalServiceWrapper implements KBFolderLocalService,
 	}
 
 	/**
-	* @deprecated As of 1.1.0, replaced by {@link
-	#updateKBFolder(long, long, long, String, String,
-	ServiceContext)}
+	* @deprecated As of 1.1.0, replaced by {@link #updateKBFolder(long, long,
+	long, String, String, ServiceContext)}
 	*/
 	@Deprecated
 	@Override
@@ -432,6 +431,12 @@ public class KBFolderLocalServiceWrapper implements KBFolderLocalService,
 		com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery,
 		com.liferay.portal.kernel.dao.orm.Projection projection) {
 		return _kbFolderLocalService.dynamicQueryCount(dynamicQuery, projection);
+	}
+
+	@Override
+	public void deleteKBFolders(long groupId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		_kbFolderLocalService.deleteKBFolders(groupId);
 	}
 
 	@Override

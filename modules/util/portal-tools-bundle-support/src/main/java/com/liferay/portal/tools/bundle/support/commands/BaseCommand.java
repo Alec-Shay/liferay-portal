@@ -15,11 +15,8 @@
 package com.liferay.portal.tools.bundle.support.commands;
 
 import com.beust.jcommander.Parameter;
-import com.beust.jcommander.converters.FileConverter;
 
 import java.io.File;
-
-import java.nio.file.Path;
 
 /**
  * @author David Truong
@@ -34,12 +31,7 @@ public abstract class BaseCommand implements Command {
 		_liferayHomeDir = liferayHomeDir;
 	}
 
-	protected Path getLiferayHomePath() {
-		return _liferayHomeDir.toPath();
-	}
-
 	@Parameter(
-		converter = FileConverter.class,
 		description = "The home directory of your Liferay bundle.",
 		names = {"-l", "--liferay"}, required = true
 	)

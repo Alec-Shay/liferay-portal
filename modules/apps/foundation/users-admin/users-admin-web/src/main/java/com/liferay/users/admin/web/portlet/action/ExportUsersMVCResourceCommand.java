@@ -40,7 +40,7 @@ import com.liferay.portal.kernel.util.CSVUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.ProgressTracker;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
@@ -51,7 +51,10 @@ import com.liferay.portlet.usersadmin.search.UserSearch;
 import com.liferay.portlet.usersadmin.search.UserSearchTerms;
 import com.liferay.users.admin.constants.UsersAdminPortletKeys;
 
+import java.sql.Timestamp;
+
 import java.util.Collections;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -84,7 +87,7 @@ public class ExportUsersMVCResourceCommand extends BaseMVCResourceCommand {
 		try {
 			SessionMessages.add(
 				resourceRequest,
-				PortalUtil.getPortletId(resourceRequest) +
+				_portal.getPortletId(resourceRequest) +
 					SessionMessages.KEY_SUFFIX_HIDE_DEFAULT_ERROR_MESSAGE);
 
 			String keywords = ParamUtil.getString(resourceRequest, "keywords");
@@ -119,8 +122,14 @@ public class ExportUsersMVCResourceCommand extends BaseMVCResourceCommand {
 		for (int i = 0; i < PropsValues.USERS_EXPORT_CSV_FIELDS.length; i++) {
 			String field = PropsValues.USERS_EXPORT_CSV_FIELDS[i];
 
-			if (field.equals("fullName")) {
-				sb.append(CSVUtil.encode(user.getFullName()));
+			if (field.contains("Date")) {
+				Date date = (Date)BeanPropertiesUtil.getObject(user, field);
+
+				if (date instanceof Timestamp) {
+					date = new Date(date.getTime());
+				}
+
+				sb.append(CSVUtil.encode(String.valueOf(date)));
 			}
 			else if (field.startsWith("expando:")) {
 				String attributeName = field.substring(8);
@@ -129,6 +138,9 @@ public class ExportUsersMVCResourceCommand extends BaseMVCResourceCommand {
 
 				sb.append(
 					CSVUtil.encode(expandoBridge.getAttribute(attributeName)));
+			}
+			else if (field.equals("fullName")) {
+				sb.append(CSVUtil.encode(user.getFullName()));
 			}
 			else {
 				sb.append(
@@ -167,7 +179,7 @@ public class ExportUsersMVCResourceCommand extends BaseMVCResourceCommand {
 		}
 
 		LiferayPortletResponse liferayPortletResponse =
-			(LiferayPortletResponse)resourceResponse;
+			_portal.getLiferayPortletResponse(resourceResponse);
 
 		PortletURL portletURL = liferayPortletResponse.createRenderURL(
 			UsersAdminPortletKeys.USERS_ADMIN);
@@ -276,6 +288,9 @@ public class ExportUsersMVCResourceCommand extends BaseMVCResourceCommand {
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		ExportUsersMVCResourceCommand.class);
+
+	@Reference
+	private Portal _portal;
 
 	private UserLocalService _userLocalService;
 

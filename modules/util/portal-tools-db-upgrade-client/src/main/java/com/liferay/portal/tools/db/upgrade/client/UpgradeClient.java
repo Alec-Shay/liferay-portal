@@ -14,27 +14,33 @@
 
 package com.liferay.portal.tools.db.upgrade.client;
 
+import com.liferay.portal.tools.db.upgrade.client.util.GogoTelnetClient;
+import com.liferay.portal.tools.db.upgrade.client.util.Properties;
 import com.liferay.portal.tools.db.upgrade.client.util.StringUtil;
+import com.liferay.portal.tools.db.upgrade.client.util.TeePrintStream;
 
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.ObjectOutputStream;
+
+import java.net.URISyntaxException;
+import java.net.URL;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import java.security.CodeSource;
+import java.security.ProtectionDomain;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import jline.console.ConsoleReader;
 
@@ -162,13 +168,15 @@ public class UpgradeClient {
 		}
 
 		commands.add("-cp");
-		commands.add(_getClassPath());
-		commands.addAll(Arrays.asList(_jvmOpts.split(" ")));
+		commands.add(_getBootstrapClassPath());
+
+		Collections.addAll(commands, _jvmOpts.split(" "));
+
 		commands.add("-Dexternal-properties=portal-upgrade.properties");
 		commands.add(
 			"-Dserver.detector.server.id=" +
 				_appServer.getServerDetectorServerId());
-		commands.add("com.liferay.portal.tools.DBUpgrader");
+		commands.add(DBUpgraderLauncher.class.getName());
 
 		processBuilder.command(commands);
 
@@ -176,10 +184,16 @@ public class UpgradeClient {
 
 		Process process = processBuilder.start();
 
-		try (InputStreamReader inputStreamReader = new InputStreamReader(
+		try (ObjectOutputStream bootstrapObjectOutputStream =
+				new ObjectOutputStream(process.getOutputStream());
+			InputStreamReader inputStreamReader = new InputStreamReader(
 				process.getInputStream());
 			BufferedReader bufferedReader = new BufferedReader(
 				inputStreamReader)) {
+
+			bootstrapObjectOutputStream.writeObject(_getClassPath());
+
+			bootstrapObjectOutputStream.flush();
 
 			String line = null;
 
@@ -295,6 +309,30 @@ public class UpgradeClient {
 		closeable.close();
 	}
 
+	private String _getBootstrapClassPath() throws IOException {
+		ProtectionDomain protectionDomain =
+			UpgradeClient.class.getProtectionDomain();
+
+		CodeSource codeSource = protectionDomain.getCodeSource();
+
+		URL url = codeSource.getLocation();
+
+		try {
+			StringBuilder sb = new StringBuilder();
+
+			Path path = Paths.get(url.toURI());
+
+			File jarFile = path.toFile();
+
+			_appendClassPath(sb, jarFile.getParentFile());
+
+			return sb.toString();
+		}
+		catch (URISyntaxException urise) {
+			throw new IOException(urise);
+		}
+	}
+
 	private String _getClassPath() throws IOException {
 		StringBuilder sb = new StringBuilder();
 
@@ -400,8 +438,8 @@ public class UpgradeClient {
 		Properties properties = new Properties();
 
 		if (file.exists()) {
-			try (InputStream inputStream = new FileInputStream(file)) {
-				properties.load(inputStream);
+			try {
+				properties.load(file);
 			}
 			catch (IOException ioe) {
 				System.err.println("Unable to load " + file);
@@ -412,27 +450,10 @@ public class UpgradeClient {
 	}
 
 	private void _saveProperties() throws IOException {
-		_store(_appServerProperties, _appServerPropertiesFile);
-		_store(
-			_portalUpgradeDatabaseProperties,
+		_appServerProperties.store(_appServerPropertiesFile);
+		_portalUpgradeDatabaseProperties.store(
 			_portalUpgradeDatabasePropertiesFile);
-		_store(_portalUpgradeExtProperties, _portalUpgradeExtPropertiesFile);
-	}
-
-	private void _store(Properties properties, File file) throws IOException {
-		try (PrintWriter printWriter = new PrintWriter(file)) {
-			Enumeration<?> enumeration = properties.propertyNames();
-
-			while (enumeration.hasMoreElements()) {
-				String key = (String)enumeration.nextElement();
-
-				String value = properties.getProperty(key);
-
-				value = value.replace('\\', '/');
-
-				printWriter.println(key + "=" + value);
-			}
-		}
+		_portalUpgradeExtProperties.store(_portalUpgradeExtPropertiesFile);
 	}
 
 	private void _verifyAppServerProperties() throws IOException {

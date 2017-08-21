@@ -14,8 +14,6 @@
 
 package com.liferay.knowledge.base.service.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.model.AssetLink;
 import com.liferay.asset.kernel.model.AssetLinkConstants;
@@ -33,6 +31,7 @@ import com.liferay.knowledge.base.exception.KBArticleStatusException;
 import com.liferay.knowledge.base.exception.KBArticleTitleException;
 import com.liferay.knowledge.base.exception.KBArticleUrlTitleException;
 import com.liferay.knowledge.base.exception.NoSuchArticleException;
+import com.liferay.knowledge.base.internal.importer.KBArchiveFactory;
 import com.liferay.knowledge.base.internal.importer.KBArticleImporter;
 import com.liferay.knowledge.base.internal.util.KBArticleLocalSiblingNavigationHelper;
 import com.liferay.knowledge.base.model.KBArticle;
@@ -64,7 +63,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.ModelHintsUtil;
 import com.liferay.portal.kernel.model.ResourceConstants;
-import com.liferay.portal.kernel.model.Subscription;
 import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
@@ -82,6 +80,7 @@ import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.SubscriptionSender;
@@ -92,6 +91,8 @@ import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.workflow.WorkflowHandlerRegistryUtil;
 import com.liferay.portal.kernel.workflow.WorkflowThreadLocal;
 import com.liferay.portal.spring.extender.service.ServiceReference;
+import com.liferay.subscription.model.Subscription;
+import com.liferay.subscription.service.SubscriptionLocalService;
 
 import java.io.InputStream;
 import java.io.Serializable;
@@ -109,7 +110,6 @@ import java.util.Map;
  * @author Brian Wing Shun Chan
  * @author Edward Han
  */
-@ProviderType
 public class KBArticleLocalServiceImpl extends KBArticleLocalServiceBaseImpl {
 
 	@Override
@@ -290,6 +290,9 @@ public class KBArticleLocalServiceImpl extends KBArticleLocalServiceBaseImpl {
 
 		try {
 			WorkflowThreadLocal.setEnabled(false);
+
+			KBArticleImporter kbArticleImporter = new KBArticleImporter(
+				kbArchiveFactory, this, portal);
 
 			return kbArticleImporter.processZipFile(
 				userId, groupId, parentKbFolderId, prioritizeByNumericalPrefix,
@@ -718,7 +721,7 @@ public class KBArticleLocalServiceImpl extends KBArticleLocalServiceBaseImpl {
 
 		List<KBArticle> kbArticles = new ArrayList<>();
 
-		Long[][] params = new Long[][] {ArrayUtil.toArray(resourcePrimKeys)};
+		Long[][] params = {ArrayUtil.toArray(resourcePrimKeys)};
 
 		while ((params = KnowledgeBaseUtil.getParams(params[0])) != null) {
 			List<KBArticle> curKBArticles = null;
@@ -2056,15 +2059,20 @@ public class KBArticleLocalServiceImpl extends KBArticleLocalServiceBaseImpl {
 	@ServiceReference(type = IndexWriterHelper.class)
 	protected IndexWriterHelper indexWriterHelper;
 
-	@ServiceReference(type = KBArticleImporter.class)
-	protected KBArticleImporter kbArticleImporter;
+	@ServiceReference(type = KBArchiveFactory.class)
+	protected KBArchiveFactory kbArchiveFactory;
+
+	@ServiceReference(type = Portal.class)
+	protected Portal portal;
 
 	@BeanReference(type = PortletFileRepository.class)
 	protected PortletFileRepository portletFileRepository;
 
-	private static final int[] _STATUSES = {
-		WorkflowConstants.STATUS_APPROVED, WorkflowConstants.STATUS_PENDING
-	};
+	@ServiceReference(type = SubscriptionLocalService.class)
+	protected SubscriptionLocalService subscriptionLocalService;
+
+	private static final int[] _STATUSES =
+		{WorkflowConstants.STATUS_APPROVED, WorkflowConstants.STATUS_PENDING};
 
 	private static final long _TICKET_EXPIRATION = Time.HOUR;
 

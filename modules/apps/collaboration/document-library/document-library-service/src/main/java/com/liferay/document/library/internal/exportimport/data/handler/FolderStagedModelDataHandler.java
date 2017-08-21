@@ -40,7 +40,7 @@ import com.liferay.portal.kernel.trash.TrashHandler;
 import com.liferay.portal.kernel.trash.TrashHandlerRegistryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -154,7 +154,7 @@ public class FolderStagedModelDataHandler
 			portletDataContext.addClassedModel(
 				folderElement, folderPath, folder);
 
-			long portletRepositoryClassNameId = PortalUtil.getClassNameId(
+			long portletRepositoryClassNameId = _portal.getClassNameId(
 				PortletRepository.class.getName());
 
 			if (repository.getClassNameId() != portletRepositoryClassNameId) {
@@ -494,7 +494,10 @@ public class FolderStagedModelDataHandler
 			PortletDataException pde = new PortletDataException(
 				PortletDataException.INVALID_GROUP);
 
-			pde.setStagedModel(folder);
+			pde.setStagedModelDisplayName(folder.getName());
+			pde.setStagedModelClassName(folder.getModelClassName());
+			pde.setStagedModelClassPK(
+				GetterUtil.getString(folder.getFolderId()));
 
 			throw pde;
 		}
@@ -508,7 +511,10 @@ public class FolderStagedModelDataHandler
 				PortletDataException pde = new PortletDataException(
 					PortletDataException.STATUS_IN_TRASH);
 
-				pde.setStagedModel(folder);
+				pde.setStagedModelDisplayName(folder.getName());
+				pde.setStagedModelClassName(folder.getModelClassName());
+				pde.setStagedModelClassPK(
+					GetterUtil.getString(folder.getFolderId()));
 
 				throw pde;
 			}
@@ -518,6 +524,10 @@ public class FolderStagedModelDataHandler
 	private DLAppLocalService _dlAppLocalService;
 	private DLFileEntryTypeLocalService _dlFileEntryTypeLocalService;
 	private DLFolderLocalService _dlFolderLocalService;
+
+	@Reference
+	private Portal _portal;
+
 	private RepositoryLocalService _repositoryLocalService;
 
 }

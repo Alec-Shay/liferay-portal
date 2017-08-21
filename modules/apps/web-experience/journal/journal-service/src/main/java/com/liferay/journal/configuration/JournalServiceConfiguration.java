@@ -14,6 +14,7 @@
 
 package com.liferay.journal.configuration;
 
+import aQute.bnd.annotation.ProviderType;
 import aQute.bnd.annotation.metatype.Meta;
 
 import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClassDefinition;
@@ -30,7 +31,11 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
 	localization = "content/Language",
 	name = "journal.service.configuration.name"
 )
+@ProviderType
 public interface JournalServiceConfiguration {
+
+	@Meta.AD(deflt = "true", required = false)
+	public boolean addDefaultStructures();
 
 	@Meta.AD(
 		deflt = "&|\\'|@|\\\\|]|}|:|=|>|/|<|[|{|%|+|#|`|?|\\\"|;|*|~",
@@ -57,8 +62,8 @@ public interface JournalServiceConfiguration {
 	)
 	public String errorTemplateXSL();
 
-	@Meta.AD(deflt = "86400000", required = false)
-	public long checkInterval();
+	@Meta.AD(deflt = "15", required = false)
+	public int checkInterval();
 
 	@Meta.AD(
 		deflt = "", description = "journal-article-custom-token-names",

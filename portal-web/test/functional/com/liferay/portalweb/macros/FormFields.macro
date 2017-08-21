@@ -20,6 +20,12 @@
 		<execute function="Uncheck" locator1="FormFields#CHECKBOX" />
 	</command>
 
+	<command name="duplicateField">
+		<execute function="Click" locator1="Form#SIDEBAR_ELLIPSIS" />
+
+		<execute function="AssertClick" locator1="Form#SIDEBAR_MENUITEM_DUPLICATE_FIELD" value1="Duplicate Field" />
+	</command>
+
 	<command name="editBlankMultiTextFieldWithEnterKey">
 		<var name="key_fieldName" value="${fieldName}" />
 
@@ -31,7 +37,6 @@
 	</command>
 
 	<command name="editDate">
-		<var name="key_fieldLabel" value="${fieldLabel}" />
 		<var name="key_fieldName" value="${fieldName}" />
 
 		<execute function="Type" locator1="FormFields#DATE_FIELD" value1="${fieldValue}" />
@@ -43,12 +48,21 @@
 		<execute function="Type#clickAtType" locator1="FormFields#FIELD_NAME_EDIT" value1="${fieldValue}" />
 	</command>
 
+	<command name="editGridOptions">
+		<var name="key_gridField" value="${gridField}" />
+		<var name="key_rowNumber" value="${rowNumber}" />
+
+		<execute function="Type" locator1="FormFields#GRID_OPTIONS_OPTION_VALUE_FIELD" value1="${optionValue}" />
+
+		<execute function="AssertElementPresent" locator1="FormFields#GRID_OPTIONS_OPTION_NAME_FIELD" />
+	</command>
+
 	<command name="editOptionsRow">
 		<var name="key_rowNumber" value="${rowNumber}" />
 
 		<execute function="Type" locator1="FormFields#OPTIONS_OPTION_VALUE_FIELD" value1="${optionValue}" />
 
-		<execute function="AssertElementPresent" locator1="FormFields#OPTIONS_OPTION_NAME_FIELD" value1="Field Name:${optionName}" />
+		<execute function="AssertElementPresent" locator1="FormFields#OPTIONS_OPTION_NAME_FIELD" />
 	</command>
 
 	<command name="editOptionsRowNameField">
@@ -59,6 +73,12 @@
 
 	<command name="editParagraphBody">
 		<execute function="Type" locator1="FormFields#PARAGRAPH_BODY_TEXT_FIELD" value1="${fieldValue}" />
+	</command>
+
+	<command name="editPassword">
+		<var name="key_fieldName" value="${fieldName}" />
+
+		<execute function="Type" locator1="FormFields#PASSWORD_FIELD" value1="${fieldValue}" />
 	</command>
 
 	<command name="editRepeatableTextMultiline">
@@ -84,15 +104,27 @@
 		<execute function="Type" locator1="FormFields#TEXT_FIELD" value1="${fieldValue}" />
 	</command>
 
+	<command name="editTextAlt">
+		<var name="key_fieldName" value="${fieldName}" />
+
+		<execute function="Type" locator1="FormFields#TEXT_FIELD_ALT" value1="${fieldValue}" />
+	</command>
+
 	<command name="editTextMultiline">
 		<var name="key_fieldName" value="${fieldName}" />
 
 		<execute function="Type" locator1="FormFields#TEXT_MULTILINE_FIELD" value1="${fieldValue}" />
 	</command>
 
-	<command name="editValidation">
-		<execute function="Select" locator1="FormFields#VALIDATION_TYPE" value1="${validationType}" />
+	<command name="editTextWithBackspace">
+		<var name="key_fieldName" value="${fieldName}" />
 
+		<execute function="DoubleClick" locator1="FormFields#TEXT_FIELD" />
+
+		<execute function="KeyPress" locator1="FormFields#TEXT_FIELD" value1="\BACK_SPACE" />
+	</command>
+
+	<command name="editValidation">
 		<execute function="Select" locator1="FormFields#VALIDATION_ARGUMENT" value1="${validationArgument}" />
 
 		<execute function="Type" locator1="FormFields#VALIDATION_INPUT" value1="${validationInput}" />
@@ -135,6 +167,23 @@
 		<execute function="Click" locator1="FormFields#CHECKBOX_OPTION" />
 	</command>
 
+	<command name="selectDataProviderOutputType">
+		<execute function="ScrollWebElementIntoView" locator1="Button#SAVE" />
+
+		<execute function="Click" locator1="Form#DATA_PROVIDER_OUTPUT_PARAMETER_TYPE_FIELD" />
+
+		<var name="key_outputParameterType" value="${outputParameterType}" />
+
+		<execute function="AssertClick" locator1="Form#DATA_PROVIDER_OUTPUT_PARAMETER_TYPE_FIELD_OPTIONS_LIST" value1="${outputParameterType}" />
+	</command>
+
+	<command name="selectGridRadioOption">
+		<var name="key_categoryColumnName" value="${categoryColumnName}" />
+		<var name="key_optionRowName" value="${optionRowName}" />
+
+		<execute function="Click" locator1="FormFields#GRID_RADIO_OPTIONS" />
+	</command>
+
 	<command name="selectRadioOption">
 		<var name="key_fieldName" value="${fieldName}" />
 		<var name="key_radioOption" value="${radioOption}" />
@@ -150,7 +199,10 @@
 		<var name="key_selectOption" value="${selectOption}" />
 
 		<if>
-			<equals arg1="${fieldName}" arg2="ddmDataProviderInstanceId" />
+			<or>
+				<equals arg1="${fieldName}" arg2="ddmDataProviderInstanceId" />
+				<equals arg1="${fieldName}" arg2="ddmDataProviderInstanceOutput" />
+			</or>
 			<then>
 				<execute function="AssertClick" locator1="FormFields#SELECT_FIELD_DATA_PROVIDER_LIST" value1="${selectOption}" />
 			</then>
@@ -444,6 +496,16 @@
 		<execute function="AssertTextEquals#assertText" locator1="FormFields#SELECT_FIELD" value1="${selectOption}" />
 	</command>
 
+	<command name="viewSelectOptionsList">
+		<var name="key_fieldName" value="${fieldName}" />
+
+		<execute function="Click" locator1="FormFields#SELECT_FIELD" />
+
+		<var name="key_selectOption" value="${selectOption}" />
+
+		<execute function="AssertElementPresent" locator1="FormFields#SELECT_FIELD_OPTIONS_LIST" value1="${selectOption}" />
+	</command>
+
 	<command name="viewSelectOptionsRowFieldValue">
 		<var name="key_rowNumber" value="${rowNumber}" />
 
@@ -539,5 +601,11 @@
 		<var name="key_fieldName" value="${fieldName}" />
 
 		<execute function="AssertTextEquals" locator1="FormFields#TEXT_FIELD" value1="${fieldValue}" />
+	</command>
+
+	<command name="viewTextValueAlt">
+		<var name="key_fieldName" value="${fieldName}" />
+
+		<execute function="AssertTextEquals" locator1="FormFields#TEXT_FIELD_ALT" value1="${fieldValue}" />
 	</command>
 </definition>

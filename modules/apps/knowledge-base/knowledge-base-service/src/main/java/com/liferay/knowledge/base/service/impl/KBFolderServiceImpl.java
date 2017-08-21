@@ -14,8 +14,6 @@
 
 package com.liferay.knowledge.base.service.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.knowledge.base.constants.KBActionKeys;
 import com.liferay.knowledge.base.model.KBFolder;
 import com.liferay.knowledge.base.service.base.KBFolderServiceBaseImpl;
@@ -30,7 +28,6 @@ import java.util.List;
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class KBFolderServiceImpl extends KBFolderServiceBaseImpl {
 
 	@Override
@@ -180,9 +177,8 @@ public class KBFolderServiceImpl extends KBFolderServiceBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 1.1.0, replaced by {@link
-	 *             #updateKBFolder(long, long, long, String, String,
-	 *             ServiceContext)}
+	 * @deprecated As of 1.1.0, replaced by {@link #updateKBFolder(long, long,
+	 *             long, String, String, ServiceContext)}
 	 */
 	@Deprecated
 	@Override

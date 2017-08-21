@@ -72,7 +72,7 @@
 <!--DATE-->
 <tr>
 	<td>DATE_FIELD</td>
-	<td>//div[contains(@data-fieldname,'${key_fieldName}')]//input[@type='text' and contains(@aria-label,'${key_fieldLabel}')]</td>
+	<td>//div[contains(@data-fieldname,'${key_fieldName}')]//input[@type='text']</td>
 	<td></td>
 </tr>
 <tr>
@@ -152,6 +152,27 @@
 	<td></td>
 	<td></td>
 </tr>
+<!--GRID-->
+<tr>
+	<td>GRID_OPTIONS_OPTION_VALUE_FIELD</td>
+	<td>//div[contains(@data-fieldname,'${key_gridField}sOption')]/../../div[${key_rowNumber}]//input</td>
+	<td></td>
+</tr>
+<tr>
+	<td>GRID_OPTIONS_OPTION_NAME_FIELD</td>
+	<td>//div[contains(@data-fieldname,'${key_gridField}sOption')]/../../div[${key_rowNumber}]//div[contains(@class, 'key-value-editor')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>GRID_RADIO_OPTIONS</td>
+	<td>//div[contains(@class,'field-grid')]//tr[@name='${key_optionRowName}']//input[@value='${key_categoryColumnName}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
 <!--RADIO-->
 <tr>
 	<td>RADIO_OPTION</td>
@@ -190,6 +211,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>TEXT_FIELD_ALT</td>
+	<td>//input[@type='text' and contains(@id,'${key_fieldName}') and contains(@id,'Alt')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>TEXT_FIELD_2</td>
 	<td>//div[contains(@class,'ddm-form')][2]//input[@type='text' and contains(@id,'${key_fieldName}')]</td>
 	<td></td>
@@ -222,7 +248,7 @@
 <!--PARAGRAPH-->
 <tr>
 	<td>PARAGRAPH_BODY_TEXT_CONTENT</td>
-	<td>//div[contains(@class,'paragraph') and contains(@data-fieldname,'${key_fieldName}')]//p</td>
+	<td>//div[contains(@class,'paragraph') and contains(@data-fieldname,'${key_fieldName}')]//div</td>
 	<td></td>
 </tr>
 <tr>
@@ -240,10 +266,21 @@
 	<td></td>
 	<td></td>
 </tr>
+<!--PASSWORD-->
+<tr>
+	<td>PASSWORD_FIELD</td>
+	<td>//input[@type='password' and contains(@id,'${key_fieldName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
 <!--SELECT-->
 <tr>
 	<td>SELECT_FIELD</td>
-	<td>//div[contains(@data-fieldname,'${key_fieldName}')]//div[contains(@class,'form-builder-select-field')]//a[contains(@class,'select-field-trigger')]</td>
+	<td>//div[contains(@data-fieldname,'${key_fieldName}')]//div[contains(@class,'form-builder-select-field')]//div[contains(@class,'select-field-trigger')]</td>
 	<td></td>
 </tr>
 <tr>

@@ -3,6 +3,7 @@
 	<property name="portal.upstream" value="true" />
 	<property name="plugins.deployment.type" value="osgi" />
 	<property name="testray.main.component.name" value="Invite Members" />
+	<property name="test.assert.warning.exceptions" value="true" />
 
 	<set-up>
 		<execute macro="User#firstLoginPG" />
@@ -16,7 +17,9 @@
 		<execute macro="Page#tearDownPG" />
 	</tear-down>
 
-	<command name="InvitationPortletSmoke" priority="">
+	<command name="InvitationPortletSmoke" priority="4">
+		<property name="portal.release" value="true" />
+
 		<var name="appName" value="Invitation" />
 
 		<execute macro="Navigator#gotoPage">

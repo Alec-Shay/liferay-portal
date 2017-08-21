@@ -15,29 +15,17 @@
 package com.liferay.dynamic.data.mapping.type.radio.internal;
 
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldValueValidator;
-import com.liferay.dynamic.data.mapping.type.BaseDDMFormFieldOptionsValidationTest;
-import com.liferay.portal.json.JSONFactoryImpl;
-
-import org.junit.Before;
+import com.liferay.dynamic.data.mapping.type.BaseDDMFormFieldOptionsValidationTestCase;
 
 /**
  * @author Marcellus Tavares
  */
 public class RadioDDMFormFieldValueValidatorTest
-	extends BaseDDMFormFieldOptionsValidationTest {
-
-	@Before
-	public void setUp() {
-		setUpDDMFormFieldValueValidator();
-	}
+	extends BaseDDMFormFieldOptionsValidationTestCase {
 
 	@Override
 	protected DDMFormFieldValueValidator getDDMFormFieldValueValidator() {
 		return _radioDDMFormFieldValueValidator;
-	}
-
-	protected void setUpDDMFormFieldValueValidator() {
-		_radioDDMFormFieldValueValidator.jsonFactory = new JSONFactoryImpl();
 	}
 
 	private final RadioDDMFormFieldValueValidator

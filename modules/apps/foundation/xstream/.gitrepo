@@ -2,8 +2,10 @@
 ; Do not manually edit this file.
 ;
 [subrepo]
+	autopull = false
 	cmdver = liferay
-	commit = 99c0983c6cf0d5acdd44c16dd1a1000db9645c2d
+	commit = cd18d129e6ed948c8c899f2ec3ec7ab730d58339
+	mergebuttonmergecommits = false
 	mode = push
-	parent = 85622c89a393e5fbbd1fa1c330668d1149751d6f
+	parent = 0fefcb53ccd2302431b541c9cb2749834d65c108
 	remote = git@github.com:liferay/com-liferay-xstream.git

@@ -124,6 +124,12 @@ public class PortletPreferencesLocalServiceUtil {
 	}
 
 	public static com.liferay.portal.kernel.model.PortletPreferences fetchPortletPreferences(
+		long ownerId, int ownerType, long plid, java.lang.String portletId) {
+		return getService()
+				   .fetchPortletPreferences(ownerId, ownerType, plid, portletId);
+	}
+
+	public static com.liferay.portal.kernel.model.PortletPreferences fetchPortletPreferences(
 		long portletPreferencesId) {
 		return getService().fetchPortletPreferences(portletPreferencesId);
 	}
@@ -172,6 +178,15 @@ public class PortletPreferencesLocalServiceUtil {
 		return getService()
 				   .updatePreferences(ownerId, ownerType, plid, portletId,
 			portletPreferences);
+	}
+
+	public static com.liferay.portal.kernel.settings.Settings getPortletInstanceSettings(
+		long companyId, long groupId, java.lang.String portletId,
+		com.liferay.portal.kernel.settings.PortletInstanceSettingsLocator portletInstanceSettingsLocator,
+		com.liferay.portal.kernel.settings.Settings portalPreferencesSettings) {
+		return getService()
+				   .getPortletInstanceSettings(companyId, groupId, portletId,
+			portletInstanceSettingsLocator, portalPreferencesSettings);
 	}
 
 	/**
@@ -260,6 +275,14 @@ public class PortletPreferencesLocalServiceUtil {
 	}
 
 	public static java.util.List<com.liferay.portal.kernel.model.PortletPreferences> getPortletPreferences(
+		long companyId, long ownerId, int ownerType, java.lang.String portletId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return getService()
+				   .getPortletPreferences(companyId, ownerId, ownerType,
+			portletId);
+	}
+
+	public static java.util.List<com.liferay.portal.kernel.model.PortletPreferences> getPortletPreferences(
 		long ownerId, int ownerType, long plid) {
 		return getService().getPortletPreferences(ownerId, ownerType, plid);
 	}
@@ -288,6 +311,12 @@ public class PortletPreferencesLocalServiceUtil {
 	public static java.util.List<com.liferay.portal.kernel.model.PortletPreferences> getPortletPreferenceses(
 		int start, int end) {
 		return getService().getPortletPreferenceses(start, end);
+	}
+
+	public static java.util.Map<java.lang.String, javax.portlet.PortletPreferences> getStrictPreferences(
+		com.liferay.portal.kernel.model.Layout layout,
+		java.util.List<com.liferay.portal.kernel.model.Portlet> portlets) {
+		return getService().getStrictPreferences(layout, portlets);
 	}
 
 	public static javax.portlet.PortletPreferences fetchPreferences(

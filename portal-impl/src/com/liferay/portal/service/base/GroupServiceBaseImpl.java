@@ -64,7 +64,7 @@ import com.liferay.portal.kernel.service.persistence.ResourceTypePermissionFinde
 import com.liferay.portal.kernel.service.persistence.ResourceTypePermissionPersistence;
 import com.liferay.portal.kernel.service.persistence.RoleFinder;
 import com.liferay.portal.kernel.service.persistence.RolePersistence;
-import com.liferay.portal.kernel.service.persistence.SubscriptionPersistence;
+import com.liferay.portal.kernel.service.persistence.SystemEventPersistence;
 import com.liferay.portal.kernel.service.persistence.TeamFinder;
 import com.liferay.portal.kernel.service.persistence.TeamPersistence;
 import com.liferay.portal.kernel.service.persistence.UserFinder;
@@ -2049,41 +2049,41 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	}
 
 	/**
-	 * Returns the subscription local service.
+	 * Returns the system event local service.
 	 *
-	 * @return the subscription local service
+	 * @return the system event local service
 	 */
-	public com.liferay.portal.kernel.service.SubscriptionLocalService getSubscriptionLocalService() {
-		return subscriptionLocalService;
+	public com.liferay.portal.kernel.service.SystemEventLocalService getSystemEventLocalService() {
+		return systemEventLocalService;
 	}
 
 	/**
-	 * Sets the subscription local service.
+	 * Sets the system event local service.
 	 *
-	 * @param subscriptionLocalService the subscription local service
+	 * @param systemEventLocalService the system event local service
 	 */
-	public void setSubscriptionLocalService(
-		com.liferay.portal.kernel.service.SubscriptionLocalService subscriptionLocalService) {
-		this.subscriptionLocalService = subscriptionLocalService;
+	public void setSystemEventLocalService(
+		com.liferay.portal.kernel.service.SystemEventLocalService systemEventLocalService) {
+		this.systemEventLocalService = systemEventLocalService;
 	}
 
 	/**
-	 * Returns the subscription persistence.
+	 * Returns the system event persistence.
 	 *
-	 * @return the subscription persistence
+	 * @return the system event persistence
 	 */
-	public SubscriptionPersistence getSubscriptionPersistence() {
-		return subscriptionPersistence;
+	public SystemEventPersistence getSystemEventPersistence() {
+		return systemEventPersistence;
 	}
 
 	/**
-	 * Sets the subscription persistence.
+	 * Sets the system event persistence.
 	 *
-	 * @param subscriptionPersistence the subscription persistence
+	 * @param systemEventPersistence the system event persistence
 	 */
-	public void setSubscriptionPersistence(
-		SubscriptionPersistence subscriptionPersistence) {
-		this.subscriptionPersistence = subscriptionPersistence;
+	public void setSystemEventPersistence(
+		SystemEventPersistence systemEventPersistence) {
+		this.systemEventPersistence = systemEventPersistence;
 	}
 
 	/**
@@ -2752,10 +2752,10 @@ public abstract class GroupServiceBaseImpl extends BaseServiceImpl
 	protected RolePersistence rolePersistence;
 	@BeanReference(type = RoleFinder.class)
 	protected RoleFinder roleFinder;
-	@BeanReference(type = com.liferay.portal.kernel.service.SubscriptionLocalService.class)
-	protected com.liferay.portal.kernel.service.SubscriptionLocalService subscriptionLocalService;
-	@BeanReference(type = SubscriptionPersistence.class)
-	protected SubscriptionPersistence subscriptionPersistence;
+	@BeanReference(type = com.liferay.portal.kernel.service.SystemEventLocalService.class)
+	protected com.liferay.portal.kernel.service.SystemEventLocalService systemEventLocalService;
+	@BeanReference(type = SystemEventPersistence.class)
+	protected SystemEventPersistence systemEventPersistence;
 	@BeanReference(type = com.liferay.portal.kernel.service.TeamLocalService.class)
 	protected com.liferay.portal.kernel.service.TeamLocalService teamLocalService;
 	@BeanReference(type = com.liferay.portal.kernel.service.TeamService.class)

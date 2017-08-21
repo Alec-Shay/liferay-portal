@@ -25,6 +25,7 @@ import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.asset.kernel.model.AssetTag;
 import com.liferay.asset.kernel.service.persistence.AssetEntryQuery;
 import com.liferay.asset.kernel.validator.AssetEntryValidator;
+import com.liferay.asset.kernel.validator.AssetEntryValidatorExclusionRule;
 import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
@@ -49,6 +50,8 @@ import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.social.SocialActivityManagerUtil;
+import com.liferay.portal.kernel.transaction.Propagation;
+import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringPool;
@@ -58,6 +61,8 @@ import com.liferay.portlet.asset.service.base.AssetEntryLocalServiceBaseImpl;
 import com.liferay.portlet.asset.service.permission.AssetCategoryPermission;
 import com.liferay.portlet.asset.util.AssetSearcher;
 import com.liferay.portlet.asset.validator.AssetEntryValidatorRegistry;
+import com.liferay.registry.collections.ServiceTrackerCollections;
+import com.liferay.registry.collections.ServiceTrackerMap;
 import com.liferay.social.kernel.model.SocialActivityConstants;
 
 import java.util.ArrayList;
@@ -130,6 +135,13 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 		for (AssetEntry assetEntry : assetEntries) {
 			deleteEntry(assetEntry);
 		}
+	}
+
+	@Override
+	public void destroy() {
+		super.destroy();
+
+		_serviceTrackerMap.close();
 	}
 
 	@Override
@@ -368,6 +380,24 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 	}
 
 	@Override
+	public void incrementViewCounter(long userId, AssetEntry assetEntry)
+		throws PortalException {
+
+		User user = userPersistence.findByPrimaryKey(userId);
+
+		assetEntryLocalService.incrementViewCounter(
+			user.getUserId(), assetEntry.getClassName(),
+			assetEntry.getClassPK(), 1);
+
+		if (!user.isDefaultUser()) {
+			SocialActivityManagerUtil.addActivity(
+				user.getUserId(), assetEntry, SocialActivityConstants.TYPE_VIEW,
+				StringPool.BLANK, 0);
+		}
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public AssetEntry incrementViewCounter(
 			long userId, String className, long classPK)
 		throws PortalException {
@@ -412,13 +442,6 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 		entry.setViewCount(entry.getViewCount() + increment);
 
 		assetEntryPersistence.update(entry);
-
-		try {
-			reindex(entry);
-		}
-		catch (PortalException pe) {
-			throw new SystemException(pe);
-		}
 	}
 
 	@Override
@@ -744,7 +767,7 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 
 		// Tags
 
-		if (tagNames != null) {
+		if ((tagNames != null) && (!entry.isNew() || (tagNames.length > 0))) {
 			long siteGroupId = PortalUtil.getSiteGroupId(groupId);
 
 			Group siteGroup = groupLocalService.getGroup(siteGroupId);
@@ -752,21 +775,19 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 			List<AssetTag> tags = assetTagLocalService.checkTags(
 				userId, siteGroup, tagNames);
 
-			List<AssetTag> oldTags = assetEntryPersistence.getAssetTags(
-				entry.getEntryId());
-
 			assetEntryPersistence.setAssetTags(entry.getEntryId(), tags);
 
 			if (entry.isVisible()) {
-				boolean isNew = entry.isNew();
-
-				if (isNew) {
+				if (entry.isNew()) {
 					for (AssetTag tag : tags) {
 						assetTagLocalService.incrementAssetCount(
 							tag.getTagId(), classNameId);
 					}
 				}
 				else {
+					List<AssetTag> oldTags = assetEntryPersistence.getAssetTags(
+						entry.getEntryId());
+
 					for (AssetTag oldTag : oldTags) {
 						if (!tags.contains(oldTag)) {
 							assetTagLocalService.decrementAssetCount(
@@ -783,6 +804,9 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 				}
 			}
 			else if (oldVisible) {
+				List<AssetTag> oldTags = assetEntryPersistence.getAssetTags(
+					entry.getEntryId());
+
 				for (AssetTag oldTag : oldTags) {
 					assetTagLocalService.decrementAssetCount(
 						oldTag.getTagId(), classNameId);
@@ -970,8 +994,6 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 				entry.getClassNameId(), entry.getClassPK());
 		}
 
-		reindex(entry);
-
 		return entry;
 	}
 
@@ -996,6 +1018,22 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 
 		if (ExportImportThreadLocal.isImportInProcess()) {
 			return;
+		}
+
+		List<AssetEntryValidatorExclusionRule> exclusionRules =
+			_serviceTrackerMap.getService(className);
+
+		if (exclusionRules != null) {
+			for (AssetEntryValidatorExclusionRule exclusionRule :
+					exclusionRules) {
+
+				if (exclusionRule.isValidationExcluded(
+						groupId, className, classPK, classTypePK, categoryIds,
+						tagNames)) {
+
+					return;
+				}
+			}
 		}
 
 		for (AssetEntryValidator assetEntryValidator :
@@ -1260,5 +1298,10 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 
 	@BeanReference(type = AssetEntryValidatorRegistry.class)
 	protected AssetEntryValidatorRegistry assetEntryValidatorRegistry;
+
+	private final ServiceTrackerMap
+		<String, List<AssetEntryValidatorExclusionRule>>
+			_serviceTrackerMap = ServiceTrackerCollections.openMultiValueMap(
+				AssetEntryValidatorExclusionRule.class, "model.class.name");
 
 }

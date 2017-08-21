@@ -19,13 +19,10 @@ import com.liferay.document.library.kernel.antivirus.AntivirusScannerUtil;
 import com.liferay.document.library.kernel.antivirus.AntivirusScannerWrapper;
 import com.liferay.document.library.kernel.util.DLProcessor;
 import com.liferay.document.library.kernel.util.DLProcessorRegistryUtil;
-import com.liferay.portal.captcha.CaptchaImpl;
 import com.liferay.portal.kernel.bean.BeanLocatorException;
 import com.liferay.portal.kernel.bean.ClassLoaderBeanHandler;
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 import com.liferay.portal.kernel.bean.PortletBeanLocatorUtil;
-import com.liferay.portal.kernel.captcha.Captcha;
-import com.liferay.portal.kernel.captcha.CaptchaUtil;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.configuration.ConfigurationFactoryUtil;
 import com.liferay.portal.kernel.deploy.DeployManagerUtil;
@@ -118,7 +115,6 @@ import com.liferay.portal.repository.registry.RepositoryClassDefinitionCatalogUt
 import com.liferay.portal.repository.util.ExternalRepositoryFactory;
 import com.liferay.portal.repository.util.ExternalRepositoryFactoryImpl;
 import com.liferay.portal.security.auth.AuthVerifierPipeline;
-import com.liferay.portal.security.lang.DoPrivilegedBean;
 import com.liferay.portal.servlet.filters.cache.CacheUtil;
 import com.liferay.portal.servlet.taglib.ui.DeprecatedFormNavigatorEntry;
 import com.liferay.portal.spring.aop.ServiceBeanAopProxy;
@@ -141,7 +137,7 @@ import java.lang.reflect.Field;
 import java.net.URL;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -183,9 +179,8 @@ public class HookHotDeployListener
 		"auth.token.ignore.actions", "auth.token.ignore.origins",
 		"auth.token.ignore.portlets", "auth.token.impl", "auth.pipeline.post",
 		"auth.pipeline.pre", "auto.login.hooks",
-		"captcha.check.portal.create_account", "captcha.engine.impl",
-		"company.default.locale", "company.default.time.zone",
-		"company.settings.form.authentication",
+		"captcha.check.portal.create_account", "company.default.locale",
+		"company.default.time.zone", "company.settings.form.authentication",
 		"company.settings.form.configuration",
 		"company.settings.form.identification",
 		"company.settings.form.miscellaneous", "company.settings.form.social",
@@ -390,23 +385,6 @@ public class HookHotDeployListener
 		}
 
 		resetPortalProperties(servletContextName, portalProperties, false);
-
-		if (portalProperties.containsKey(PropsKeys.CAPTCHA_ENGINE_IMPL)) {
-			CaptchaImpl captchaImpl = null;
-
-			Captcha captcha = CaptchaUtil.getCaptcha();
-
-			if (captcha instanceof DoPrivilegedBean) {
-				DoPrivilegedBean doPrivilegedBean = (DoPrivilegedBean)captcha;
-
-				captchaImpl = (CaptchaImpl)doPrivilegedBean.getActualBean();
-			}
-			else {
-				captchaImpl = (CaptchaImpl)captcha;
-			}
-
-			captchaImpl.setCaptcha(null);
-		}
 
 		if (portalProperties.containsKey(PropsKeys.DL_FILE_ENTRY_PROCESSORS)) {
 			DLFileEntryProcessorContainer dlFileEntryProcessorContainer =
@@ -1409,30 +1387,6 @@ public class HookHotDeployListener
 				authToken);
 		}
 
-		if (portalProperties.containsKey(PropsKeys.CAPTCHA_ENGINE_IMPL)) {
-			String captchaClassName = portalProperties.getProperty(
-				PropsKeys.CAPTCHA_ENGINE_IMPL);
-
-			Captcha captcha = (Captcha)newInstance(
-				portletClassLoader, Captcha.class, captchaClassName);
-
-			CaptchaImpl captchaImpl = null;
-
-			Captcha currentCaptcha = CaptchaUtil.getCaptcha();
-
-			if (currentCaptcha instanceof DoPrivilegedBean) {
-				DoPrivilegedBean doPrivilegedBean =
-					(DoPrivilegedBean)currentCaptcha;
-
-				captchaImpl = (CaptchaImpl)doPrivilegedBean.getActualBean();
-			}
-			else {
-				captchaImpl = (CaptchaImpl)currentCaptcha;
-			}
-
-			captchaImpl.setCaptcha(captcha);
-		}
-
 		if (portalProperties.containsKey(
 				PropsKeys.CONTROL_PANEL_DEFAULT_ENTRY_CLASS)) {
 
@@ -2336,9 +2290,8 @@ public class HookHotDeployListener
 		SERVLET_SERVICE_EVENTS_PRE
 	};
 
-	private static final String[] _PROPS_KEYS_SESSION_EVENTS = {
-		SERVLET_SESSION_CREATE_EVENTS, SERVLET_SESSION_DESTROY_EVENTS
-	};
+	private static final String[] _PROPS_KEYS_SESSION_EVENTS =
+		{SERVLET_SESSION_CREATE_EVENTS, SERVLET_SESSION_DESTROY_EVENTS};
 
 	private static final String[] _PROPS_VALUES_BOOLEAN = {
 		"auth.forward.by.last.path", "captcha.check.portal.create_account",
@@ -2413,9 +2366,8 @@ public class HookHotDeployListener
 		"layout.user.public.layouts.modifiable"
 	};
 
-	private static final String[] _PROPS_VALUES_OVERRIDE_STRING_ARRAY = {
-		"locales.beta"
-	};
+	private static final String[] _PROPS_VALUES_OVERRIDE_STRING_ARRAY =
+		{"locales.beta"};
 
 	private static final String[] _PROPS_VALUES_STRING = {
 		"company.default.locale", "company.default.time.zone",
@@ -2532,12 +2484,12 @@ public class HookHotDeployListener
 		public String[] getStringArray() {
 			Set<String> mergedStringSet = new LinkedHashSet<>();
 
-			mergedStringSet.addAll(Arrays.asList(_portalStringArray));
+			Collections.addAll(mergedStringSet, _portalStringArray);
 
 			for (Map.Entry<String, String[]> entry :
 					_pluginStringArrayMap.entrySet()) {
 
-				mergedStringSet.addAll(Arrays.asList(entry.getValue()));
+				Collections.addAll(mergedStringSet, entry.getValue());
 			}
 
 			return mergedStringSet.toArray(new String[mergedStringSet.size()]);

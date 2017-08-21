@@ -1,0 +1,11 @@
+;
+; Do not manually edit this file.
+;
+[subrepo]
+	autopull = false
+	cmdver = liferay
+	commit = b1e59146c3dfea3cf239b9e41eed54840aea0d35
+	mergebuttonmergecommits = false
+	mode = push
+	parent = d55870e6134f57db89cb0c9c2a757b960afc10d8
+	remote = git@github.com:liferay/com-liferay-subscription.git

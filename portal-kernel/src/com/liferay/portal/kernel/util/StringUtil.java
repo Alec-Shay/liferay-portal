@@ -479,6 +479,26 @@ public class StringUtil {
 	}
 
 	/**
+	 * Returns <code>true</code> if the strings are equal.
+	 *
+	 * @param  s1 the first string to compare
+	 * @param  s2 the second string to compare
+	 * @return <code>true</code> if the strings are equal; <code>false</code>
+	 *         otherwise
+	 */
+	public static boolean equals(String s1, String s2) {
+		if (s1 == s2) {
+			return true;
+		}
+
+		if ((s1 == null) || (s2 == null)) {
+			return false;
+		}
+
+		return s1.equals(s2);
+	}
+
+	/**
 	 * Returns <code>true</code> if the strings are equal, ignoring new line
 	 * characters.
 	 *
@@ -1679,6 +1699,10 @@ public class StringUtil {
 			return StringPool.BLANK;
 		}
 
+		if (array.length == 1) {
+			return String.valueOf(array[0]);
+		}
+
 		StringBundler sb = new StringBundler(2 * array.length - 1);
 
 		for (int i = 0; i < array.length; i++) {
@@ -1722,6 +1746,10 @@ public class StringUtil {
 
 		if (array.length == 0) {
 			return StringPool.BLANK;
+		}
+
+		if (array.length == 1) {
+			return String.valueOf(array[0]);
 		}
 
 		StringBundler sb = new StringBundler(2 * array.length - 1);
@@ -1816,6 +1844,10 @@ public class StringUtil {
 			return StringPool.BLANK;
 		}
 
+		if (array.length == 1) {
+			return String.valueOf(array[0]);
+		}
+
 		StringBundler sb = new StringBundler(2 * array.length - 1);
 
 		for (int i = 0; i < array.length; i++) {
@@ -1859,6 +1891,10 @@ public class StringUtil {
 
 		if (array.length == 0) {
 			return StringPool.BLANK;
+		}
+
+		if (array.length == 1) {
+			return String.valueOf(array[0]);
 		}
 
 		StringBundler sb = new StringBundler(2 * array.length - 1);
@@ -1906,6 +1942,10 @@ public class StringUtil {
 			return StringPool.BLANK;
 		}
 
+		if (array.length == 1) {
+			return String.valueOf(array[0]);
+		}
+
 		StringBundler sb = new StringBundler(2 * array.length - 1);
 
 		for (int i = 0; i < array.length; i++) {
@@ -1949,6 +1989,10 @@ public class StringUtil {
 
 		if (array.length == 0) {
 			return StringPool.BLANK;
+		}
+
+		if (array.length == 1) {
+			return String.valueOf(array[0]);
 		}
 
 		StringBundler sb = new StringBundler(2 * array.length - 1);
@@ -1996,6 +2040,10 @@ public class StringUtil {
 			return StringPool.BLANK;
 		}
 
+		if (array.length == 1) {
+			return String.valueOf(array[0]);
+		}
+
 		StringBundler sb = new StringBundler(2 * array.length - 1);
 
 		for (int i = 0; i < array.length; i++) {
@@ -2039,6 +2087,10 @@ public class StringUtil {
 
 		if (array.length == 0) {
 			return StringPool.BLANK;
+		}
+
+		if (array.length == 1) {
+			return String.valueOf(array[0]);
 		}
 
 		StringBundler sb = new StringBundler(2 * array.length - 1);
@@ -2195,6 +2247,15 @@ public class StringUtil {
 		}
 
 		return new String(chars);
+	}
+
+	public static String read(Class<?> clazz, String name) {
+		try (InputStream inputStream = clazz.getResourceAsStream(name)) {
+			return read(inputStream);
+		}
+		catch (IOException ioe) {
+			return ReflectionUtil.throwException(ioe);
+		}
 	}
 
 	public static String read(ClassLoader classLoader, String name)
@@ -3996,14 +4057,13 @@ public class StringUtil {
 			return false;
 		}
 
-		String temp = s.substring(0, start.length());
+		for (int i = 0; i < start.length(); i++) {
+			if (!equalsIgnoreCase(s.charAt(i), start.charAt(i))) {
+				return false;
+			}
+		}
 
-		if (equalsIgnoreCase(temp, start)) {
-			return true;
-		}
-		else {
-			return false;
-		}
+		return true;
 	}
 
 	/**
@@ -4509,45 +4569,51 @@ public class StringUtil {
 			return null;
 		}
 
-		if (s.length() == 0) {
+		int len = s.length();
+
+		if (len == 0) {
 			return s;
 		}
 
-		int len = s.length();
+		int x = 0;
 
-		int x = len;
+		while (x < len) {
+			char c = s.charAt(x);
 
-		for (int i = 0; i < len; i++) {
-			char c = s.charAt(i);
-
-			if (!Character.isWhitespace(c)) {
-				x = i;
+			if (((c > CharPool.SPACE) && (c < 128)) ||
+				!Character.isWhitespace(c)) {
 
 				break;
 			}
+
+			x++;
 		}
 
 		if (x == len) {
 			return StringPool.BLANK;
 		}
 
-		int y = x + 1;
+		int y = len - 1;
 
-		for (int i = len - 1; i > x; i--) {
-			char c = s.charAt(i);
+		while (x < y) {
+			char c = s.charAt(y);
 
-			if (!Character.isWhitespace(c)) {
-				y = i + 1;
+			if (((c > CharPool.SPACE) && (c < 128)) ||
+				!Character.isWhitespace(c)) {
 
 				break;
 			}
+
+			y--;
 		}
 
-		if ((x == 0) && (y == len)) {
-			return s;
+		y++;
+
+		if ((x > 0) || (y < len)) {
+			return s.substring(x, y);
 		}
 
-		return s.substring(x, y);
+		return s;
 	}
 
 	/**

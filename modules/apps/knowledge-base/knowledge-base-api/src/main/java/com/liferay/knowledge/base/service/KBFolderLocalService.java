@@ -172,9 +172,8 @@ public interface KBFolderLocalService extends BaseLocalService,
 	public KBFolder updateKBFolder(KBFolder kbFolder);
 
 	/**
-	* @deprecated As of 1.1.0, replaced by {@link
-	#updateKBFolder(long, long, long, String, String,
-	ServiceContext)}
+	* @deprecated As of 1.1.0, replaced by {@link #updateKBFolder(long, long,
+	long, String, String, ServiceContext)}
 	*/
 	@java.lang.Deprecated
 	public KBFolder updateKBFolder(long parentResourceClassNameId,
@@ -338,6 +337,8 @@ public interface KBFolderLocalService extends BaseLocalService,
 	*/
 	public long dynamicQueryCount(DynamicQuery dynamicQuery,
 		Projection projection);
+
+	public void deleteKBFolders(long groupId) throws PortalException;
 
 	public void moveKBFolder(long kbFolderId, long parentKBFolderId)
 		throws PortalException;

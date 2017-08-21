@@ -35,7 +35,7 @@
 		</if>
 	</tear-down>
 
-	<command name="ApproveInWebContentFolderNoWorkflowWithHomeFolderSingleApproverWorkflowCP" priority="3">
+	<command name="ConfigureFolderWorkflow" priority="4">
 		<execute macro="Workflow#configureWorkflowViaFolderInfo">
 			<var name="workflowDefinition" value="Single Approver (Version 1)" />
 		</execute>
@@ -47,95 +47,33 @@
 
 		<execute macro="WebContentFolder#configureWorkflowCP">
 			<var name="folderName" value="WC Folder Name" />
-			<var name="workflowDefinition" value="No Workflow" />
+			<var name="workflowDefinition" value="Single Approver (Version 1)" />
 			<var name="workflowRestriction" value="Default Workflow" />
 		</execute>
 
-		<execute macro="WebContentFolder#gotoCP">
+		<execute macro="WebContentFolder#configureWorkflowCP">
 			<var name="folderName" value="WC Folder Name" />
-			<var name="webContentTitle" value="WC Folder Name" />
+			<var name="workflowRestriction" value="Parent Folder" />
 		</execute>
 
-		<execute macro="WebContentNavigator#gotoAddCP" />
-
-		<execute macro="WebContent#addCP">
-			<var name="webContentContent" value="WC Folder WebContent Content" />
-			<var name="webContentTitle" value="WC Folder WebContent Title" />
+		<execute macro="WebContentFolder#configureWorkflowCP">
+			<var name="folderName" value="WC Folder Name" />
+			<var name="structureName" value="Basic Web Content" />
+			<var name="workflowDefinition" value="Single Approver (Version 1)" />
+			<var name="workflowRestriction" value="Specific Restrictions" />
 		</execute>
 
-		<execute macro="PortletEntry#publish" />
-
-		<execute macro="WebContent#viewTitle">
-			<var name="webContentTitle" value="WC Folder WebContent Title" />
-		</execute>
-
-		<execute macro="WebContent#viewApprovedStatus">
-			<var name="webContentTitle" value="WC Folder WebContent Title" />
-		</execute>
-
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Web Content" />
-		</execute>
-
-		<execute macro="WebContentNavigator#gotoAddCP" />
-
-		<execute macro="WebContent#addWithWorkflowCP">
-			<var name="webContentContent" value="WC WebContent Content" />
-			<var name="webContentTitle" value="WC WebContent Title" />
-		</execute>
-
-		<execute macro="WebContent#viewWithWorkflowCP">
-			<var name="webContentContent" value="WC WebContent Content" />
-			<var name="webContentTitle" value="WC WebContent Title" />
-			<var name="workflowTask" value="Review" />
-		</execute>
-
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="My Workflow Tasks" />
-		</execute>
-
-		<execute macro="Workflow#assignToMeTaskByActions">
-			<var name="workflowAssetTitle" value="WC WebContent Title" />
-			<var name="workflowAssetType" value="Web Content Article" />
-			<var name="workflowTask" value="Review" />
-		</execute>
-
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Web Content" />
-		</execute>
-
-		<execute macro="WebContent#viewWithWorkflowCP">
-			<var name="webContentContent" value="WC WebContent Content" />
-			<var name="webContentTitle" value="WC WebContent Title" />
-			<var name="workflowTask" value="Review" />
-		</execute>
-
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="My Workflow Tasks" />
-		</execute>
-
-		<execute macro="Workflow#approveTaskByActions">
-			<var name="workflowAssetTitle" value="WC WebContent Title" />
-			<var name="workflowAssetType" value="Web Content Article" />
-			<var name="workflowTask" value="Review" />
-		</execute>
-
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Web Content" />
-		</execute>
-
-		<execute macro="WebContent#viewApprovedStatus">
-			<var name="webContentTitle" value="WC WebContent Title" />
+		<execute macro="WebContentFolder#configureWorkflowCP">
+			<var name="folderName" value="WC Folder Name" />
+			<var name="workflowDefinition" value="No Workflow" />
+			<var name="workflowRestriction" value="Default Workflow" />
 		</execute>
 	</command>
 
-	<command name="ApproveInWebContentFolderSingleApproverStructureSpecificWorkflowCP" priority="4">
+	<command name="EditWebContentInReviewProcess" priority="5">
+		<property name="portal.acceptance" value="pending" />
+		<property name="testray.component.names" value="Training" />
+
 		<execute macro="WebContentNavigator#gotoManageStructures" />
 
 		<execute macro="WebContentStructures#addCP">
@@ -144,9 +82,9 @@
 		</execute>
 
 		<execute macro="DynamicDataMapping#addField">
-			<var name="field" value="Text" />
-			<var name="fieldFieldLabel" value="Text" />
-			<var name="fieldName" value="Text" />
+			<var name="field" value="Image" />
+			<var name="fieldFieldLabel" value="Image" />
+			<var name="fieldName" value="Image" />
 		</execute>
 
 		<execute macro="WebContentStructures#saveCP">
@@ -168,43 +106,22 @@
 
 		<execute macro="WebContentTemplates#addStructure">
 			<var name="structureName" value="WC Structure Name" />
-			<var name="templateFieldNames" value="Text" />
+			<var name="templateFieldNames" value="Image" />
+			<var name="templateLanguage" value="ftl" />
 		</execute>
 
 		<execute macro="PortletEntry#save" />
-
-		<execute macro="Navigator#openURL" />
 
 		<execute macro="ProductMenu#gotoSitesContent">
 			<var name="portlet" value="Web Content" />
 		</execute>
 
 		<execute macro="Workflow#configureWorkflowViaFolderInfo">
-			<var name="workflowDefinition" value="No Workflow" />
-		</execute>
-
-		<execute macro="WebContentFolder#addCP">
-			<var name="folderDescription" value="WC Folder Description" />
-			<var name="folderName" value="WC Folder Name" />
-		</execute>
-
-		<execute macro="WebContentFolder#configureWorkflowCP">
-			<var name="folderName" value="WC Folder Name" />
-			<var name="structureName" value="WC Structure Name" />
 			<var name="workflowDefinition" value="Single Approver (Version 1)" />
-			<var name="workflowRestriction" value="Specific Restrictions" />
 		</execute>
 
-		<execute macro="WebContentFolder#configureWorkflowCP">
-			<var name="folderName" value="WC Folder Name" />
-			<var name="structureName" value="Basic Web Content" />
-			<var name="workflowDefinition" value="No Workflow" />
-			<var name="workflowRestriction" value="Specific Restrictions" />
-		</execute>
-
-		<execute macro="WebContentFolder#gotoCP">
-			<var name="folderName" value="WC Folder Name" />
-			<var name="webContentTitle" value="WC Folder Name" />
+		<execute macro="ProductMenu#gotoSitesContent">
+			<var name="portlet" value="Web Content" />
 		</execute>
 
 		<execute macro="WebContentNavigator#gotoAddWithStructureCP">
@@ -214,102 +131,39 @@
 		<execute macro="WebContent#addWithStructureAndWorkflowCP">
 			<var name="structureName" value="WC Structure Name" />
 			<var name="templateName" value="WC Template Name" />
-			<var name="webContentText" value="WC Folder WCWithStructure Text" />
-			<var name="webContentTitle" value="WC Folder WCWithStructure Title" />
+			<var name="webContentTitle" value="WC WebContent Title" />
 		</execute>
 
 		<execute macro="WebContent#viewTitle">
-			<var name="webContentTitle" value="WC Folder WCWithStructure Title" />
+			<var name="webContentTitle" value="WC WebContent Title" />
 		</execute>
 
 		<execute macro="WebContent#viewStructureWithWorkflowCP">
-			<var name="webContentTitle" value="WC Folder WCWithStructure Title" />
+			<var name="webContentTitle" value="WC WebContent Title" />
 			<var name="workflowTask" value="Review" />
 		</execute>
 
 		<execute macro="Navigator#openURL" />
-
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Web Content" />
-		</execute>
-
-		<execute macro="WebContentFolder#gotoCP">
-			<var name="folderName" value="WC Folder Name" />
-			<var name="webContentTitle" value="WC Folder Name" />
-		</execute>
-
-		<execute macro="WebContentNavigator#gotoAddCP" />
-
-		<execute macro="WebContent#addCP">
-			<var name="webContentContent" value="WC Folder WebContent Content" />
-			<var name="webContentTitle" value="WC Folder WebContent Title" />
-		</execute>
-
-		<execute macro="PortletEntry#publish" />
-
-		<execute macro="WebContent#viewTitle">
-			<var name="webContentTitle" value="WC Folder WebContent Title" />
-		</execute>
-
-		<execute macro="WebContent#viewApprovedStatus">
-			<var name="webContentTitle" value="WC Folder WebContent Title" />
-		</execute>
-
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Web Content" />
-		</execute>
-
-		<execute macro="WebContentNavigator#gotoAddWithStructureCP">
-			<var name="structureName" value="WC Structure Name" />
-		</execute>
-
-		<execute macro="WebContent#addWithStructureCP">
-			<var name="structureName" value="WC Structure Name" />
-			<var name="templateName" value="WC Template Name" />
-			<var name="webContentText" value="WC WebContent Structure Text" />
-			<var name="webContentTitle" value="WC WebContent Structure Title" />
-		</execute>
-
-		<execute macro="PortletEntry#publish" />
-
-		<execute macro="Portlet#changeDisplayStyle">
-			<var name="displayStyle" value="Descriptive" />
-		</execute>
-
-		<execute macro="WebContent#viewTitle">
-			<var name="webContentTitle" value="WC WebContent Structure Title" />
-		</execute>
-
-		<execute macro="WebContent#viewApprovedStatus">
-			<var name="webContentTitle" value="WC WebContent Structure Title" />
-		</execute>
 
 		<execute macro="Page#gotoMyAccount">
 			<var name="portletName" value="My Workflow Tasks" />
 		</execute>
 
 		<execute macro="Workflow#assignToMeTaskByActions">
-			<var name="workflowAssetTitle" value="WC Folder WCWithStructure Title" />
+			<var name="workflowAssetTitle" value="WC WebContent Title" />
 			<var name="workflowAssetType" value="Web Content Article" />
 			<var name="workflowTask" value="Review" />
 		</execute>
 
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Web Content" />
+		<execute macro="Workflow#gotoTaskDetails">
+			<var name="workflowAssetTitle" value="WC WebContent Title" />
 		</execute>
 
-		<execute macro="WebContentFolder#gotoCP">
-			<var name="folderName" value="WC Folder Name" />
-			<var name="webContentTitle" value="WC Folder Name" />
-		</execute>
+		<execute macro="Workflow#gotoPreviewEdit" />
 
-		<execute macro="WebContent#viewStructureWithWorkflowCP">
-			<var name="webContentTitle" value="WC Folder WCWithStructure Title" />
-			<var name="workflowTask" value="Review" />
+		<execute macro="WebContent#editInReview">
+			<var name="webContentImage" value="Document_2.jpeg" />
+			<var name="webContentTitleEdit" value="WC WebContent Title Edit" />
 		</execute>
 
 		<execute macro="Page#gotoMyAccount">
@@ -317,275 +171,9 @@
 		</execute>
 
 		<execute macro="Workflow#approveTaskByActions">
-			<var name="workflowAssetTitle" value="WC Folder WCWithStructure Title" />
+			<var name="workflowAssetTitle" value="WC WebContent Title Edit" />
 			<var name="workflowAssetType" value="Web Content Article" />
 			<var name="workflowTask" value="Review" />
-		</execute>
-
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Web Content" />
-		</execute>
-
-		<execute macro="WebContentFolder#gotoCP">
-			<var name="folderName" value="WC Folder Name" />
-			<var name="webContentTitle" value="WC Folder Name" />
-		</execute>
-
-		<execute macro="WebContent#viewApprovedStatus">
-			<var name="webContentTitle" value="WC Folder WCWithStructure Title" />
-		</execute>
-	</command>
-
-	<command name="ApproveInWebContentFolderSingleApproverWorkflowWithNoHomeFolderWorkflowCP" priority="4">
-		<execute macro="Workflow#configureWorkflowViaFolderInfo">
-			<var name="workflowDefinition" value="No Workflow" />
-		</execute>
-
-		<execute macro="WebContentFolder#addCP">
-			<var name="folderDescription" value="WC Folder Description" />
-			<var name="folderName" value="WC Folder Name" />
-		</execute>
-
-		<execute macro="WebContentFolder#configureWorkflowCP">
-			<var name="folderName" value="WC Folder Name" />
-			<var name="workflowDefinition" value="Single Approver (Version 1)" />
-			<var name="workflowRestriction" value="Default Workflow" />
-		</execute>
-
-		<execute macro="WebContentNavigator#gotoAddCP" />
-
-		<execute macro="WebContent#addCP">
-			<var name="webContentContent" value="WC WebContent Content" />
-			<var name="webContentTitle" value="WC WebContent Title" />
-		</execute>
-
-		<execute macro="PortletEntry#publish" />
-
-		<execute macro="WebContent#viewTitle">
-			<var name="webContentTitle" value="WC WebContent Title" />
-		</execute>
-
-		<execute macro="WebContent#viewApprovedStatus">
-			<var name="webContentTitle" value="WC WebContent Title" />
-		</execute>
-
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Web Content" />
-		</execute>
-
-		<execute macro="WebContentFolder#gotoCP">
-			<var name="folderName" value="WC Folder Name" />
-			<var name="webContentTitle" value="WC Folder Name" />
-		</execute>
-
-		<execute macro="WebContentNavigator#gotoAddCP" />
-
-		<execute macro="WebContent#addWithWorkflowCP">
-			<var name="webContentContent" value="WC Folder WebContent Content" />
-			<var name="webContentTitle" value="WC Folder WebContent Title" />
-		</execute>
-
-		<execute macro="WebContent#viewWithWorkflowCP">
-			<var name="webContentContent" value="WC Folder WebContent Content" />
-			<var name="webContentTitle" value="WC Folder WebContent Title" />
-			<var name="workflowTask" value="Review" />
-		</execute>
-
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="My Workflow Tasks" />
-		</execute>
-
-		<execute macro="Workflow#assignToMeTaskByActions">
-			<var name="workflowAssetTitle" value="WC Folder WebContent Title" />
-			<var name="workflowAssetType" value="Web Content Article" />
-			<var name="workflowTask" value="Review" />
-		</execute>
-
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Web Content" />
-		</execute>
-
-		<execute macro="WebContentFolder#gotoCP">
-			<var name="folderName" value="WC Folder Name" />
-			<var name="webContentTitle" value="WC Folder Name" />
-		</execute>
-
-		<execute macro="WebContent#viewWithWorkflowCP">
-			<var name="webContentContent" value="WC Folder WebContent Content" />
-			<var name="webContentTitle" value="WC Folder WebContent Title" />
-			<var name="workflowTask" value="Review" />
-		</execute>
-
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="My Workflow Tasks" />
-		</execute>
-
-		<execute macro="Workflow#approveTaskByActions">
-			<var name="workflowAssetTitle" value="WC Folder WebContent Title" />
-			<var name="workflowAssetType" value="Web Content Article" />
-			<var name="workflowTask" value="Review" />
-		</execute>
-
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Web Content" />
-		</execute>
-
-		<execute macro="WebContentFolder#gotoCP">
-			<var name="folderName" value="WC Folder Name" />
-			<var name="webContentTitle" value="WC Folder Name" />
-		</execute>
-
-		<execute macro="WebContent#viewApprovedStatus">
-			<var name="webContentTitle" value="WC Folder WebContent Title" />
-		</execute>
-	</command>
-
-	<command name="ApproveInWebContentFolderWithParentFolderSingleApproverWorkflowCP" priority="5">
-		<property name="portal.acceptance" value="true" />
-
-		<execute macro="Workflow#configureWorkflowViaFolderInfo">
-			<var name="workflowDefinition" value="Single Approver (Version 1)" />
-		</execute>
-
-		<execute macro="WebContentFolder#addCP">
-			<var name="folderDescription" value="WC Folder Description" />
-			<var name="folderName" value="WC Folder Name" />
-		</execute>
-
-		<execute macro="WebContentFolder#configureWorkflowCP">
-			<var name="folderName" value="WC Folder Name" />
-			<var name="workflowRestriction" value="Parent Folder" />
-		</execute>
-
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Web Content" />
-		</execute>
-
-		<execute macro="WebContentFolder#gotoCP">
-			<var name="folderName" value="WC Folder Name" />
-			<var name="webContentTitle" value="WC Folder Name" />
-		</execute>
-
-		<execute macro="WebContentNavigator#gotoAddCP" />
-
-		<execute macro="WebContent#addWithWorkflowCP">
-			<var name="webContentContent" value="WC Folder WebContent Content" />
-			<var name="webContentTitle" value="WC Folder WebContent Title" />
-		</execute>
-
-		<execute macro="WebContent#viewWithWorkflowCP">
-			<var name="webContentContent" value="WC Folder WebContent Content" />
-			<var name="webContentTitle" value="WC Folder WebContent Title" />
-			<var name="workflowTask" value="Review" />
-		</execute>
-
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Web Content" />
-		</execute>
-
-		<execute macro="WebContentNavigator#gotoAddCP" />
-
-		<execute macro="WebContent#addWithWorkflowCP">
-			<var name="webContentContent" value="WC WebContent Content" />
-			<var name="webContentTitle" value="WC WebContent Title" />
-		</execute>
-
-		<execute macro="WebContent#viewWithWorkflowCP">
-			<var name="webContentContent" value="WC WebContent Content" />
-			<var name="webContentTitle" value="WC WebContent Title" />
-			<var name="workflowTask" value="Review" />
-		</execute>
-
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="My Workflow Tasks" />
-		</execute>
-
-		<execute macro="Workflow#assignToMeTaskByActions">
-			<var name="workflowAssetTitle" value="WC WebContent Title" />
-			<var name="workflowAssetType" value="Web Content Article" />
-			<var name="workflowTask" value="Review" />
-		</execute>
-
-		<execute macro="Workflow#assignToMeTaskByActions">
-			<var name="workflowAssetTitle" value="WC Folder WebContent Title" />
-			<var name="workflowAssetType" value="Web Content Article" />
-			<var name="workflowTask" value="Review" />
-		</execute>
-
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Web Content" />
-		</execute>
-
-		<execute macro="WebContentFolder#gotoCP">
-			<var name="folderName" value="WC Folder Name" />
-			<var name="webContentTitle" value="WC Folder Name" />
-		</execute>
-
-		<execute macro="WebContent#viewWithWorkflowCP">
-			<var name="webContentContent" value="WC Folder WebContent Content" />
-			<var name="webContentTitle" value="WC Folder WebContent Title" />
-			<var name="workflowTask" value="Review" />
-		</execute>
-
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Web Content" />
-		</execute>
-
-		<execute macro="WebContent#viewWithWorkflowCP">
-			<var name="webContentContent" value="WC WebContent Content" />
-			<var name="webContentTitle" value="WC WebContent Title" />
-			<var name="workflowTask" value="Review" />
-		</execute>
-
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="My Workflow Tasks" />
-		</execute>
-
-		<execute macro="Workflow#approveTaskByActions">
-			<var name="workflowAssetTitle" value="WC Folder WebContent Title" />
-			<var name="workflowAssetType" value="Web Content Article" />
-			<var name="workflowTask" value="Review" />
-		</execute>
-
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="My Workflow Tasks" />
-		</execute>
-
-		<execute macro="Workflow#approveTaskByActions">
-			<var name="workflowAssetTitle" value="WC WebContent Title" />
-			<var name="workflowAssetType" value="Web Content Article" />
-			<var name="workflowTask" value="Review" />
-		</execute>
-
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Web Content" />
-		</execute>
-
-		<execute macro="WebContentFolder#gotoCP">
-			<var name="folderName" value="WC Folder Name" />
-			<var name="webContentTitle" value="WC Folder Name" />
-		</execute>
-
-		<execute macro="WebContent#viewApprovedStatus">
-			<var name="webContentTitle" value="WC Folder WebContent Title" />
 		</execute>
 
 		<execute macro="Navigator#openURL" />
@@ -595,67 +183,37 @@
 		</execute>
 
 		<execute macro="WebContent#viewApprovedStatus">
-			<var name="webContentTitle" value="WC WebContent Title" />
-		</execute>
-	</command>
-
-	<command name="RejectWebContentCP" priority="4">
-		<execute macro="Workflow#configureWorkflowViaFolderInfo">
-			<var name="workflowDefinition" value="Single Approver (Version 1)" />
+			<var name="webContentTitle" value="WC WebContent Title Edit" />
 		</execute>
 
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Web Content" />
+		<execute macro="WebContentNavigator#gotoEditCP">
+			<var name="webContentTitle" value="WC WebContent Title Edit" />
 		</execute>
 
-		<execute macro="WebContentNavigator#gotoAddCP" />
-
-		<execute macro="WebContent#addWithWorkflowCP">
-			<var name="webContentContent" value="WC WebContent Content" />
-			<var name="webContentTitle" value="WC WebContent Title" />
-		</execute>
-
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="My Workflow Tasks" />
-		</execute>
-
-		<execute macro="Workflow#assignToMeTaskByActions">
-			<var name="workflowAssetTitle" value="WC WebContent Title" />
-			<var name="workflowAssetType" value="Web Content Article" />
-			<var name="workflowTask" value="Review" />
-		</execute>
-
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="My Workflow Tasks" />
-		</execute>
-
-		<execute macro="Workflow#rejectTaskByActions">
-			<var name="workflowAssetTitle" value="WC WebContent Title" />
-			<var name="workflowAssetType" value="Web Content Article" />
-			<var name="workflowTask" value="Review" />
-		</execute>
-
-		<execute macro="Page#gotoMyAccount">
-			<var name="portletName" value="My Workflow Tasks" />
-		</execute>
-
-		<execute macro="Workflow#viewRejectedTask">
-			<var name="workflowAssetTitle" value="WC WebContent Title" />
-			<var name="workflowAssetType" value="Web Content Article" />
+		<execute macro="WebContent#viewCPWithoutContentField">
+			<var name="field" value="Image" />
+			<var name="webContentImage" value="Document_2.jpeg" />
+			<var name="webContentTitle" value="WC WebContent Title Edit" />
 		</execute>
 
 		<execute macro="Navigator#openURL" />
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Web Content" />
+		<execute macro="Page#add">
+			<var name="pageName" value="Test Page" />
 		</execute>
 
-		<execute macro="WebContent#viewWithWorkflowCP">
-			<var name="webContentContent" value="WC WebContent Content" />
-			<var name="webContentTitle" value="WC WebContent Title" />
-			<var name="workflowTask" value="Update" />
+		<execute macro="Portlet#addPG">
+			<var name="portletName" value="Web Content Display" />
 		</execute>
+
+		<execute macro="WebContentDisplayPortlet#selectWebContent">
+			<var name="webContentTitle" value="WC WebContent Title Edit" />
+		</execute>
+
+		<execute macro="Navigator#gotoPage">
+			<var name="pageName" value="Test Page" />
+		</execute>
+
+		<execute macro="WebContentDisplayPortlet#viewImageFieldViaWCD" />
 	</command>
 </definition>

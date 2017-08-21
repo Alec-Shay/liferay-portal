@@ -22,6 +22,7 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.search.BaseIndexSearcher;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.DocumentImpl;
+import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.GeoDistanceSort;
 import com.liferay.portal.kernel.search.GroupBy;
 import com.liferay.portal.kernel.search.Hits;
@@ -42,7 +43,10 @@ import com.liferay.portal.kernel.search.highlight.HighlightUtil;
 import com.liferay.portal.kernel.search.query.QueryTranslator;
 import com.liferay.portal.kernel.search.suggest.QuerySuggester;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MapUtil;
+import com.liferay.portal.kernel.util.Props;
+import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.search.elasticsearch.configuration.ElasticsearchConfiguration;
@@ -120,23 +124,41 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 		stopWatch.start();
 
 		try {
-			int total = (int)searchCount(searchContext, query);
-
 			int start = searchContext.getStart();
 			int end = searchContext.getEnd();
 
-			if ((end == QueryUtil.ALL_POS) && (start == QueryUtil.ALL_POS)) {
+			if (start == QueryUtil.ALL_POS) {
 				start = 0;
-				end = total;
+			}
+			else if (start < 0) {
+				throw new IllegalArgumentException("Invalid start " + start);
 			}
 
-			int[] startAndEnd = SearchPaginationUtil.calculateStartAndEnd(
-				start, end, total);
+			if (end == QueryUtil.ALL_POS) {
+				end = GetterUtil.getInteger(
+					props.get(PropsKeys.INDEX_SEARCH_LIMIT));
+			}
+			else if (end < 0) {
+				throw new IllegalArgumentException("Invalid end " + end);
+			}
 
-			start = startAndEnd[0];
-			end = startAndEnd[1];
+			Hits hits = null;
 
-			Hits hits = doSearchHits(searchContext, query, start, end);
+			while (true) {
+				hits = doSearchHits(searchContext, query, start, end);
+
+				Document[] documents = hits.getDocs();
+
+				if ((documents.length != 0) || (start == 0)) {
+					break;
+				}
+
+				int[] startAndEnd = SearchPaginationUtil.calculateStartAndEnd(
+					start, end, hits.getLength());
+
+				start = startAndEnd[0];
+				end = startAndEnd[1];
+			}
 
 			hits.setStart(stopWatch.getStartTime());
 
@@ -260,6 +282,10 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 	protected void addHighlights(
 		SearchRequestBuilder searchRequestBuilder, QueryConfig queryConfig) {
 
+		if (!queryConfig.isHighlightEnabled()) {
+			return;
+		}
+
 		for (String highlightFieldName : queryConfig.getHighlightFieldNames()) {
 			addHighlightedField(
 				searchRequestBuilder, queryConfig, highlightFieldName);
@@ -300,13 +326,10 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 
 		String snippet = StringPool.BLANK;
 
-		String localizedContentName = DocumentImpl.getLocalizedName(
+		String snippetFieldName = DocumentImpl.getLocalizedName(
 			locale, fieldName);
 
-		String snippetFieldName = localizedContentName;
-
-		HighlightField highlightField = highlightFields.get(
-			localizedContentName);
+		HighlightField highlightField = highlightFields.get(snippetFieldName);
 
 		if (highlightField == null) {
 			highlightField = highlightFields.get(fieldName);
@@ -329,8 +352,9 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 			snippet = sb.toString();
 		}
 
-		HighlightUtil.addSnippet(
-			document, queryTerms, snippet, snippetFieldName);
+		document.addText(
+			Field.SNIPPET.concat(StringPool.UNDERLINE).concat(snippetFieldName),
+			snippet);
 	}
 
 	protected void addSnippets(
@@ -489,11 +513,19 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 
 		searchRequestBuilder.setQuery(queryBuilder);
 
+		String searchRequestBuilderString = searchRequestBuilder.toString();
+
+		searchContext.setAttribute("queryString", searchRequestBuilderString);
+
+		if (_log.isDebugEnabled()) {
+			_log.debug("Search query " + searchRequestBuilderString);
+		}
+
 		SearchResponse searchResponse = searchRequestBuilder.get();
 
 		if (_log.isInfoEnabled()) {
 			_log.info(
-				"The search engine processed " + queryBuilder.toString() +
+				"The search engine processed " + searchRequestBuilderString +
 					" in " + searchResponse.getTook());
 		}
 
@@ -717,6 +749,9 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 
 	@Reference
 	protected IndexNameBuilder indexNameBuilder;
+
+	@Reference
+	protected Props props;
 
 	@Reference(target = "(search.engine.impl=Elasticsearch)")
 	protected QueryTranslator<QueryBuilder> queryTranslator;

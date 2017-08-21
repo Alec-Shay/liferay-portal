@@ -119,6 +119,26 @@ else {
 	dlEditFileEntryDisplayContext = dlDisplayContextProvider.getDLEditFileEntryDisplayContext(request, response, fileEntry);
 }
 
+String defaultLanguageId = themeDisplay.getLanguageId();
+
+Locale[] availableLocales = {LocaleUtil.fromLanguageId(defaultLanguageId)};
+
+if (fileEntryTypeId > 0) {
+	DLFileEntryType fileEntryType = DLFileEntryTypeLocalServiceUtil.getFileEntryType(fileEntryTypeId);
+
+	defaultLanguageId = fileEntryType.getDefaultLanguageId();
+
+	String[] availableLanguageIds = fileEntryType.getAvailableLanguageIds();
+
+	if (availableLanguageIds.length > 0) {
+		availableLocales = new Locale[availableLanguageIds.length];
+
+		for (int i = 0; i < availableLanguageIds.length; i++) {
+			availableLocales[i] = LocaleUtil.fromLanguageId(availableLanguageIds[i]);
+		}
+	}
+}
+
 String headerTitle = LanguageUtil.get(request, "new-document");
 
 if (fileVersion != null) {
@@ -163,11 +183,6 @@ if (portletTitleBasedNavigation) {
 							<liferay-ui:message key="you-now-have-an-indefinite-lock-on-this-document" />
 						</c:when>
 						<c:otherwise>
-
-							<%
-							String lockExpirationTime = StringUtil.toLowerCase(LanguageUtil.getTimeDescription(request, DLFileEntryConstants.LOCK_EXPIRATION_TIME));
-							%>
-
 							<liferay-ui:message arguments="<%= StringUtil.toLowerCase(LanguageUtil.getTimeDescription(request, DLFileEntryConstants.LOCK_EXPIRATION_TIME)) %>" key="you-now-have-a-lock-on-this-document" translateArguments="<%= false %>" />
 						</c:otherwise>
 					</c:choose>
@@ -255,6 +270,12 @@ if (portletTitleBasedNavigation) {
 			<liferay-ui:asset-categories-error />
 
 			<liferay-ui:asset-tags-error />
+
+			<aui:translation-manager
+				availableLocales="<%= availableLocales %>"
+				defaultLanguageId="<%= defaultLanguageId %>"
+				id="translationManager"
+			/>
 
 			<aui:model-context bean="<%= fileVersion %>" model="<%= DLFileVersion.class %>" />
 
@@ -378,7 +399,7 @@ if (portletTitleBasedNavigation) {
 								</c:otherwise>
 							</c:choose>
 
-							<aui:input name="defaultLanguageId" type="hidden" value="<%= themeDisplay.getLanguageId() %>" />
+							<aui:input name="defaultLanguageId" type="hidden" value="<%= defaultLanguageId %>" />
 
 							<%
 							if (fileEntryTypeId > 0) {

@@ -6,9 +6,9 @@
 
 		<execute function="Click" locator1="EditUserSegment#USER_SEGMENT_RULE_BEHAVIOR_CONTENT_VISITED_SELECT_CONTENT_BUTTON" />
 
-		<var name="key_menuItem" value="${contentVisitedContent}" />
-
-		<execute function="Click" locator1="MenuItem#ANY_MENU_ITEM" />
+		<execute function="Click" locator1="MenuItem#ANY_MENU_ITEM">
+			<var name="key_menuItem" value="${contentVisitedContent}" />
+		</execute>
 
 		<execute function="SelectFrame" locator1="EditUserSegment#USER_SEGMENT_RULE_BEHAVIOR_CONTENT_VISITED_SELECT_WEB_CONTENT_IFRAME" />
 
@@ -54,8 +54,13 @@
 
 		<execute macro="LexiconEntry#gotoAdd" />
 
-		<execute function="Type" locator1="TextInput#NAME" value1="${userSegmentName}" />
-		<execute function="Type" locator1="TextArea#DESCRIPTION" value1="${userSegmentDescription}" />
+		<execute macro="PortletEntry#inputName">
+			<var name="name" value="${userSegmentName}" />
+		</execute>
+
+		<execute macro="PortletEntry#inputDescription">
+			<var name="description" value="${userSegmentDescription}" />
+		</execute>
 	</command>
 
 	<command name="addRuleCmdCP">
@@ -318,7 +323,9 @@
 
 		<execute function="Click" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
 
-		<execute function="ClickNoError" locator1="MenuItem#DELETE" />
+		<execute function="ClickNoError" locator1="MenuItem#ANY_MENU_ITEM" value1="Delete">
+			<var name="key_menuItem" value="Delete" />
+		</execute>
 
 		<execute function="Confirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
 
@@ -331,7 +338,9 @@
 
 		<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
 
-		<execute function="Click" locator1="MenuItem#EDIT" />
+		<execute function="Click" locator1="MenuItem#ANY_MENU_ITEM" value1="Edit">
+			<var name="key_menuItem" value="Edit" />
+		</execute>
 
 		<execute macro="ContentTargetingUserSegment#openFormField">
 			<var name="usersegmentRuleName" value="Gender" />
@@ -346,10 +355,17 @@
 
 		<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
 
-		<execute function="Click" locator1="MenuItem#EDIT" />
+		<execute function="Click" locator1="MenuItem#ANY_MENU_ITEM" value1="Edit">
+			<var name="key_menuItem" value="Edit" />
+		</execute>
 
-		<execute function="Type" locator1="TextInput#NAME" value1="${userSegmentNameEdit}" />
-		<execute function="Type" locator1="TextArea#DESCRIPTION" value1="${userSegmentDescriptionEdit}" />
+		<execute macro="PortletEntry#inputName">
+			<var name="name" value="${userSegmentNameEdit}" />
+		</execute>
+
+		<execute macro="PortletEntry#inputDescription">
+			<var name="description" value="${userSegmentDescriptionEdit}" />
+		</execute>
 
 		<if>
 			<isset var="userSegmentRuleDeleteList" />
@@ -435,7 +451,9 @@
 
 		<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#HEADER_VERTICAL_ELLIPSIS" />
 
-		<execute function="Click" locator1="MenuItem#EDIT" />
+		<execute function="Click" locator1="MenuItem#ANY_MENU_ITEM" value1="Edit">
+			<var name="key_menuItem" value="Edit" />
+		</execute>
 
 		<execute function="AssertElementNotPresent" locator1="EditUserSegment#USER_SEGMENT_RULE_BEHAVIOR_CONTENT_VISITED_WEB_CONTENT_TITLE" />
 	</command>

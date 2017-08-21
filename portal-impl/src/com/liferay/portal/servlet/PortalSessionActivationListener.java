@@ -23,8 +23,10 @@ import javax.servlet.http.HttpSessionActivationListener;
 import javax.servlet.http.HttpSessionEvent;
 
 /**
- * @author Alexander Chow
+ * @author     Alexander Chow
+ * @deprecated As of 7.0.0, with no direct replacement
  */
+@Deprecated
 public class PortalSessionActivationListener
 	implements HttpSessionActivationListener, Serializable {
 

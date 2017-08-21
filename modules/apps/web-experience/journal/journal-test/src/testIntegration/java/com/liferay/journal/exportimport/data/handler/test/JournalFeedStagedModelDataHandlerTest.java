@@ -21,6 +21,7 @@ import com.liferay.dynamic.data.mapping.service.DDMStructureLocalServiceUtil;
 import com.liferay.dynamic.data.mapping.service.DDMTemplateLocalServiceUtil;
 import com.liferay.dynamic.data.mapping.test.util.DDMStructureTestUtil;
 import com.liferay.dynamic.data.mapping.test.util.DDMTemplateTestUtil;
+import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.journal.exportimport.data.handler.JournalFeedStagedModelDataHandler;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.model.JournalFeed;
@@ -153,7 +154,8 @@ public class JournalFeedStagedModelDataHandlerTest
 			List<LoggingEvent> loggingEvents =
 				captureAppender.getLoggingEvents();
 
-			Assert.assertEquals(1, loggingEvents.size());
+			Assert.assertEquals(
+				loggingEvents.toString(), 1, loggingEvents.size());
 
 			LoggingEvent loggingEvent = loggingEvents.get(0);
 
@@ -165,6 +167,42 @@ public class JournalFeedStagedModelDataHandlerTest
 				message,
 				message.contains(" already exists. The new generated ID is "));
 		}
+	}
+
+	@Test
+	public void testDoubleExportImport() throws Exception {
+		Map<String, List<StagedModel>> dependentStagedModelsMap =
+			addDependentStagedModelsMap(stagingGroup);
+
+		StagedModel stagedModel = addStagedModel(
+			stagingGroup, dependentStagedModelsMap);
+
+		ExportImportThreadLocal.setPortletImportInProcess(true);
+
+		try {
+			exportImportStagedModel(stagedModel);
+		}
+		finally {
+			ExportImportThreadLocal.setPortletImportInProcess(false);
+		}
+
+		StagedModel importedStagedModel = getStagedModel(
+			stagedModel.getUuid(), liveGroup);
+
+		Assert.assertNotNull(importedStagedModel);
+
+		ExportImportThreadLocal.setPortletImportInProcess(true);
+
+		try {
+			exportImportStagedModel(stagedModel);
+		}
+		finally {
+			ExportImportThreadLocal.setPortletImportInProcess(false);
+		}
+
+		importedStagedModel = getStagedModel(stagedModel.getUuid(), liveGroup);
+
+		Assert.assertNotNull(importedStagedModel);
 	}
 
 	@Override
@@ -180,7 +218,8 @@ public class JournalFeedStagedModelDataHandlerTest
 			List<LoggingEvent> loggingEvents =
 				captureAppender.getLoggingEvents();
 
-			Assert.assertEquals(1, loggingEvents.size());
+			Assert.assertEquals(
+				loggingEvents.toString(), 1, loggingEvents.size());
 
 			LoggingEvent loggingEvent = loggingEvents.get(0);
 
@@ -272,7 +311,9 @@ public class JournalFeedStagedModelDataHandlerTest
 		List<StagedModel> ddmStructureDependentStagedModels =
 			dependentStagedModelsMap.get(DDMStructure.class.getSimpleName());
 
-		Assert.assertEquals(1, ddmStructureDependentStagedModels.size());
+		Assert.assertEquals(
+			ddmStructureDependentStagedModels.toString(), 1,
+			ddmStructureDependentStagedModels.size());
 
 		DDMStructure ddmStructure =
 			(DDMStructure)ddmStructureDependentStagedModels.get(0);
@@ -283,7 +324,9 @@ public class JournalFeedStagedModelDataHandlerTest
 		List<StagedModel> ddmTemplateDependentStagedModels =
 			dependentStagedModelsMap.get(DDMTemplate.class.getSimpleName());
 
-		Assert.assertEquals(2, ddmTemplateDependentStagedModels.size());
+		Assert.assertEquals(
+			ddmTemplateDependentStagedModels.toString(), 2,
+			ddmTemplateDependentStagedModels.size());
 
 		for (StagedModel ddmTemplateDependentStagedModel :
 				ddmTemplateDependentStagedModels) {

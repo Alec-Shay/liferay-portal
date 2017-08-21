@@ -187,9 +187,8 @@ public class KBFolderLocalServiceUtil {
 	}
 
 	/**
-	* @deprecated As of 1.1.0, replaced by {@link
-	#updateKBFolder(long, long, long, String, String,
-	ServiceContext)}
+	* @deprecated As of 1.1.0, replaced by {@link #updateKBFolder(long, long,
+	long, String, String, ServiceContext)}
 	*/
 	@Deprecated
 	public static com.liferay.knowledge.base.model.KBFolder updateKBFolder(
@@ -406,6 +405,11 @@ public class KBFolderLocalServiceUtil {
 		com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery,
 		com.liferay.portal.kernel.dao.orm.Projection projection) {
 		return getService().dynamicQueryCount(dynamicQuery, projection);
+	}
+
+	public static void deleteKBFolders(long groupId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		getService().deleteKBFolders(groupId);
 	}
 
 	public static void moveKBFolder(long kbFolderId, long parentKBFolderId)

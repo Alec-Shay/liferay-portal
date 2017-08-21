@@ -43,6 +43,8 @@ import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.model.impl.PortletImpl;
 import com.liferay.portal.test.rule.AdviseWith;
 import com.liferay.portal.test.rule.AspectJNewEnvTestRule;
+import com.liferay.registry.BasicRegistryImpl;
+import com.liferay.registry.RegistryUtil;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -84,16 +86,20 @@ public class SPIAgentSerializableTest {
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
 		new AggregateTestRule(
-			CodeCoverageAssertor.INSTANCE, AspectJNewEnvTestRule.INSTANCE);
+			AspectJNewEnvTestRule.INSTANCE, CodeCoverageAssertor.INSTANCE);
 
 	@Before
 	public void setUp() {
+		RegistryUtil.setRegistry(new BasicRegistryImpl());
+
 		Thread currentThread = Thread.currentThread();
 
 		_classLoader = new URLClassLoader(
 			new URL[0], currentThread.getContextClassLoader());
 
 		ClassLoaderPool.register(_SERVLET_CONTEXT_NAME, _classLoader);
+
+		ClassLoaderPool.unregister(ClassLoaderPool.class.getClassLoader());
 	}
 
 	@Test
@@ -141,7 +147,9 @@ public class SPIAgentSerializableTest {
 					mockHttpServletRequest, Direction.DUPLEX);
 
 			Assert.assertTrue(logRecords.isEmpty());
-			Assert.assertEquals(1, distributedRequestAttributes.size());
+			Assert.assertEquals(
+				distributedRequestAttributes.toString(), 1,
+				distributedRequestAttributes.size());
 			Assert.assertEquals(
 				distributedSerializable,
 				distributedRequestAttributes.get(distributedSerializable));
@@ -154,7 +162,7 @@ public class SPIAgentSerializableTest {
 				SPIAgentSerializable.extractDistributedRequestAttributes(
 					mockHttpServletRequest, Direction.DUPLEX);
 
-			Assert.assertEquals(1, logRecords.size());
+			Assert.assertEquals(logRecords.toString(), 1, logRecords.size());
 
 			LogRecord logRecord = logRecords.get(0);
 
@@ -164,7 +172,9 @@ public class SPIAgentSerializableTest {
 						distributedNonserializable,
 				logRecord.getMessage());
 
-			Assert.assertEquals(1, distributedRequestAttributes.size());
+			Assert.assertEquals(
+				distributedRequestAttributes.toString(), 1,
+				distributedRequestAttributes.size());
 			Assert.assertEquals(
 				distributedSerializable,
 				distributedRequestAttributes.get(distributedSerializable));
@@ -177,7 +187,7 @@ public class SPIAgentSerializableTest {
 				SPIAgentSerializable.extractDistributedRequestAttributes(
 					mockHttpServletRequest, Direction.DUPLEX);
 
-			Assert.assertEquals(2, logRecords.size());
+			Assert.assertEquals(logRecords.toString(), 2, logRecords.size());
 
 			logRecord = logRecords.get(0);
 
@@ -194,7 +204,9 @@ public class SPIAgentSerializableTest {
 					" with direction DUPLEX and value " + nondistributed,
 				logRecord.getMessage());
 
-			Assert.assertEquals(1, distributedRequestAttributes.size());
+			Assert.assertEquals(
+				distributedRequestAttributes.toString(), 1,
+				distributedRequestAttributes.size());
 			Assert.assertEquals(
 				distributedSerializable,
 				distributedRequestAttributes.get(distributedSerializable));
@@ -242,7 +254,7 @@ public class SPIAgentSerializableTest {
 		headers = SPIAgentSerializable.extractRequestHeaders(
 			mockHttpServletRequest);
 
-		Assert.assertEquals(2, headers.size());
+		Assert.assertEquals(headers.toString(), 2, headers.size());
 
 		List<String> emptyHeaders = headers.get(
 			StringUtil.toLowerCase(emptyHeaderName));
@@ -325,7 +337,8 @@ public class SPIAgentSerializableTest {
 					mockHttpServletRequest);
 
 			Assert.assertTrue(logRecords.isEmpty());
-			Assert.assertEquals(2, sessionAttributes.size());
+			Assert.assertEquals(
+				sessionAttributes.toString(), 2, sessionAttributes.size());
 			Assert.assertEquals(
 				serializeableAttribute,
 				sessionAttributes.get(serializeableAttribute));
@@ -346,7 +359,8 @@ public class SPIAgentSerializableTest {
 			Assert.assertNull(
 				mockHttpServletRequest.getAttribute(WebKeys.PORTLET_SESSION));
 			Assert.assertTrue(logRecords.isEmpty());
-			Assert.assertEquals(2, sessionAttributes.size());
+			Assert.assertEquals(
+				sessionAttributes.toString(), 2, sessionAttributes.size());
 			Assert.assertEquals(
 				serializeableAttribute,
 				sessionAttributes.get(serializeableAttribute));
@@ -383,7 +397,8 @@ public class SPIAgentSerializableTest {
 			Assert.assertNull(
 				mockHttpServletRequest.getAttribute(WebKeys.PORTLET_SESSION));
 			Assert.assertTrue(logRecords.isEmpty());
-			Assert.assertEquals(2, sessionAttributes.size());
+			Assert.assertEquals(
+				sessionAttributes.toString(), 2, sessionAttributes.size());
 			Assert.assertEquals(
 				serializeableAttribute,
 				sessionAttributes.get(serializeableAttribute));
@@ -393,7 +408,9 @@ public class SPIAgentSerializableTest {
 					portletSessionAttributesName1);
 
 			Assert.assertNotNull(portletSessionAttributes);
-			Assert.assertEquals(1, portletSessionAttributes.size());
+			Assert.assertEquals(
+				portletSessionAttributes.toString(), 1,
+				portletSessionAttributes.size());
 			Assert.assertEquals(
 				serializeableAttribute,
 				portletSessionAttributes.get(serializeableAttribute));
@@ -405,7 +422,7 @@ public class SPIAgentSerializableTest {
 			sessionAttributes = SPIAgentSerializable.extractSessionAttributes(
 				mockHttpServletRequest);
 
-			Assert.assertEquals(1, logRecords.size());
+			Assert.assertEquals(logRecords.toString(), 1, logRecords.size());
 
 			LogRecord logRecord = logRecords.get(0);
 
@@ -415,7 +432,8 @@ public class SPIAgentSerializableTest {
 						nonserializableAttribute,
 				logRecord.getMessage());
 
-			Assert.assertEquals(2, sessionAttributes.size());
+			Assert.assertEquals(
+				sessionAttributes.toString(), 2, sessionAttributes.size());
 			Assert.assertEquals(
 				serializeableAttribute,
 				sessionAttributes.get(serializeableAttribute));
@@ -435,7 +453,7 @@ public class SPIAgentSerializableTest {
 
 			Assert.assertNull(
 				mockHttpServletRequest.getAttribute(WebKeys.PORTLET_SESSION));
-			Assert.assertEquals(2, logRecords.size());
+			Assert.assertEquals(logRecords.toString(), 2, logRecords.size());
 
 			logRecord = logRecords.get(0);
 
@@ -453,7 +471,8 @@ public class SPIAgentSerializableTest {
 						nonserializableAttribute,
 				logRecord.getMessage());
 
-			Assert.assertEquals(2, sessionAttributes.size());
+			Assert.assertEquals(
+				sessionAttributes.toString(), 2, sessionAttributes.size());
 			Assert.assertEquals(
 				serializeableAttribute,
 				sessionAttributes.get(serializeableAttribute));
@@ -463,7 +482,9 @@ public class SPIAgentSerializableTest {
 					portletSessionAttributesName1);
 
 			Assert.assertNotNull(portletSessionAttributes);
-			Assert.assertEquals(1, portletSessionAttributes.size());
+			Assert.assertEquals(
+				portletSessionAttributes.toString(), 1,
+				portletSessionAttributes.size());
 			Assert.assertEquals(
 				serializeableAttribute,
 				portletSessionAttributes.get(serializeableAttribute));
@@ -663,7 +684,8 @@ public class SPIAgentSerializableTest {
 			threadLocalDistributor, "_threadLocalValues");
 
 		Assert.assertNotNull(serializables);
-		Assert.assertEquals(1, serializables.length);
+		Assert.assertEquals(
+			Arrays.toString(serializables), 1, serializables.length);
 		Assert.assertNull(serializables[0]);
 
 		String threadLocalValue = "threadLocalValue";
@@ -681,14 +703,17 @@ public class SPIAgentSerializableTest {
 			agentSerializable.threadLocalDistributors;
 
 		Assert.assertNotNull(threadLocalDistributors);
-		Assert.assertEquals(1, threadLocalDistributors.length);
+		Assert.assertEquals(
+			Arrays.toString(threadLocalDistributors), 1,
+			threadLocalDistributors.length);
 		Assert.assertSame(threadLocalDistributor, threadLocalDistributors[0]);
 
 		serializables = ReflectionTestUtil.getFieldValue(
 			threadLocalDistributor, "_threadLocalValues");
 
 		Assert.assertNotNull(serializables);
-		Assert.assertEquals(1, serializables.length);
+		Assert.assertEquals(
+			Arrays.toString(serializables), 1, serializables.length);
 		Assert.assertEquals(threadLocalValue, serializables[0]);
 
 		_threadLocal.remove();

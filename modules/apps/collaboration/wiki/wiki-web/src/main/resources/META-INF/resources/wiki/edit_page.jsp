@@ -288,11 +288,11 @@ if (portletTitleBasedNavigation) {
 					</aui:fieldset>
 
 					<aui:fieldset collapsed="<%= true %>" collapsible="<%= true %>" label="configuration">
+						<aui:input label="Summary" name="summary" />
+
 						<c:if test="<%= (wikiPage == null) || wikiPage.isNew() || wikiPage.isApproved() %>">
 							<aui:model-context bean="<%= new WikiPageImpl() %>" model="<%= WikiPage.class %>" />
 						</c:if>
-
-						<aui:input label="Summary" name="summary" />
 
 						<c:choose>
 							<c:when test="<%= !formats.isEmpty() %>">
@@ -401,7 +401,7 @@ if (portletTitleBasedNavigation) {
 			currentAction: '<%= (wikiPage == null || wikiPage.isNew()) ? Constants.ADD : Constants.UPDATE %>',
 			namespace: '<portlet:namespace />',
 			renderUrl: '<%= editPageRenderURL %>',
-			rootNode: '#<portlet:namespace/>wikiEditPageContainer'
+			rootNode: '#<portlet:namespace />wikiEditPageContainer'
 		}
 	);
 </aui:script>

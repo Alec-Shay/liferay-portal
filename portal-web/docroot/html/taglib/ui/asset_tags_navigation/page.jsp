@@ -62,10 +62,10 @@ private String _buildTagsNavigation(long scopeGroupId, String selectedTagName, P
 	List<AssetTag> tags = null;
 
 	if (showAssetCount && (classNameId > 0)) {
-		tags = AssetTagServiceUtil.getTags(scopeGroupId, classNameId, null, 0, maxAssetTags, new AssetTagCountComparator());
+		tags = AssetTagServiceUtil.getTags(PortalUtil.getSiteGroupId(scopeGroupId), classNameId, null, 0, maxAssetTags, new AssetTagCountComparator());
 	}
 	else {
-		tags = AssetTagServiceUtil.getGroupTags(scopeGroupId, 0, maxAssetTags, new AssetTagCountComparator());
+		tags = AssetTagServiceUtil.getGroupTags(PortalUtil.getSiteGroupId(scopeGroupId), 0, maxAssetTags, new AssetTagCountComparator());
 	}
 
 	if (tags.isEmpty()) {
@@ -118,6 +118,10 @@ private String _buildTagsNavigation(long scopeGroupId, String selectedTagName, P
 		multiplier = (double)5 / (maxCount - minCount);
 	}
 
+	portletURL.setParameter("tag", StringPool.BLANK);
+
+	String originalPortletURLString = portletURL.toString();
+
 	for (AssetTag tag : tags) {
 		String tagName = tag.getName();
 
@@ -141,17 +145,16 @@ private String _buildTagsNavigation(long scopeGroupId, String selectedTagName, P
 		sb.append("\"><span>");
 
 		if (tagName.equals(selectedTagName)) {
-			portletURL.setParameter("tag", StringPool.BLANK);
-
 			sb.append("<a class=\"tag-selected\" href=\"");
+			sb.append(HtmlUtil.escape(originalPortletURLString));
 		}
 		else {
 			portletURL.setParameter("tag", tagName);
 
 			sb.append("<a href=\"");
+			sb.append(HtmlUtil.escape(portletURL.toString()));
 		}
 
-		sb.append(HtmlUtil.escape(portletURL.toString()));
 		sb.append("\">");
 		sb.append(tagName);
 
