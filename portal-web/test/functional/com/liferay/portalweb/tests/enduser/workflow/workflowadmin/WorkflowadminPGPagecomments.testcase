@@ -13,9 +13,19 @@
 
 		<execute macro="Navigator#openURL" />
 
-		<execute macro="ProductMenu#gotoSitesConfiguration">
-			<var name="portlet" value="Workflow Configuration" />
-		</execute>
+		<toggle name="LPS-73924">
+			<on>
+				<execute macro="ProductMenu#gotoSitesConfiguration">
+					<var name="portlet" value="Workflow" />
+				</execute>
+			</on>
+
+			<off>
+				<execute macro="ProductMenu#gotoSitesConfiguration">
+					<var name="portlet" value="Workflow Configuration" />
+				</execute>
+			</off>
+		</toggle>
 
 		<execute macro="Workflow#configureWorkflow">
 			<var name="workflowDefinition" value="Single Approver (Version 1)" />
@@ -175,8 +185,9 @@
 		<execute macro="Workflow#viewDefaultMySubmissionsCP" />
 	</command>
 
-	<command name="EditCommentAssignedToMe" priority="4">
+	<command name="EditCommentAssignedToMe" priority="5">
 		<description message="This is a use case for LPS-68780." />
+		<property name="portal.acceptance" value="true" />
 
 		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Page Comments Page" />

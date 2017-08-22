@@ -9,6 +9,11 @@
 </thead>
 <tbody>
 <tr>
+	<td>ARTICLE_ELLIPSIS_ICON</td>
+	<td>//div[h2[./text()='${key_webContentTitle}']]//*[name()='svg'][contains(@class,'icon-ellipsis')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>SELECT_WEB_CONTENT</td>
 	<td>//span[contains(@class,'lfr-icon-action')]/a[contains(.,'Select Web Content')]</td>
 	<td></td>
@@ -88,6 +93,11 @@
 <tr>
 	<td>WEB_CONTENT_INLINE_IMAGE</td>
 	<td>//img[contains(@src,'Document')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>WEB_CONTENT_VIDEO</td>
+	<td>//div[contains(@class,'video-content')]/video[@class='video-node']</td>
 	<td></td>
 </tr>
 <tr>

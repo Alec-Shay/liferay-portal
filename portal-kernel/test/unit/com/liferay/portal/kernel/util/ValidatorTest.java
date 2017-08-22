@@ -47,7 +47,7 @@ public class ValidatorTest extends PowerMockito {
 
 		// 来锐.com, живот.рс
 
-		String[] validDomains = new String[] {
+		String[] validDomains = {
 			"localhost", "liferay.com", "\u6765\u9510.com",
 			"\u0436\u0438\u0432\u043E\u0442.\u0440\u0441"
 		};
@@ -106,9 +106,8 @@ public class ValidatorTest extends PowerMockito {
 
 	@Test
 	public void testIsInvalidFileExtension() throws Exception {
-		String[] invalidFileExtensions = {
-			null, "", "\u0000", ".\u0000", "abc\u0000\u0000/", "a/b", "c\\d"
-		};
+		String[] invalidFileExtensions =
+			{null, "", "\u0000", ".\u0000", "abc\u0000\u0000/", "a/b", "c\\d"};
 
 		testValidFileExtensions(invalidFileExtensions, false);
 	}
@@ -126,18 +125,16 @@ public class ValidatorTest extends PowerMockito {
 
 	@Test
 	public void testIsInvalidFilePath() throws Exception {
-		String[] invalidFilePaths = {
-			null, "", "..", "./..", "../a", "/../a", "\u0000", "a\u0000/../a"
-		};
+		String[] invalidFilePaths =
+			{null, "", "..", "./..", "../a", "/../a", "\u0000", "a\u0000/../a"};
 
 		testValidFilePaths(invalidFilePaths, false, false);
 	}
 
 	@Test
 	public void testIsInvalidFilePathWithParentDirectories() throws Exception {
-		String[] invalidFilePathsWithParentDirectories = {
-			null, "", "\u0000", "a\u0000/../a"
-		};
+		String[] invalidFilePathsWithParentDirectories =
+			{null, "", "\u0000", "a\u0000/../a"};
 
 		testValidFilePaths(invalidFilePathsWithParentDirectories, true, false);
 	}
@@ -374,18 +371,16 @@ public class ValidatorTest extends PowerMockito {
 
 	@Test
 	public void testIsNull() throws Exception {
-		String[] nullStrings = {
-			null, "", "  ", "null", " null", "null ", "  null  "
-		};
+		String[] nullStrings =
+			{null, "", "  ", "null", " null", "null ", "  null  "};
 
 		testIsNull(nullStrings, true);
 	}
 
 	@Test
 	public void testIsNullInvalid() throws Exception {
-		String[] notNullStrings = {
-			"a", "anull", "nulla", " anull", " nulla ", "  null  a"
-		};
+		String[] notNullStrings =
+			{"a", "anull", "nulla", " anull", " nulla ", "  null  a"};
 
 		testIsNull(notNullStrings, false);
 	}

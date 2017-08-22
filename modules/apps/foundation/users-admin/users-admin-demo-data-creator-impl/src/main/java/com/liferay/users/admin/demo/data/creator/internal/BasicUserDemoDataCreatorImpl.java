@@ -28,10 +28,25 @@ public class BasicUserDemoDataCreatorImpl
 	extends BaseUserDemoDataCreator implements BasicUserDemoDataCreator {
 
 	@Override
+	public User create(long companyId) throws PortalException {
+		return create(companyId, null);
+	}
+
+	@Override
 	public User create(long companyId, String emailAddress)
 		throws PortalException {
 
-		return createBaseUser(companyId, emailAddress);
+		return createUser(companyId, emailAddress);
+	}
+
+	@Override
+	public User create(
+			long companyId, String screenName, String emailAddress,
+			String firstName, String lastName)
+		throws PortalException {
+
+		return createUser(
+			companyId, screenName, emailAddress, firstName, lastName);
 	}
 
 }

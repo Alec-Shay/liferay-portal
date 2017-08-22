@@ -14,9 +14,19 @@
 
 		<execute macro="Navigator#openURL" />
 
-		<execute macro="ProductMenu#gotoSitesConfiguration">
-			<var name="portlet" value="Workflow Configuration" />
-		</execute>
+		<toggle name="LPS-73924">
+			<on>
+				<execute macro="ProductMenu#gotoSitesConfiguration">
+					<var name="portlet" value="Workflow" />
+				</execute>
+			</on>
+
+			<off>
+				<execute macro="ProductMenu#gotoSitesConfiguration">
+					<var name="portlet" value="Workflow Configuration" />
+				</execute>
+			</off>
+		</toggle>
 
 		<execute macro="Workflow#configureWorkflow">
 			<var name="workflowDefinition" value="Single Approver (Version 1)" />
@@ -58,7 +68,9 @@
 		</if>
 	</tear-down>
 
-	<command name="ApproveFrontPageUserEdit" priority="4">
+	<command name="ApproveFrontPageUserEdit" priority="5">
+		<property name="portal.acceptance" value="true" />
+
 		<execute macro="ProductMenu#gotoControlPanelUsers">
 			<var name="portlet" value="Users and Organizations" />
 		</execute>

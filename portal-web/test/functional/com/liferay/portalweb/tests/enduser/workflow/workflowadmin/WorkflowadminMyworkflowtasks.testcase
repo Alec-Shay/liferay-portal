@@ -12,9 +12,19 @@
 
 		<execute macro="Navigator#openURL" />
 
-		<execute macro="ProductMenu#gotoSitesConfiguration">
-			<var name="portlet" value="Workflow Configuration" />
-		</execute>
+		<toggle name="LPS-73924">
+			<on>
+				<execute macro="ProductMenu#gotoSitesConfiguration">
+					<var name="portlet" value="Workflow" />
+				</execute>
+			</on>
+
+			<off>
+				<execute macro="ProductMenu#gotoSitesConfiguration">
+					<var name="portlet" value="Workflow Configuration" />
+				</execute>
+			</off>
+		</toggle>
 
 		<execute macro="Workflow#configureWorkflow">
 			<var name="workflowDefinition" value="Single Approver (Version 1)" />
@@ -114,7 +124,9 @@
 			<var name="portletName" value="My Workflow Tasks" />
 		</execute>
 
-		<execute macro="Workflow#gotoAssignedToMyRoles" />
+		<execute macro="Navigator#gotoNavTab">
+			<var name="navTab" value="Assigned to My Roles" />
+		</execute>
 
 		<execute macro="Workflow#gotoAssetViaTableTitle">
 			<var name="workflowAssetTitle" value="Blogs Entry Title" />
@@ -128,7 +140,9 @@
 			<var name="portletName" value="My Workflow Tasks" />
 		</execute>
 
-		<execute macro="Workflow#gotoAssignedToMyRoles" />
+		<execute macro="Navigator#gotoNavTab">
+			<var name="navTab" value="Assigned to My Roles" />
+		</execute>
 
 		<execute macro="Workflow#gotoAssetViaTableTitle">
 			<var name="workflowAssetTitle" value="Blogs Entry Title" />

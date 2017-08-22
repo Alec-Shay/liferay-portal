@@ -78,6 +78,62 @@
 		</execute>
 	</command>
 
+	<command name="AddDocumentTypeAndMetadata" priority="5">
+		<property name="portal.acceptance" value="pending" />
+		<property name="testray.component.names" value="Training" />
+
+		<execute macro="ProductMenu#gotoSitesContent">
+			<var name="portlet" value="Documents and Media" />
+		</execute>
+
+		<execute macro="DMNavigator#gotoMetadataSets" />
+
+		<execute macro="DMMetadataSet#add">
+			<var name="dmMetadataSetFieldNames" value="Boolean" />
+			<var name="metadataSetName" value="Document Metadata Set Name" />
+		</execute>
+
+		<execute macro="DMMetadataSet#save" />
+
+		<execute macro="ProductMenu#gotoSitesContent">
+			<var name="portlet" value="Documents and Media" />
+		</execute>
+
+		<execute macro="DMNavigator#gotoDocumentType" />
+
+		<execute macro="DMDocumentType#add">
+			<var name="dmDocumentTypeDescription" value="DM Document Type Description" />
+			<var name="dmDocumentTypeFieldNames" value="Boolean" />
+			<var name="dmDocumentTypeName" value="DM Document Type Name" />
+			<var name="metadataSetName" value="Document Metadata Set Name" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoSitesContent">
+			<var name="portlet" value="Documents and Media" />
+		</execute>
+
+		<execute macro="DMDocument#addCP">
+			<var name="dmDocumentDescription" value="DM Document Type Contract Description" />
+			<var name="dmDocumentFile" value="Document_1.doc" />
+			<var name="dmDocumentTitle" value="DM Document Type Contract Title" />
+			<var name="dmDocumentTypeName" value="DM Document Type Name" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoSitesContent">
+			<var name="portlet" value="Documents and Media" />
+		</execute>
+
+		<execute macro="DMPortlet#setDescriptiveView" />
+
+		<execute macro="DMNavigator#gotoDocumentCP">
+			<var name="dmDocumentTitle" value="DM Document Type Contract Title" />
+		</execute>
+
+		<execute macro="DMDocument#viewCP">
+			<var name="dmDocumentTitle" value="DM Document Type Contract Title" />
+		</execute>
+	</command>
+
 	<command name="AllowMultiplePortletConfigurationsPerSite" priority="4">
 		<execute macro="ProductMenu#gotoControlPanelSites">
 			<var name="portlet" value="Sites" />
@@ -138,6 +194,89 @@
 		</execute>
 
 		<execute macro="DMPortlet#viewDefaultConfigurationDisplaySettingsPG" />
+	</command>
+
+	<command name="AssertFileSizeValidation">
+		<description message="This is a use case for LPS-50760." />
+
+		<property name="test.name.skip.portal.instance" value="DocumentsadministrationUsecase#AssertFileSizeValidation" />
+
+		<execute macro="Navigator#openURL" />
+
+		<execute macro="ProductMenu#gotoSitesContent">
+			<var name="portlet" value="Documents and Media" />
+		</execute>
+
+		<execute macro="DMDocument#addCP">
+			<var name="dmDocumentDescription" value="DM Document Description1" />
+			<var name="dmDocumentFile" value="Document_1.mp3" />
+			<var name="dmDocumentTitle" value="DM Document Title" />
+		</execute>
+
+		<execute macro="DMNavigator#gotoDocumentCP">
+			<var name="dmDocumentTitle" value="DM Document Title" />
+		</execute>
+
+		<execute macro="DMDocument#viewCP">
+			<var name="dmDocumentSize" value="4.3MB" />
+			<var name="dmDocumentTitle" value="DM Document Title" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoSitesContent">
+			<var name="portlet" value="Documents and Media" />
+		</execute>
+
+		<execute macro="LAR#exportPortlet">
+			<var name="larFileName" value="DM.portlet.lar" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoControlPanelConfiguration">
+			<var name="portlet" value="Server Administration" />
+		</execute>
+
+		<execute function="AssertClick" locator1="NavBar#FILE_UPLOADS" value1="File Uploads" />
+
+		<execute function="Type" locator1="ServerAdministrationFileUploads#DOCS_AND_MEDIA_MAX_FILE_SIZE_FIELD" value1="300000" />
+
+		<execute function="ScrollWebElementIntoView" locator1="Button#SAVE" />
+
+		<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
+
+		<execute function="AssertElementPresent" locator1="Message#SUCCESS" value1="Your request completed successfully." />
+
+		<execute macro="ProductMenu#gotoSitesContent">
+			<var name="portlet" value="Documents and Media" />
+		</execute>
+
+		<execute macro="DMNavigator#gotoAddDocumentType">
+			<var name="dmDocumentTypeName" value="${dmDocumentTypeName}" />
+		</execute>
+
+		<execute function="AssertTextEquals" locator1="Message#INFO" value1="Upload documents no larger than 293KB." />
+
+		<execute macro="DMDocument#editCmd">
+			<var name="dmDocumentFileEdit" value="Document_1.mp4" />
+			<var name="dmDocumentTitle" value="Document_1.mp4" />
+		</execute>
+
+		<execute macro="Button#clickPublish" />
+
+		<execute macro="Alert#viewRequestFailedToComplete" />
+
+		<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="Please enter a file with a valid file size no larger than 293KB." />
+
+		<execute macro="Button#clickCancel" />
+
+		<execute macro="LAR#_gotoExportImport" />
+
+		<execute function="AssertElementPresent" locator1="IFrame#DIALOG" />
+
+		<execute macro="LAR#_export">
+			<var name="exportPermissions" value="${exportPermissions}" />
+			<var name="larFileName" value="DM.portlet.lar" />
+		</execute>
+
+		<execute function="SelectFrame" value1="relative=top" />
 	</command>
 
 	<command name="CheckoutAndCheckin" priority="5">
@@ -258,6 +397,8 @@
 
 			<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
 
+			<execute function="Pause" locator1="10000" />
+
 			<execute macro="Navigator#gotoPage">
 				<var name="pageName" value="Documents and Media Page" />
 			</execute>
@@ -332,9 +473,9 @@
 			<var name="pageName" value="Documents and Media Page" />
 		</execute>
 
-		<var name="key_dmDocumentTitle" value="Document1" />
-
-		<execute function="AssertClick" locator1="DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_TITLE" value1="Document1" />
+		<execute function="AssertClick" locator1="DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_TITLE" value1="Document1">
+			<var name="key_dmDocumentTitle" value="Document1" />
+		</execute>
 
 		<execute function="AssertClick#assertTextClick" locator1="Button#EDIT" value1="Edit" />
 
@@ -450,13 +591,13 @@
 			<var name="portletName" value="Activities" />
 		</execute>
 
-		<var name="key_dmFolderName" value="Folder1" />
+		<execute function="AssertTextEquals" locator1="DocumentsAndMedia#DESCRIPTIVE_LIST_FOLDER_TITLE" value1="Folder1">
+			<var name="key_dmFolderName" value="Folder1" />
+		</execute>
 
-		<execute function="AssertTextEquals" locator1="DocumentsAndMedia#DESCRIPTIVE_LIST_FOLDER_TITLE" value1="Folder1" />
-
-		<var name="key_assetName" value="Zero Document File" />
-
-		<execute function="AssertClick" locator1="Activities#ACTIVITY_TITLE_ASSET_NAME" value1="Zero Document File" />
+		<execute function="AssertClick" locator1="Activities#ACTIVITY_TITLE_ASSET_NAME" value1="Zero Document File">
+			<var name="key_assetName" value="Zero Document File" />
+		</execute>
 
 		<execute macro="DMDocument#viewDocumentTitleCmdPG">
 			<var name="dmDocumentTitle" value="Zero Document File" />
@@ -517,26 +658,7 @@
 
 	<command name="ConfigureXugglerVideoPreviewSizePG" priority="3">
 		<property name="custom.properties" value="xuggler.enabled=true${line.separator}dl.file.entry.preview.video.width=0${line.separator}dl.file.entry.preview.video.height=0" />
-
-		<execute macro="ProductMenu#gotoControlPanelConfiguration">
-			<var name="portlet" value="Server Administration" />
-		</execute>
-
-		<execute macro="ServerAdministration#configureExternalServices">
-			<var name="installXuggler" value="true" />
-			<var name="xugglerJarFile" value="Linux 32-bit JVM (with GNU libc v6) (xuggle-xuggler-arch-i686-pc-linux-gnu.jar)" />
-		</execute>
-
-		<execute macro="Portlet#shutdownServer" />
-
-		<execute macro="Portlet#startServer" />
-
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="User#loginPG">
-			<var name="password" value="test" />
-			<var name="userEmailAddress" value="test@liferay.com" />
-		</execute>
+		<property name="test.name.skip.portal.instance" value="DocumentsadministrationUsecase#ConfigureXugglerVideoPreviewSizePG" />
 
 		<execute macro="ProductMenu#gotoControlPanelConfiguration">
 			<var name="portlet" value="Server Administration" />
@@ -616,21 +738,132 @@
 		<execute function="Open" locator1="${videoPreviewThumbnailLink}" />
 		<execute function="Pause" locator1="1000" />
 
-		<var name="key_videoGenerationThumbnailResolution" value="640" />
+		<execute function="AssertElementNotPresent" locator1="DocumentsAndMediaDocument#VIDEO_GENERATION_THUMBNAIL_RESOLUTION">
+			<var name="key_videoGenerationThumbnailResolution" value="640" />
+		</execute>
 
-		<execute function="AssertElementNotPresent" locator1="DocumentsAndMediaDocument#VIDEO_GENERATION_THUMBNAIL_RESOLUTION" />
+		<execute function="AssertElementNotPresent" locator1="DocumentsAndMediaDocument#VIDEO_GENERATION_THUMBNAIL_RESOLUTION">
+			<var name="key_videoGenerationThumbnailResolution" value="360" />
+		</execute>
 
-		<var name="key_videoGenerationThumbnailResolution" value="360" />
+		<execute function="AssertElementPresent#assertElementPresent" locator1="DocumentsAndMediaDocument#VIDEO_GENERATION_THUMBNAIL_RESOLUTION">
+			<var name="key_videoGenerationThumbnailResolution" value="1280" />
+		</execute>
 
-		<execute function="AssertElementNotPresent" locator1="DocumentsAndMediaDocument#VIDEO_GENERATION_THUMBNAIL_RESOLUTION" />
+		<execute function="AssertElementPresent#assertElementPresent" locator1="DocumentsAndMediaDocument#VIDEO_GENERATION_THUMBNAIL_RESOLUTION">
+			<var name="key_videoGenerationThumbnailResolution" value="720" />
+		</execute>
+	</command>
 
-		<var name="key_videoGenerationThumbnailResolution" value="1280" />
+	<command name="ImportAudioAndLimitPermissionsToSubfolder" priority="5">
+		<property name="testray.component.names" value="Training" />
 
-		<execute function="AssertElementPresent#assertElementPresent" locator1="DocumentsAndMediaDocument#VIDEO_GENERATION_THUMBNAIL_RESOLUTION" />
+		<execute macro="ProductMenu#gotoControlPanelSites">
+			<var name="portlet" value="Sites" />
+		</execute>
 
-		<var name="key_videoGenerationThumbnailResolution" value="720" />
+		<execute macro="Site#addBlankCP">
+			<var name="siteName" value="Moon Rocks 101" />
+		</execute>
 
-		<execute function="AssertElementPresent#assertElementPresent" locator1="DocumentsAndMediaDocument#VIDEO_GENERATION_THUMBNAIL_RESOLUTION" />
+		<execute function="Refresh" />
+
+		<execute macro="ProductMenu#gotoSitesContent">
+			<var name="portlet" value="Documents and Media" />
+		</execute>
+
+		<execute macro="PermissionsInline#gotoConfigurationPG">
+			<var name="portletOption" value="Home Folder Permissions" />
+		</execute>
+
+		<execute macro="PermissionsInline#gotoRolesAdminFromPortletConfiguration">
+			<var name="roleName" value="User" />
+		</execute>
+
+		<execute macro="RoleNavigator#gotoPermissionSectionViaDropdown">
+			<var name="contentTitle" value="Content" />
+			<var name="permissionName" value="SITE_ADMIN_CONTENT_DOCUMENTS_AND_MEDIA" />
+			<var name="sectionTitle" value="Site Administration" />
+		</execute>
+
+		<execute macro="Role#addPermissions">
+			<var name="permissionDefinitionKeys" value="SITE_ADMIN_CONTENT_DOCUMENTS_AND_MEDIA_GENERAL_PERMISSIONS_ACCESS_IN_SITE_ADMINISTRATION_CHECKBOX,SITE_ADMIN_CONTENT_DOCUMENTS_AND_MEDIA_GENERAL_PERMISSIONS_VIEW_CHECKBOX,SITE_ADMIN_CONTENT_DOCUMENTS_AND_MEDIA_RESOURCE_PERMISSIONS_DOCUMENTS_ADD_FOLDER_CHECKBOX,SITE_ADMIN_CONTENT_DOCUMENTS_AND_MEDIA_RESOURCE_PERMISSIONS_DOCUMENTS_VIEW_CHECKBOX,SITE_ADMIN_CONTENT_DOCUMENTS_AND_MEDIA_RESOURCE_PERMISSIONS_DOCUMENTS_FOLDER_ADD_SUBFOLDER_CHECKBOX,SITE_ADMIN_CONTENT_DOCUMENTS_AND_MEDIA_RESOURCE_PERMISSIONS_DOCUMENTS_FOLDER_VIEW_CHECKBOX,SITE_ADMIN_CONTENT_DOCUMENTS_AND_MEDIA_RESOURCE_PERMISSIONS_DOCUMENT_UPDATE_CHECKBOX" />
+		</execute>
+
+		<execute macro="IFrame#closeFrame" />
+
+		<execute function="Refresh" />
+
+		<execute macro="ProductMenu#gotoSitesContent">
+			<var name="portlet" value="Documents and Media" />
+		</execute>
+
+		<execute macro="DMFolder#addCP">
+			<var name="dmFolderName" value="Unit 1 - Moon Rock Chemistry" />
+		</execute>
+
+		<execute macro="DMFolder#gotoCP">
+			<var name="dmFolderName" value="Unit 1 - Moon Rock Chemistry" />
+		</execute>
+
+		<execute macro="DMFolder#addSubfolderCP">
+			<var name="dmSubFolderName" value="The Properties of Moon Rocks" />
+		</execute>
+
+		<execute macro="DMFolder#gotoCP">
+			<var name="dmFolderName" value="The Properties of Moon Rocks" />
+		</execute>
+
+		<execute macro="DMFolder#addSubfolderCP">
+			<var name="dmSubFolderName" value="Audio Lectures" />
+		</execute>
+
+		<execute macro="DMFolder#gotoCP">
+			<var name="dmFolderName" value="Audio Lectures" />
+		</execute>
+
+		<execute macro="DMDocument#addCP">
+			<var name="dmDocumentDescription" value="DM Document Description" />
+			<var name="dmDocumentFile" value="Dr. Winters Introductory Audio Lecture.ogg" />
+			<var name="dmDocumentTitle" value="Dr. Winters Introductory Audio Lecture.ogg" />
+		</execute>
+
+		<execute function="Refresh" />
+
+		<execute macro="ProductMenu#gotoSitesContent">
+			<var name="portlet" value="Documents and Media" />
+		</execute>
+
+		<execute macro="DMFolder#gotoCP">
+			<var name="dmFolderName" value="Unit 1 - Moon Rock Chemistry" />
+		</execute>
+
+		<execute macro="DMFolder#gotoCP">
+			<var name="dmFolderName" value="The Properties of Moon Rocks" />
+		</execute>
+
+		<execute macro="DMFolder#removePermissions">
+			<var name="dmFolder" value="Audio Lectures" />
+			<var name="permissionNameList" value="ADD_DOCUMENT,ADD_SHORTCUT,ADD_SUBFOLDER" />
+			<var name="roleTitle" value="Site Member" />
+		</execute>
+
+		<execute macro="IFrame#closeFrame" />
+
+		<execute function="Refresh" />
+
+		<execute macro="ProductMenu#gotoSite">
+			<var name="site" value="Moon Rocks 101" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoSitesContent">
+			<var name="portlet" value="Documents and Media" />
+		</execute>
+
+		<execute macro="LAR#importPortlet">
+			<var name="larFileName" value="moon-rocks-101-materials-structure.lar" />
+			<var name="uploadFrom" value="dependencies" />
+		</execute>
 	</command>
 
 	<command name="ImportDocumentWithDBStore" priority="3">
@@ -761,7 +994,11 @@
 		<execute macro="DMDocument#viewDefaultCP" />
 	</command>
 
-	<command name="UpdateDocumentTypeWithPermissions" priority="3">
+	<command name="UpdateDocumentTypeWithPermissions" priority="5">
+		<property name="portal.acceptance" value="pending" />
+		<property name="test.name.skip.portal.instance" value="DocumentsadministrationUsecase#UpdateDocumentTypeWithPermissions" />
+		<property name="testray.component.names" value="Training" />
+
 		<execute macro="TestCase#getSiteName">
 			<return from="siteName" name="siteName" />
 			<var name="siteName" value="${siteName}" />
@@ -791,12 +1028,13 @@
 			<var name="portlet" value="Roles" />
 		</execute>
 
-		<execute macro="Role#addCP">
+		<execute macro="RoleNavigator#gotoRoleType" />
+
+		<execute macro="Role#add">
 			<var name="roleDescription" value="This is the technical writer role" />
 			<var name="roleKey" value="Technical Writer" />
 			<var name="roleName" value="Writer" />
 			<var name="roleTitle" value="Technical Writer" />
-			<var name="roleType" value="Regular Role" />
 		</execute>
 
 		<execute macro="ProductMenu#gotoControlPanelUsers">
@@ -960,7 +1198,7 @@
 			<var name="portlet" value="Documents and Media" />
 		</execute>
 
-		<execute function="AssertVisible" locator1="ControlMenu#HEADER_TITLE" value1="Documents and Media" />
+		<execute function="AssertVisible" locator1="Portlet#HEADER" value1="Documents and Media" />
 
 		<execute macro="DMNavigator#gotoDocumentType" />
 
@@ -989,7 +1227,46 @@
 		<execute macro="DMDocumentType#viewNoAvailableActionsViaDocumentTypesPG" />
 	</command>
 
-	<command name="ViewDocumentWithGlobalScope" priority="4">
+	<command name="ViewDateFieldRequiredInContract" priority="5">
+		<description message="This is a use case for LPS-53009" />
+
+		<execute macro="ProductMenu#gotoSitesContent">
+			<var name="portlet" value="Documents and Media" />
+		</execute>
+
+		<execute macro="DMNavigator#gotoDocumentType" />
+
+		<execute macro="DMDocumentType#edit">
+			<var name="dmDocumentTypeFieldRequiredEdit" value="Effective Date" />
+			<var name="dmDocumentTypeName" value="Contract" />
+		</execute>
+
+		<execute macro="DMDocumentType#edit">
+			<var name="dmDocumentTypeFieldRequiredEdit" value="Expiration Date" />
+			<var name="dmDocumentTypeName" value="Contract" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoSitesContent">
+			<var name="portlet" value="Documents and Media" />
+		</execute>
+
+		<execute macro="DMNavigator#gotoAddDocumentType">
+			<var name="dmDocumentTypeName" value="Contract" />
+		</execute>
+
+		<execute function="AssertElementPresent" locator1="Icon#ASTERISK_DATE_FIELD">
+			<var name="key_fieldFieldLabel" value="Effective Date" />
+		</execute>
+
+		<execute function="AssertElementPresent" locator1="Icon#ASTERISK_DATE_FIELD">
+			<var name="key_fieldFieldLabel" value="Expiration Date" />
+		</execute>
+	</command>
+
+	<command name="ViewDocumentWithGlobalScope" priority="5">
+		<property name="portal.acceptance" value="pending" />
+		<property name="testray.component.names" value="Training" />
+
 		<execute macro="Page#add">
 			<var name="pageName" value="Documents and Media Page" />
 		</execute>
@@ -1174,7 +1451,10 @@
 		</execute>
 	</command>
 
-	<command name="ViewFileCategoryAndTags" priority="4">
+	<command name="ViewFileCategoryAndTags" priority="5">
+		<property name="portal.acceptance" value="pending" />
+		<property name="testray.component.names" value="Training" />
+
 		<execute macro="Page#add">
 			<var name="pageName" value="Documents and Media Page" />
 		</execute>
@@ -1232,19 +1512,21 @@
 			<var name="vocabularyName" value="Topic" />
 		</execute>
 
-		<var name="key_dmDocumentTitle" value="Document Title" />
+		<execute function="Click" locator1="DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_VERTICAL_ELLIPSIS">
+			<var name="key_dmDocumentTitle" value="Document Title" />
+		</execute>
 
-		<execute function="Click" locator1="DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_VERTICAL_ELLIPSIS" />
-
-		<execute function="AssertClick" locator1="MenuItem#EDIT" value1="Edit" />
-
-		<var name="key_categoryName" value="Category Name" />
+		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Edit">
+			<var name="key_menuItem" value="Edit" />
+		</execute>
 
 		<execute macro="Panel#expandPanel">
 			<var name="panelHeading" value="Categorization" />
 		</execute>
 
-		<execute function="AssertTextEquals" locator1="AssetCategorization#CATEGORY" value1="Category Name" />
+		<execute function="AssertTextEquals" locator1="AssetCategorization#CATEGORY" value1="Category Name">
+			<var name="key_categoryName" value="Category Name" />
+		</execute>
 
 		<for list="${tagNameList}" param="tagName">
 			<var name="key_tagName" value="${tagName}" />

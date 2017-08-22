@@ -14,10 +14,6 @@
 
 package com.liferay.dynamic.data.mapping.util;
 
-import static org.mockito.Mockito.when;
-
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldTypeSettings;
 import com.liferay.dynamic.data.mapping.form.field.type.DefaultDDMFormFieldTypeSettings;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
@@ -39,7 +35,9 @@ import org.junit.runner.RunWith;
 
 import org.mockito.Matchers;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
+import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -83,7 +81,7 @@ public class DDMFormFactoryTest {
 
 		Assert.assertNotNull(indexTypeDDMFormField);
 		Assert.assertEquals("string", indexTypeDDMFormField.getDataType());
-		Assert.assertEquals("select", indexTypeDDMFormField.getType());
+		Assert.assertEquals("radio", indexTypeDDMFormField.getType());
 
 		DDMFormField labelDDMFormField = ddmFormFieldsMap.get("label");
 
@@ -147,7 +145,7 @@ public class DDMFormFactoryTest {
 
 		List<DDMFormRule> ddmFormRules = ddmForm.getDDMFormRules();
 
-		Assert.assertEquals(0, ddmFormRules.size());
+		Assert.assertEquals(ddmFormRules.toString(), 0, ddmFormRules.size());
 	}
 
 	@Test
@@ -156,7 +154,7 @@ public class DDMFormFactoryTest {
 
 		List<DDMFormRule> ddmFormRules = ddmForm.getDDMFormRules();
 
-		Assert.assertEquals(2, ddmFormRules.size());
+		Assert.assertEquals(ddmFormRules.toString(), 2, ddmFormRules.size());
 
 		DDMFormRule ddmFormRule = ddmFormRules.get(0);
 
@@ -164,7 +162,8 @@ public class DDMFormFactoryTest {
 
 		List<String> ddmFormRuleActions = ddmFormRule.getActions();
 
-		Assert.assertEquals(2, ddmFormRuleActions.size());
+		Assert.assertEquals(
+			ddmFormRuleActions.toString(), 2, ddmFormRuleActions.size());
 		Assert.assertArrayEquals(
 			new String[] {"action1", "action2"}, ddmFormRuleActions.toArray());
 
@@ -174,7 +173,8 @@ public class DDMFormFactoryTest {
 
 		ddmFormRuleActions = ddmFormRule.getActions();
 
-		Assert.assertEquals(1, ddmFormRuleActions.size());
+		Assert.assertEquals(
+			ddmFormRuleActions.toString(), 1, ddmFormRuleActions.size());
 		Assert.assertArrayEquals(
 			new String[] {"action1"}, ddmFormRuleActions.toArray());
 	}
@@ -185,7 +185,7 @@ public class DDMFormFactoryTest {
 
 		List<DDMFormField> ddmFormFields = ddmForm.getDDMFormFields();
 
-		Assert.assertEquals(1, ddmFormFields.size());
+		Assert.assertEquals(ddmFormFields.toString(), 1, ddmFormFields.size());
 
 		DDMFormField ddmFormField = ddmFormFields.get(0);
 
@@ -198,7 +198,8 @@ public class DDMFormFactoryTest {
 		List<DDMFormField> nestedDDMFormFields =
 			ddmFormField.getNestedDDMFormFields();
 
-		Assert.assertEquals(2, nestedDDMFormFields.size());
+		Assert.assertEquals(
+			nestedDDMFormFields.toString(), 2, nestedDDMFormFields.size());
 
 		DDMFormField nestedDDMFormField1 = nestedDDMFormFields.get(0);
 
@@ -246,9 +247,9 @@ public class DDMFormFactoryTest {
 	}
 
 	protected void setUpResourceBundleUtil() {
-		mockStatic(ResourceBundleUtil.class);
+		PowerMockito.mockStatic(ResourceBundleUtil.class);
 
-		when(
+		Mockito.when(
 			ResourceBundleUtil.getBundle(
 				Matchers.anyString(), Matchers.any(Locale.class),
 				Matchers.any(ClassLoader.class))

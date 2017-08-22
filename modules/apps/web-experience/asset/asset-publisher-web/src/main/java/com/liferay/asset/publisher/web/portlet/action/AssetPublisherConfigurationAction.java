@@ -20,37 +20,43 @@ import com.liferay.asset.kernel.exception.DuplicateQueryRuleException;
 import com.liferay.asset.kernel.model.AssetQueryRule;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.asset.kernel.service.AssetTagLocalService;
+import com.liferay.asset.publisher.web.configuration.AssetPublisherPortletInstanceConfiguration;
+import com.liferay.asset.publisher.web.configuration.AssetPublisherWebConfiguration;
 import com.liferay.asset.publisher.web.constants.AssetPublisherPortletKeys;
 import com.liferay.asset.publisher.web.constants.AssetPublisherWebKeys;
-import com.liferay.asset.publisher.web.internal.configuration.AssetPublisherWebConfigurationValues;
 import com.liferay.asset.publisher.web.util.AssetPublisherCustomizer;
 import com.liferay.asset.publisher.web.util.AssetPublisherCustomizerRegistry;
 import com.liferay.asset.publisher.web.util.AssetPublisherUtil;
 import com.liferay.exportimport.kernel.staging.LayoutStagingUtil;
-import com.liferay.exportimport.kernel.staging.StagingUtil;
-import com.liferay.petra.content.ContentUtil;
+import com.liferay.exportimport.kernel.staging.Staging;
+import com.liferay.item.selector.ItemSelector;
+import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutRevision;
 import com.liferay.portal.kernel.model.LayoutSetBranch;
 import com.liferay.portal.kernel.model.LayoutTypePortletConstants;
-import com.liferay.portal.kernel.model.PortletConstants;
+import com.liferay.portal.kernel.module.configuration.ConfigurationException;
+import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.portlet.ConfigurationAction;
 import com.liferay.portal.kernel.portlet.DefaultConfigurationAction;
+import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.LayoutRevisionLocalService;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.servlet.SessionMessages;
+import com.liferay.portal.kernel.settings.LocalizedValuesMap;
+import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
@@ -60,6 +66,8 @@ import com.liferay.portlet.PortletPreferencesImpl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -71,7 +79,9 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 
 /**
@@ -79,6 +89,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Juan Fernández
  */
 @Component(
+	configurationPid = "com.liferay.asset.publisher.web.configuration.AssetPublisherWebConfiguration",
 	immediate = true,
 	property = {
 		"javax.portlet.name=" + AssetPublisherPortletKeys.ASSET_PUBLISHER
@@ -90,19 +101,25 @@ public class AssetPublisherConfigurationAction
 
 	@Override
 	public String getJspPath(HttpServletRequest request) {
+		String cmd = ParamUtil.getString(request, Constants.CMD);
+
+		if (Objects.equals(cmd, "edit_query_rule")) {
+			return "/edit_query_rule.jsp";
+		}
+
 		return "/configuration.jsp";
 	}
 
 	@Override
 	public void include(
-		PortletConfig portletConfig, HttpServletRequest request,
-		HttpServletResponse response)
-	throws Exception {
+			PortletConfig portletConfig, HttpServletRequest request,
+			HttpServletResponse response)
+		throws Exception {
 
 		String portletResource = ParamUtil.getString(
 			request, "portletResource");
 
-		String rootPortletId = PortletConstants.getRootPortletId(
+		String rootPortletId = PortletIdCodec.decodePortletName(
 			portletResource);
 
 		AssetPublisherCustomizer assetPublisherCustomizer =
@@ -113,31 +130,60 @@ public class AssetPublisherConfigurationAction
 			AssetPublisherWebKeys.ASSET_PUBLISHER_CUSTOMIZER,
 			assetPublisherCustomizer);
 
+		request.setAttribute(
+			AssetPublisherWebKeys.ASSET_PUBLISHER_WEB_CONFIGURATION,
+			assetPublisherWebConfiguration);
+
+		request.setAttribute(AssetPublisherWebKeys.ITEM_SELECTOR, itemSelector);
+
+		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
+
+		AssetPublisherPortletInstanceConfiguration
+			assetPublisherPortletInstanceConfiguration =
+				portletDisplay.getPortletInstanceConfiguration(
+					AssetPublisherPortletInstanceConfiguration.class);
+
+		request.setAttribute(
+			AssetPublisherWebKeys.
+				ASSET_PUBLISHER_PORTLET_INSTANCE_CONFIGURATION,
+			assetPublisherPortletInstanceConfiguration);
+
 		super.include(portletConfig, request, response);
 	}
 
 	@Override
 	public void postProcess(
-		long companyId, PortletRequest portletRequest,
-		PortletPreferences portletPreferences) {
+			long companyId, PortletRequest portletRequest,
+			PortletPreferences portletPreferences)
+		throws ConfigurationException {
+
+		AssetPublisherPortletInstanceConfiguration
+			assetPublisherPortletInstanceConfiguration =
+				ConfigurationProviderUtil.getSystemConfiguration(
+					AssetPublisherPortletInstanceConfiguration.class);
 
 		String languageId = LocaleUtil.toLanguageId(
 			LocaleUtil.getSiteDefault());
+		LocalizedValuesMap emailAssetEntryAddedBodyMap =
+			assetPublisherPortletInstanceConfiguration.
+				emailAssetEntryAddedBody();
 
 		removeDefaultValue(
 			portletRequest, portletPreferences,
 			"emailAssetEntryAddedBody_" + languageId,
-			ContentUtil.get(
-				AssetPublisherConfigurationAction.class.getClassLoader(),
-				AssetPublisherWebConfigurationValues.
-					EMAIL_ASSET_ENTRY_ADDED_BODY));
+			emailAssetEntryAddedBodyMap.get(LocaleUtil.getSiteDefault()));
+
+		LocalizedValuesMap emailAssetEntryAddedSubjectMap =
+			assetPublisherPortletInstanceConfiguration.
+				emailAssetEntryAddedSubject();
+
 		removeDefaultValue(
 			portletRequest, portletPreferences,
 			"emailAssetEntryAddedSubject_" + languageId,
-			ContentUtil.get(
-				AssetPublisherConfigurationAction.class.getClassLoader(),
-				AssetPublisherWebConfigurationValues.
-					EMAIL_ASSET_ENTRY_ADDED_SUBJECT));
+			emailAssetEntryAddedSubjectMap.get(LocaleUtil.getSiteDefault()));
 	}
 
 	@Override
@@ -218,17 +264,17 @@ public class AssetPublisherConfigurationAction
 
 				SessionMessages.add(
 					actionRequest,
-					PortalUtil.getPortletId(actionRequest) +
+					portal.getPortletId(actionRequest) +
 						SessionMessages.KEY_SUFFIX_REFRESH_PORTLET,
 					portletResource);
 
 				SessionMessages.add(
 					actionRequest,
-					PortalUtil.getPortletId(actionRequest) +
+					portal.getPortletId(actionRequest) +
 						SessionMessages.KEY_SUFFIX_UPDATED_CONFIGURATION);
 			}
 
-			String redirect = PortalUtil.escapeRedirect(
+			String redirect = portal.escapeRedirect(
 				ParamUtil.getString(actionRequest, "redirect"));
 
 			if (Validator.isNotNull(redirect)) {
@@ -244,6 +290,13 @@ public class AssetPublisherConfigurationAction
 	)
 	public void setServletContext(ServletContext servletContext) {
 		super.setServletContext(servletContext);
+	}
+
+	@Activate
+	@Modified
+	protected void activate(Map<String, Object> properties) {
+		assetPublisherWebConfiguration = ConfigurableUtil.createConfigurable(
+			AssetPublisherWebConfiguration.class, properties);
 	}
 
 	protected void addScope(
@@ -314,7 +367,7 @@ public class AssetPublisherConfigurationAction
 			return null;
 		}
 
-		String className = PortalUtil.getClassName(defaultAssetTypeId);
+		String className = portal.getClassName(defaultAssetTypeId);
 
 		AssetRendererFactory<?> assetRendererFactory =
 			AssetRendererFactoryRegistryUtil.getAssetRendererFactoryByClassName(
@@ -512,6 +565,11 @@ public class AssetPublisherConfigurationAction
 	}
 
 	@Reference(unbind = "-")
+	protected void setItemSelector(ItemSelector itemSelector) {
+		this.itemSelector = itemSelector;
+	}
+
+	@Reference(unbind = "-")
 	protected void setLayoutLocalService(
 		LayoutLocalService layoutLocalService) {
 
@@ -603,7 +661,7 @@ public class AssetPublisherConfigurationAction
 			layout.getTypeSettings());
 
 		if (LayoutStagingUtil.isBranchingLayout(layout)) {
-			HttpServletRequest request = PortalUtil.getHttpServletRequest(
+			HttpServletRequest request = portal.getHttpServletRequest(
 				actionRequest);
 
 			LayoutSetBranch layoutSetBranch =
@@ -611,7 +669,7 @@ public class AssetPublisherConfigurationAction
 
 			long layoutSetBranchId = layoutSetBranch.getLayoutSetBranchId();
 
-			long layoutRevisionId = StagingUtil.getRecentLayoutRevisionId(
+			long layoutRevisionId = staging.getRecentLayoutRevisionId(
 				request, layoutSetBranchId, layout.getPlid());
 
 			LayoutRevision layoutRevision =
@@ -637,7 +695,7 @@ public class AssetPublisherConfigurationAction
 
 		String[] extensions = actionRequest.getParameterValues("extensions");
 
-		if ((extensions.length == 1) &&
+		if (ArrayUtil.isNotEmpty(extensions) && (extensions.length == 1) &&
 			extensions[0].equals(Boolean.FALSE.toString())) {
 
 			extensions = new String[0];
@@ -729,12 +787,20 @@ public class AssetPublisherConfigurationAction
 		}
 	}
 
+	@Reference
+	protected AssetPublisherCustomizerRegistry assetPublisherCustomizerRegistry;
+
+	protected AssetPublisherWebConfiguration assetPublisherWebConfiguration;
 	protected AssetTagLocalService assetTagLocalService;
 	protected GroupLocalService groupLocalService;
+	protected ItemSelector itemSelector;
 	protected LayoutLocalService layoutLocalService;
 	protected LayoutRevisionLocalService layoutRevisionLocalService;
 
 	@Reference
-	protected AssetPublisherCustomizerRegistry assetPublisherCustomizerRegistry;
+	protected Portal portal;
+
+	@Reference
+	protected Staging staging;
 
 }

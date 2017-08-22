@@ -70,6 +70,17 @@
 		</execute>
 	</command>
 
+	<command name="addMessageBoards">
+		<execute macro="Navigator#gotoPage">
+			<var name="pageName" value="Message Boards" />
+		</execute>
+
+		<execute macro="MessageboardsThread#addPG">
+			<var name="threadBody" value="Message Boards Body" />
+			<var name="threadSubject" value="Message Boards Subject 3" />
+		</execute>
+	</command>
+
 	<command name="addOrganization">
 		<execute macro="ProductMenu#gotoControlPanelUsers">
 			<var name="portlet" value="Users and Organizations" />
@@ -518,6 +529,8 @@
 			<var name="pageName" value="Calendar" />
 		</execute>
 
+		<execute macro="ProductMenuHelper#closeProductMenu" />
+
 		<execute macro="CalendarEvent#view">
 			<var name="eventTitle" value="Calendar Event Title" />
 		</execute>
@@ -537,6 +550,8 @@
 		<execute macro="Navigator#gotoPage">
 			<var name="pageName" value="Calendar" />
 		</execute>
+
+		<execute macro="ProductMenuHelper#closeProductMenu" />
 
 		<execute macro="CalendarEvent#view">
 			<var name="eventTitle" value="Calendar Event Title Edited" />
@@ -558,8 +573,81 @@
 			<var name="pageName" value="Calendar" />
 		</execute>
 
+		<execute macro="ProductMenuHelper#closeProductMenu" />
+
 		<execute macro="CalendarEvent#view">
 			<var name="eventTitle" value="Post Upgrade Calendar Event" />
+		</execute>
+	</command>
+
+	<command name="viewDocument">
+		<execute macro="Navigator#gotoPage">
+			<var name="pageName" value="Document" />
+		</execute>
+
+		<execute macro="DMPortlet#setDescriptiveView" />
+
+		<execute macro="DMDocument#enableActionsMenuOnPortlet" />
+
+		<execute macro="Navigator#gotoPage">
+			<var name="pageName" value="Document" />
+		</execute>
+
+		<execute macro="DMDocument#viewAllPG">
+			<var name="commentBody" value="Document Comment" />
+			<var name="dmDocumentTitle" value="Document1" />
+		</execute>
+
+		<execute macro="DMDocument#viewDocumentDetailsCmdPG">
+			<var name="dmDocumentTitle" value="Document1" />
+		</execute>
+
+		<execute macro="DMDocument#viewDocumentMetadataCP">
+			<var name="metadataData" value="application/msword" />
+			<var name="metadataLabel" value="Content Type" />
+		</execute>
+
+		<execute macro="DMDocument#viewDocumentMetadataCP">
+			<var name="metadataData" value="Liferay" />
+			<var name="metadataLabel" value="Creator" />
+		</execute>
+	</command>
+
+	<command name="ViewDroolsAppManager">
+		<execute macro="ProductMenu#gotoControlPanelApps">
+			<var name="portlet" value="App Manager" />
+		</execute>
+
+		<execute macro="Search#searchCP">
+			<var name="searchTerm" value="Drools" />
+		</execute>
+
+		<execute macro="AppManager#viewAppCP">
+			<var name="appName" value="Liferay Drools" />
+		</execute>
+
+		<execute macro="AppManager#viewAppCP">
+			<var name="appName" value="Liferay Portal Rules Engine Drools" />
+		</execute>
+
+		<execute macro="AppManager#viewStatus">
+			<var name="appName" value="Liferay Drools" />
+			<var name="appStatus" value="Active" />
+		</execute>
+
+		<execute macro="AppManager#viewStatus">
+			<var name="appName" value="Liferay Portal Rules Engine Drools" />
+			<var name="appStatus" value="Active" />
+		</execute>
+	</command>
+
+	<command name="viewMessageBoards">
+		<execute macro="Navigator#gotoPage">
+			<var name="pageName" value="Message Boards" />
+		</execute>
+
+		<execute macro="MessageboardsThread#viewLockedPG">
+			<var name="threadSubject" value="Message Boards Subject 2" />
 		</execute>
 	</command>
 
@@ -568,15 +656,82 @@
 			<var name="pageName" value="Nested Portlets" />
 		</execute>
 
-		<var name="key_portletName" value="Nested Portlets" />
+		<var name="key_portletName" value="Nested Applications" />
 
-		<execute function="AssertTextEquals" locator1="Portlet#TITLE" value1="Nested Portlets" />
+		<execute function="AssertTextEquals" locator1="Portlet#TITLE" value1="Nested Applications" />
 
-		<execute function="AssertTextNotEquals" locator1="Message#INFO" value1="Drag portlets below to nest them." />
+		<execute function="AssertTextNotEquals" locator1="Message#INFO" value1="Drag applications below to nest them." />
 
 		<execute macro="NestedPortlets#viewPG">
 			<var name="portletColumnNumberTo" value="1" />
 			<var name="portletName" value="Web Content Display" />
+		</execute>
+	</command>
+
+	<command name="viewNotifications">
+		<execute macro="Navigator#gotoPage">
+			<var name="pageName" value="Welcome" />
+		</execute>
+
+		<execute macro="Notifications#gotoNotifications" />
+
+		<execute macro="Notifications#viewNewContent">
+			<var name="assetType" value="message boards message" />
+			<var name="contentBody" value="Message Boards Subject 1" />
+			<var name="user" value="Test Test" />
+		</execute>
+
+		<execute macro="Notifications#navigateToContent">
+			<var name="contentBody" value="Message Boards Subject 1" />
+		</execute>
+
+		<execute macro="MessageboardsThread#viewPG">
+			<var name="threadBody" value="Message Boards Body" />
+			<var name="threadSubject" value="Message Boards Subject 1" />
+		</execute>
+
+		<execute macro="Notifications#viewBadgeCount">
+			<var name="activePanel" value="Notifications" />
+			<var name="notificationCount" value="2" />
+		</execute>
+
+		<execute macro="Notifications#gotoNotifications" />
+
+		<execute macro="Notifications#viewNewContent">
+			<var name="assetType" value="message boards message" />
+			<var name="contentBody" value="Message Boards Subject 2" />
+			<var name="user" value="Test Test" />
+		</execute>
+
+		<execute macro="Notifications#navigateToContent">
+			<var name="contentBody" value="Message Boards Subject 2" />
+		</execute>
+
+		<execute macro="MessageboardsThread#viewPG">
+			<var name="threadBody" value="Message Boards Body" />
+			<var name="threadSubject" value="Message Boards Subject 2" />
+		</execute>
+
+		<execute macro="Notifications#viewBadgeCount">
+			<var name="activePanel" value="Notifications" />
+			<var name="notificationCount" value="1" />
+		</execute>
+
+		<execute macro="Notifications#gotoNotifications" />
+
+		<execute macro="Notifications#viewNewContent">
+			<var name="assetType" value="message boards message" />
+			<var name="contentBody" value="Message Boards Subject 3" />
+			<var name="user" value="Test Test" />
+		</execute>
+
+		<execute macro="Notifications#navigateToContent">
+			<var name="contentBody" value="Message Boards Subject 3" />
+		</execute>
+
+		<execute macro="MessageboardsThread#viewPG">
+			<var name="threadBody" value="Message Boards Body" />
+			<var name="threadSubject" value="Message Boards Subject 3" />
 		</execute>
 	</command>
 

@@ -39,8 +39,6 @@ import com.liferay.portal.kernel.lock.InvalidLockException;
 import com.liferay.portal.kernel.lock.Lock;
 import com.liferay.portal.kernel.lock.LockManagerUtil;
 import com.liferay.portal.kernel.lock.NoSuchLockException;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Repository;
 import com.liferay.portal.kernel.model.ResourceConstants;
@@ -608,27 +606,15 @@ public class DLFolderLocalServiceImpl extends DLFolderLocalServiceBaseImpl {
 	}
 
 	@Override
-	public boolean hasInheritableLock(long folderId) throws PortalException {
-		boolean inheritable = false;
+	public boolean hasInheritableLock(long folderId) {
+		Lock lock = LockManagerUtil.fetchLock(
+			DLFolder.class.getName(), folderId);
 
-		try {
-			Lock lock = LockManagerUtil.getLock(
-				DLFolder.class.getName(), folderId);
-
-			inheritable = lock.isInheritable();
-		}
-		catch (ExpiredLockException ele) {
-			if (_log.isDebugEnabled()) {
-				_log.debug(ele, ele);
-			}
-		}
-		catch (NoSuchLockException nsle) {
-			if (_log.isDebugEnabled()) {
-				_log.debug(nsle, nsle);
-			}
+		if (lock == null) {
+			return false;
 		}
 
-		return inheritable;
+		return lock.isInheritable();
 	}
 
 	@Override
@@ -1449,8 +1435,5 @@ public class DLFolderLocalServiceImpl extends DLFolderLocalServiceBaseImpl {
 			throw new FolderNameException(folderName);
 		}
 	}
-
-	private static final Log _log = LogFactoryUtil.getLog(
-		DLFolderLocalServiceImpl.class);
 
 }

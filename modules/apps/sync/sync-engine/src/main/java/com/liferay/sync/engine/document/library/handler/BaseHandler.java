@@ -43,6 +43,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NoHttpResponseException;
 import org.apache.http.StatusLine;
+import org.apache.http.TruncatedChunkException;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpResponseException;
 import org.apache.http.conn.ConnectTimeoutException;
@@ -86,34 +87,22 @@ public class BaseHandler implements Handler<Void> {
 			int statusCode = hre.getStatusCode();
 
 			if (statusCode == HttpStatus.SC_UNAUTHORIZED) {
-				if (syncAccount.getUiEvent() ==
-						SyncAccount.UI_EVENT_AUTHENTICATION_EXCEPTION) {
-
-					if (_logger.isDebugEnabled()) {
-						_logger.debug(
-							"Authentication failed. Retrying in {} seconds.",
-							syncAccount.getAuthenticationRetryInterval());
-					}
-
-					syncAccount.setState(SyncAccount.STATE_DISCONNECTED);
-
-					SyncAccountService.update(syncAccount);
-
-					ServerEventUtil.retryServerConnection(
-						getSyncAccountId(),
-						syncAccount.getAuthenticationRetryInterval(),
-						TimeUnit.SECONDS);
+				if (_logger.isDebugEnabled()) {
+					_logger.debug(
+						"Authentication failed. Retrying in {} seconds.",
+						syncAccount.getAuthenticationRetryInterval());
 				}
-				else {
-					syncAccount.setState(SyncAccount.STATE_DISCONNECTED);
-					syncAccount.setUiEvent(
-						SyncAccount.UI_EVENT_AUTHENTICATION_EXCEPTION);
 
-					SyncAccountService.update(syncAccount);
+				syncAccount.setState(SyncAccount.STATE_DISCONNECTED);
+				syncAccount.setUiEvent(
+					SyncAccount.UI_EVENT_AUTHENTICATION_EXCEPTION);
 
-					retryServerConnection(
-						SyncAccount.UI_EVENT_AUTHENTICATION_EXCEPTION);
-				}
+				SyncAccountService.update(syncAccount);
+
+				ServerEventUtil.retryServerConnection(
+					getSyncAccountId(),
+					syncAccount.getAuthenticationRetryInterval(),
+					TimeUnit.SECONDS);
 
 				return;
 			}
@@ -125,6 +114,7 @@ public class BaseHandler implements Handler<Void> {
 			e instanceof NoHttpResponseException ||
 			e instanceof SocketException ||
 			e instanceof SocketTimeoutException || e instanceof SSLException ||
+			e instanceof TruncatedChunkException ||
 			e instanceof UnknownHostException) {
 
 			retryServerConnection(SyncAccount.UI_EVENT_CONNECTION_EXCEPTION);

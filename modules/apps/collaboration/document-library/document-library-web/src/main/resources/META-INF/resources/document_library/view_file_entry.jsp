@@ -23,8 +23,6 @@ String tabs2 = ParamUtil.getString(request, "tabs2", "version-history");
 
 String redirect = ParamUtil.getString(request, "redirect");
 
-String uploadProgressId = "dlFileEntryUploadProgress";
-
 FileEntry fileEntry = (FileEntry)request.getAttribute(WebKeys.DOCUMENT_LIBRARY_FILE_ENTRY);
 
 long fileEntryId = fileEntry.getFileEntryId();
@@ -61,7 +59,7 @@ com.liferay.portal.kernel.lock.Lock lock = fileEntry.getLock();
 
 String[] conversions = new String[0];
 
-if (PropsValues.DL_FILE_ENTRY_CONVERSIONS_ENABLED && PrefsPropsUtil.getBoolean(PropsKeys.OPENOFFICE_SERVER_ENABLED, PropsValues.OPENOFFICE_SERVER_ENABLED)) {
+if (PropsValues.DL_FILE_ENTRY_CONVERSIONS_ENABLED && DocumentConversionUtil.isEnabled()) {
 	conversions = (String[])DocumentConversionUtil.getConversions(fileVersion.getExtension());
 }
 
@@ -216,6 +214,7 @@ if (portletTitleBasedNavigation) {
 									iconCssClass="icon-download"
 									label="<%= true %>"
 									message='<%= LanguageUtil.get(resourceBundle, "download") + " (" + TextFormatter.formatStorageSize(fileVersion.getSize(), locale) + ")" %>'
+									method="get"
 									url="<%= DLUtil.getDownloadURL(fileEntry, fileVersion, themeDisplay, StringPool.BLANK) %>"
 								/>
 							</span>
@@ -469,6 +468,7 @@ if (portletTitleBasedNavigation) {
 							<liferay-ui:ratings
 								className="<%= DLFileEntryConstants.getClassName() %>"
 								classPK="<%= fileEntryId %>"
+								inTrash="<%= fileEntry.isInTrash() %>"
 							/>
 						</span>
 					</c:if>
@@ -533,7 +533,7 @@ if (portletTitleBasedNavigation) {
 
 			<c:if test="<%= showComments && fileEntry.isRepositoryCapabilityProvided(CommentCapability.class) %>">
 				<liferay-ui:panel collapsible="<%= true %>" cssClass="lfr-document-library-comments panel-group" extended="<%= true %>" markupView="lexicon" persistState="<%= true %>" title="<%= dlViewFileVersionDisplayContext.getDiscussionLabel(locale) %>">
-					<liferay-ui:discussion
+					<liferay-comment:discussion
 						className="<%= dlViewFileVersionDisplayContext.getDiscussionClassName() %>"
 						classPK="<%= dlViewFileVersionDisplayContext.getDiscussionClassPK() %>"
 						formName="fm2"

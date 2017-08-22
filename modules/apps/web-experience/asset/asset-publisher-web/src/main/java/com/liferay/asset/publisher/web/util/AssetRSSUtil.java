@@ -16,7 +16,6 @@ package com.liferay.asset.publisher.web.util;
 
 import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
 import com.liferay.asset.kernel.model.AssetEntry;
-import com.liferay.asset.kernel.model.AssetRenderer;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.asset.publisher.web.constants.AssetPublisherWebKeys;
 import com.liferay.asset.publisher.web.display.context.AssetEntryResult;
@@ -24,8 +23,6 @@ import com.liferay.asset.publisher.web.display.context.AssetPublisherDisplayCont
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Layout;
-import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
-import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -300,29 +297,23 @@ public class AssetRSSUtil {
 			AssetEntry assetEntry)
 		throws Exception {
 
-		AssetRendererFactory<?> assetRendererFactory =
-			AssetRendererFactoryRegistryUtil.getAssetRendererFactoryByClassName(
-				assetEntry.getClassName());
+		String assetViewURL = AssetPublisherHelper.getAssetViewURL(
+			PortalUtil.getLiferayPortletRequest(portletRequest),
+			PortalUtil.getLiferayPortletResponse(portletResponse), assetEntry,
+			true);
 
-		AssetRenderer<?> assetRenderer = assetRendererFactory.getAssetRenderer(
-			assetEntry.getClassPK());
-
-		String viewInContextURL = assetRenderer.getURLViewInContext(
-			(LiferayPortletRequest)portletRequest,
-			(LiferayPortletResponse)portletResponse, null);
-
-		if (Validator.isNotNull(viewInContextURL) &&
-			!viewInContextURL.startsWith(Http.HTTP_WITH_SLASH) &&
-			!viewInContextURL.startsWith(Http.HTTPS_WITH_SLASH)) {
+		if (Validator.isNotNull(assetViewURL) &&
+			!assetViewURL.startsWith(Http.HTTP_WITH_SLASH) &&
+			!assetViewURL.startsWith(Http.HTTPS_WITH_SLASH)) {
 
 			ThemeDisplay themeDisplay =
 				(ThemeDisplay)portletRequest.getAttribute(
 					WebKeys.THEME_DISPLAY);
 
-			viewInContextURL = themeDisplay.getPortalURL() + viewInContextURL;
+			assetViewURL = themeDisplay.getPortalURL() + assetViewURL;
 		}
 
-		return viewInContextURL;
+		return assetViewURL;
 	}
 
 	protected static String getFeedURL(PortletRequest portletRequest)

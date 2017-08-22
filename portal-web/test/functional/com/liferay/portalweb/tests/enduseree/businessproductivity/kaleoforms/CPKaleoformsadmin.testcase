@@ -240,9 +240,19 @@
 
 		<execute macro="KaleoFormsAdmin#viewNoUnpublishedWorkflowDefinitions" />
 
-		<execute macro="ProductMenu#gotoControlPanelConfiguration">
-			<var name="portlet" value="Workflow Definition" />
-		</execute>
+		<toggle name="LPS-73924">
+			<on>
+				<execute macro="ProductMenu#gotoControlPanelConfiguration">
+					<var name="portlet" value="Workflow" />
+				</execute>
+			</on>
+
+			<off>
+				<execute macro="ProductMenu#gotoControlPanelConfiguration">
+					<var name="portlet" value="Workflow Definition" />
+				</execute>
+			</off>
+		</toggle>
 
 		<execute macro="Workflow#reactivateInactiveWorkflowDefinition">
 			<var name="workflowDefinitionName" value="Single Approver" />
@@ -340,9 +350,19 @@
 
 		<execute macro="KaleoFormsAdmin#viewNoUnpublishedWorkflowDefinitions" />
 
-		<execute macro="ProductMenu#gotoControlPanelConfiguration">
-			<var name="portlet" value="Workflow Definition" />
-		</execute>
+		<toggle name="LPS-73924">
+			<on>
+				<execute macro="ProductMenu#gotoControlPanelConfiguration">
+					<var name="portlet" value="Workflow" />
+				</execute>
+			</on>
+
+			<off>
+				<execute macro="ProductMenu#gotoControlPanelConfiguration">
+					<var name="portlet" value="Workflow Definition" />
+				</execute>
+			</off>
+		</toggle>
 
 		<execute macro="Workflow#deleteSpecificWorkflowDefinition">
 			<var name="workflowDefinitionTitle" value="Workflow Definition Title" />
@@ -374,16 +394,28 @@
 
 		<execute macro="KaleoFormsAdmin#viewNoUnpublishedWorkflowDefinitions" />
 
-		<execute macro="ProductMenu#gotoControlPanelConfiguration">
-			<var name="portlet" value="Workflow Definition" />
-		</execute>
+		<toggle name="LPS-73924">
+			<on>
+				<execute macro="ProductMenu#gotoControlPanelConfiguration">
+					<var name="portlet" value="Workflow" />
+				</execute>
+			</on>
+
+			<off>
+				<execute macro="ProductMenu#gotoControlPanelConfiguration">
+					<var name="portlet" value="Workflow Definition" />
+				</execute>
+			</off>
+		</toggle>
 
 		<execute macro="Workflow#reactivateInactiveWorkflowDefinition">
 			<var name="workflowDefinitionName" value="Single Approver" />
 		</execute>
 	</command>
 
-	<command name="DeleteCreateFormViaDDL" priority="3">
+	<!-- LPS-68693 -->
+
+	<!-- <command name="DeleteCreateFormViaDDL" priority="3">
 		<var name="kfFieldSetName" value="${kfFieldSetName}" />
 		<var name="kfProcessName" value="Kaleo Forms Process" />
 
@@ -506,9 +538,11 @@
 			<var name="kfProcessName" value="${kfProcessName}" />
 			<var name="workflowTask" value="create" />
 		</execute>
-	</command>
+	</command> -->
 
-	<command name="DeleteCreateFormViaKaleoFormsAdmin" priority="4">
+	<!-- LPS-68693 -->
+
+	<!-- <command name="DeleteCreateFormViaKaleoFormsAdmin" priority="4">
 		<var name="kfProcessName" value="Kaleo Forms Process" />
 
 		<execute macro="Navigator#openURL" />
@@ -599,9 +633,11 @@
 			<var name="kfFieldSetName" value="${kfFieldSetName}" />
 			<var name="kfFormName" value="Created Task Form" />
 		</execute>
-	</command>
+	</command> -->
 
-	<command name="DeleteEditFormViaKaleoFormsAdmin" priority="3">
+	<!-- LPS-68693 -->
+
+	<!-- <command name="DeleteEditFormViaKaleoFormsAdmin" priority="3">
 		<var name="kfProcessName" value="Kaleo Forms Process" />
 
 		<execute macro="Navigator#openURL" />
@@ -692,7 +728,7 @@
 			<var name="kfFieldSetName" value="${kfFieldSetName}" />
 			<var name="kfFormName" value="Created Task Form" />
 		</execute>
-	</command>
+	</command> -->
 
 	<command name="DeleteFieldSet" priority="4">
 		<execute macro="Navigator#openURL" />
@@ -721,7 +757,9 @@
 		<execute macro="KaleoFormsAdmin#deleteFieldSet" />
 	</command>
 
-	<command name="DeleteForm" priority="4">
+	<!-- LPS-68693 -->
+
+	<!-- <command name="DeleteForm" priority="4">
 		<var name="kfFieldSetName" value="${kfFieldSetName}" />
 		<var name="kfProcessDescription" value="Kaleo Forms Process Description" />
 		<var name="kfProcessName" value="Kaleo Forms Process" />
@@ -841,7 +879,7 @@
 			<var name="kfProcessName" value="${kfProcessName}" />
 			<var name="workflowTask" value="create" />
 		</execute>
-	</command>
+	</command> -->
 
 	<command name="DeleteProcess" priority="5">
 		<execute macro="Navigator#openURL" />
@@ -1312,6 +1350,25 @@
 
 	<command name="EditProcessFieldSetPaginationAndViewSelectedForm" priority="2">
 		<description message="This is a use case for LPS-49037." />
+
+		<for list="Field1,Field2,Field3,Field4,Field5,Field6" param="kfFieldSetName">
+			<execute macro="ProductMenu#gotoSitesContent">
+				<var name="portlet" value="Kaleo Forms Admin" />
+			</execute>
+
+			<execute macro="KaleoFormsAdmin#addFieldSet">
+				<var name="kfFieldSetName" value="${kfFieldSetName}" />
+				<var name="kfProcessName" value="${kfProcessName}" />
+			</execute>
+
+			<execute macro="DynamicDataMapping#addField">
+				<var name="field" value="Text" />
+				<var name="fieldFieldLabel" value="Text" />
+				<var name="fieldName" value="Text" />
+			</execute>
+
+			<execute macro="KaleoFormsAdmin#saveFieldSet" />
+		</for>
 
 		<execute macro="Navigator#openURL" />
 
@@ -2162,9 +2219,19 @@
 	</command>
 
 	<command name="EditUploadedWorkflowViaViewTabViaAddProcess" priority="4">
-		<execute macro="ProductMenu#gotoControlPanelConfiguration">
-			<var name="portlet" value="Workflow Definition" />
-		</execute>
+		<toggle name="LPS-73924">
+			<on>
+				<execute macro="ProductMenu#gotoControlPanelConfiguration">
+					<var name="portlet" value="Workflow" />
+				</execute>
+			</on>
+
+			<off>
+				<execute macro="ProductMenu#gotoControlPanelConfiguration">
+					<var name="portlet" value="Workflow Definition" />
+				</execute>
+			</off>
+		</toggle>
 
 		<execute macro="Workflow#uploadDefinition">
 			<var name="workflowDefinitionFile" value="workflow_definition_1.xml" />
@@ -3228,7 +3295,7 @@
 			<var name="kfProcessName" value="Kaleo Forms Process" />
 		</execute>
 
-		<execute macro="DDLDataDefinition#viewParentStuctureHeader">
+		<execute macro="DDLDataDefinition#viewParentStructureHeader">
 			<var name="assetTitle" value="Field Sets" />
 		</execute>
 	</command>

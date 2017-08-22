@@ -47,10 +47,10 @@ import com.liferay.portal.kernel.servlet.ServletResponseUtil;
 import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.HttpUtil;
+import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.MimeTypesUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StreamUtil;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -108,7 +108,7 @@ public class SyncDownloadServlet extends HttpServlet {
 				PortalSessionThreadLocal.setHttpSession(session);
 			}
 
-			User user = PortalUtil.getUser(request);
+			User user = _portal.getUser(request);
 
 			String syncUuid = request.getHeader("Sync-UUID");
 
@@ -128,7 +128,7 @@ public class SyncDownloadServlet extends HttpServlet {
 
 			PermissionThreadLocal.setPermissionChecker(permissionChecker);
 
-			String path = HttpUtil.fixPath(request.getPathInfo());
+			String path = _http.fixPath(request.getPathInfo());
 
 			String[] pathArray = StringUtil.split(path, CharPool.SLASH);
 
@@ -173,7 +173,7 @@ public class SyncDownloadServlet extends HttpServlet {
 
 				Group group = _groupLocalService.fetchGroup(groupId);
 
-				if ((group == null) || !SyncUtil.isSyncEnabled(group)) {
+				if ((group == null) || !_syncUtil.isSyncEnabled(group)) {
 					response.setHeader(
 						_ERROR_HEADER,
 						SyncSiteUnavailableException.class.getName());
@@ -196,15 +196,15 @@ public class SyncDownloadServlet extends HttpServlet {
 			}
 		}
 		catch (NoSuchFileEntryException nsfee) {
-			PortalUtil.sendError(
+			_portal.sendError(
 				HttpServletResponse.SC_NOT_FOUND, nsfee, request, response);
 		}
 		catch (NoSuchFileVersionException nsfve) {
-			PortalUtil.sendError(
+			_portal.sendError(
 				HttpServletResponse.SC_NOT_FOUND, nsfve, request, response);
 		}
 		catch (Exception e) {
-			PortalUtil.sendError(e, request, response);
+			_portal.sendError(e, request, response);
 		}
 	}
 
@@ -263,7 +263,7 @@ public class SyncDownloadServlet extends HttpServlet {
 		File targetFile = _dlFileEntryLocalService.getFile(
 			userId, fileEntryId, targetDLFileVersion.getVersion(), false);
 
-		return SyncUtil.getFileDelta(sourceFile, targetFile);
+		return _syncUtil.getFileDelta(sourceFile, targetFile);
 	}
 
 	protected DownloadServletInputStream getFileDownloadServletInputStream(
@@ -433,7 +433,7 @@ public class SyncDownloadServlet extends HttpServlet {
 		Image image = _imageLocalService.fetchImage(imageId);
 
 		if (image == null) {
-			PortalUtil.sendError(
+			_portal.sendError(
 				HttpServletResponse.SC_NOT_FOUND, new NoSuchImageException(),
 				request, response);
 
@@ -486,7 +486,7 @@ public class SyncDownloadServlet extends HttpServlet {
 
 			Group group = _groupLocalService.fetchGroup(groupId);
 
-			if ((group == null) || !SyncUtil.isSyncEnabled(group)) {
+			if ((group == null) || !_syncUtil.isSyncEnabled(group)) {
 				processException(
 					zipFileId, SyncSiteUnavailableException.class.getName(),
 					errorsJSONObject);
@@ -597,7 +597,18 @@ public class SyncDownloadServlet extends HttpServlet {
 	private DLFileEntryLocalService _dlFileEntryLocalService;
 	private DLFileVersionLocalService _dlFileVersionLocalService;
 	private GroupLocalService _groupLocalService;
+
+	@Reference
+	private Http _http;
+
 	private ImageLocalService _imageLocalService;
+
+	@Reference
+	private Portal _portal;
+
+	@Reference
+	private SyncUtil _syncUtil;
+
 	private UserLocalService _userLocalService;
 
 }

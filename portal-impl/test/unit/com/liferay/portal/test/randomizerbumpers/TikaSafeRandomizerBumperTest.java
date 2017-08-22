@@ -44,7 +44,7 @@ public class TikaSafeRandomizerBumperTest {
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
 		new AggregateTestRule(
-			CodeCoverageAssertor.INSTANCE, AspectJNewEnvTestRule.INSTANCE);
+			AspectJNewEnvTestRule.INSTANCE, CodeCoverageAssertor.INSTANCE);
 
 	@Test
 	public void testAcceptAny() {
@@ -139,7 +139,8 @@ public class TikaSafeRandomizerBumperTest {
 				List<LogRecord> logRecords = captureHandler.getLogRecords();
 
 				if (level == Level.INFO) {
-					Assert.assertEquals(1, logRecords.size());
+					Assert.assertEquals(
+						logRecords.toString(), 1, logRecords.size());
 
 					LogRecord logRecord = logRecords.get(0);
 
@@ -167,7 +168,7 @@ public class TikaSafeRandomizerBumperTest {
 
 	// http://www.phreedom.org/research/tinype
 
-	private static final byte[] _EXE_BYTE_ARRAY = new byte[] {
+	private static final byte[] _EXE_BYTE_ARRAY = {
 		77, 90, 0, 0, 80, 69, 0, 0, 76, 1, 1, 0, 106, 42, 88, -61, 0, 0, 0, 0,
 		0, 0, 0, 0, 4, 0, 3, 1, 11, 1, 8, 0, 4, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0,
 		12, 0, 0, 0, 4, 0, 0, 0, 12, 0, 0, 0, 0, 0, 64, 0, 4, 0, 0, 0, 4, 0, 0,

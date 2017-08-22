@@ -14,9 +14,12 @@
 
 package com.liferay.wiki.web.internal.portlet.action;
 
+import com.liferay.document.library.document.conversion.configuration.OpenOfficeConfiguration;
+import com.liferay.document.library.kernel.document.conversion.DocumentConversionUtil;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
@@ -25,14 +28,11 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.MimeTypesUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.PropsKeys;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.portal.util.PrefsPropsUtil;
-import com.liferay.portlet.documentlibrary.util.DocumentConversionUtil;
 import com.liferay.wiki.constants.WikiPortletKeys;
 import com.liferay.wiki.engine.impl.WikiEngineRenderer;
 import com.liferay.wiki.model.WikiPage;
@@ -77,6 +77,8 @@ public class ExportPageMVCActionCommand extends BaseMVCActionCommand {
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws Exception {
 
+		hideDefaultSuccessMessage(actionRequest);
+
 		PortletConfig portletConfig = getPortletConfig(actionRequest);
 
 		try {
@@ -111,9 +113,9 @@ public class ExportPageMVCActionCommand extends BaseMVCActionCommand {
 			editPageURL.setPortletMode(PortletMode.VIEW);
 			editPageURL.setWindowState(WindowState.MAXIMIZED);
 
-			HttpServletRequest request = PortalUtil.getHttpServletRequest(
+			HttpServletRequest request = _portal.getHttpServletRequest(
 				actionRequest);
-			HttpServletResponse response = PortalUtil.getHttpServletResponse(
+			HttpServletResponse response = _portal.getHttpServletResponse(
 				actionResponse);
 
 			getFile(
@@ -123,8 +125,11 @@ public class ExportPageMVCActionCommand extends BaseMVCActionCommand {
 			actionResponse.setRenderParameter("mvcPath", "/null.jsp");
 		}
 		catch (Exception e) {
-			String host = PrefsPropsUtil.getString(
-				PropsKeys.OPENOFFICE_SERVER_HOST);
+			OpenOfficeConfiguration openOfficeConfiguration =
+				_configurationProvider.getSystemConfiguration(
+					OpenOfficeConfiguration.class);
+
+			String host = openOfficeConfiguration.serverHost();
 
 			if (Validator.isNotNull(host) && !host.equals(_LOCALHOST_IP) &&
 				!host.startsWith(_LOCALHOST)) {
@@ -138,7 +143,7 @@ public class ExportPageMVCActionCommand extends BaseMVCActionCommand {
 				_log.error(sb.toString());
 			}
 
-			PortalUtil.sendError(e, actionRequest, actionResponse);
+			_portal.sendError(e, actionRequest, actionResponse);
 		}
 	}
 
@@ -238,6 +243,12 @@ public class ExportPageMVCActionCommand extends BaseMVCActionCommand {
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		ExportPageMVCActionCommand.class);
+
+	@Reference
+	private ConfigurationProvider _configurationProvider;
+
+	@Reference
+	private Portal _portal;
 
 	private WikiEngineRenderer _wikiEngineRenderer;
 	private WikiPageService _wikiPageService;

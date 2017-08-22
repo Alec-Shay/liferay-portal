@@ -2,8 +2,10 @@
 ; Do not manually edit this file.
 ;
 [subrepo]
+	autopull = false
 	cmdver = liferay
-	commit = a439f4b529d4bc5f8e712e08c26b988986182110
+	commit = f381592eab8abd303a9006b539d69b1fb17f62b9
+	mergebuttonmergecommits = false
 	mode = push
-	parent = 0357004c079f9e03940da6e5da91561c9f5a9376
+	parent = de8217c823a30523fb160934ca35cf3809271706
 	remote = git@github.com:liferay/com-liferay-application-list.git

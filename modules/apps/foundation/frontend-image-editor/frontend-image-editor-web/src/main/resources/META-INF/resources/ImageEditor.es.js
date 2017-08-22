@@ -29,9 +29,7 @@ class ImageEditor extends Component {
 	/**
 	 * @inheritDoc
 	 */
-	constructor(opt_config) {
-		super(opt_config);
-
+	attached() {
 		/**
 		 * This index points to the current state in the history.
 		 *
@@ -62,6 +60,7 @@ class ImageEditor extends Component {
 		// Polyfill svg usage for lexicon icons
 		svg4everybody(
 			{
+				attributeName: 'data-href',
 				polyfill: true
 			}
 		);

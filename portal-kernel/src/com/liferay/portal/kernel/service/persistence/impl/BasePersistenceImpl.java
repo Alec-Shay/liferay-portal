@@ -55,6 +55,7 @@ import java.sql.Types;
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -135,7 +136,6 @@ public class BasePersistenceImpl<T extends BaseModel<T>>
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	public T findByPrimaryKey(Serializable primaryKey)
 		throws NoSuchModelException {
 
@@ -270,7 +270,6 @@ public class BasePersistenceImpl<T extends BaseModel<T>>
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	public T remove(Serializable primaryKey) throws NoSuchModelException {
 		throw new UnsupportedOperationException();
 	}
@@ -437,13 +436,7 @@ public class BasePersistenceImpl<T extends BaseModel<T>>
 	protected String getColumnName(
 		String entityAlias, String fieldName, boolean sqlQuery) {
 
-		String columnName = fieldName;
-
-		Set<String> badColumnNames = getBadColumnNames();
-
-		if (badColumnNames.contains(fieldName)) {
-			columnName = columnName.concat(StringPool.UNDERLINE);
-		}
+		String columnName = _getDBColumnName(fieldName);
 
 		if (sqlQuery) {
 			fieldName = columnName;
@@ -537,12 +530,28 @@ public class BasePersistenceImpl<T extends BaseModel<T>>
 	@Deprecated
 	protected ModelListener<T>[] listeners = new ModelListener[0];
 
+	private String _getDBColumnName(String fieldName) {
+		if (_dbColumnNames == null) {
+			Map<String, String> dbColumnNames = new HashMap<>();
+
+			for (String badColumnName : getBadColumnNames()) {
+				dbColumnNames.put(
+					badColumnName, badColumnName.concat(StringPool.UNDERLINE));
+			}
+
+			_dbColumnNames = dbColumnNames;
+		}
+
+		return _dbColumnNames.getOrDefault(fieldName, fieldName);
+	}
+
 	private static final Log _log = LogFactoryUtil.getLog(
 		BasePersistenceImpl.class);
 
 	private int _databaseOrderByMaxColumns;
 	private DataSource _dataSource;
 	private DB _db;
+	private Map<String, String> _dbColumnNames;
 	private Dialect _dialect;
 	private Class<T> _modelClass;
 	private SessionFactory _sessionFactory;
@@ -659,12 +668,12 @@ public class BasePersistenceImpl<T extends BaseModel<T>>
 
 		@Override
 		public CacheModel<NullModel> toCacheModel() {
-			return this;
+			return nullModel;
 		}
 
 		@Override
 		public NullModel toEntityModel() {
-			return this;
+			return nullModel;
 		}
 
 		@Override

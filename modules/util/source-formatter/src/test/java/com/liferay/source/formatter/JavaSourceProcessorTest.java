@@ -43,8 +43,7 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 		test(
 			"ConstructorParameterOrder.testjava",
 			"'_value = value;' should come before '_attribute = attribute;' " +
-				"to match order of constructor parameters",
-			23);
+				"to match order of constructor parameters");
 	}
 
 	@Test
@@ -118,11 +117,12 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 				"Missing parentheses in if-statement",
 				"Missing parentheses in if-statement",
 				"Missing parentheses in if-statement",
+				"Missing parentheses in if-statement",
+				"Unnecessary parentheses around expression.",
 				"Redundant parentheses in if-statement",
-				"Redundant parentheses in if-statement",
-				"Redundant parentheses in if-statement"
+				"Unnecessary parentheses around expression."
 			},
-			new Integer[] {25, 29, 33, 39, 43, 47, 51});
+			new Integer[] {25, 29, 33, 39, 43, 43, 47, 51});
 	}
 
 	@Test
@@ -162,12 +162,16 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 		test(
 			"IncorrectLineBreaks1.testjava",
 			new String[] {
-				"Line should not start with '='",
+				"'=' should be on the previous line.",
 				"There should be a line break after '||'",
 				"There should be a line break after '\"Hello World\", " +
 					"\"Hello\", \"World\"),'",
+				"Add the string 'Hello World Hello World ' to the previous " +
+					"literal string",
 				"There should be a line break after '\"Hello World Hello " +
 					"World Hello World\",'",
+				"There should be a line break after " +
+					"'anotherStringWithAVeryLongName,'",
 				"There should be a line break after '='",
 				"There should be a line break after '+'",
 				"There should be a line break after '='",
@@ -181,13 +185,17 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 				"There should be a line break before 'new " +
 					"Comparator<String>() {'",
 				"There should be a line break after '},'",
+				"Line starts with '2' tabs, but '3' tabs are expected",
+				"Line starts with '2' tabs, but '3' tabs are expected",
 				"There should be a line break before 'throws'",
-				"There should be a line break before 'throws'",
-				"'new String[] {' should be added to previous line"
+				"There should be a line break after " +
+					"'themeDisplay.getCompanyId(),'",
+				"Line starts with '2' tabs, but '3' tabs are expected",
+				"There should be a line break before 'throws'"
 			},
 			new Integer[] {
-				31, 35, 43, 47, 49, 52, 55, 59, 62, 67, 71, 76, 80, 87, 98, 111,
-				116, 122, 132
+				33, 37, 45, 49, 49, 54, 57, 60, 63, 67, 70, 75, 79, 84, 88, 95,
+				106, 119, 123, 124, 124, 131, 141, 141
 			});
 		test("IncorrectLineBreaks2.testjava");
 	}
@@ -212,9 +220,11 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 			new String[] {
 				"There should be a line break after '('",
 				"There should be a line break after '{'",
-				"Line starts with 3 tabs, but should be 4"
+				"Line starts with '3' tabs, but '4' tabs are expected",
+				"Line starts with '2' tabs, but '3' tabs are expected",
+				"Line starts with '3' tabs, but '4' tabs are expected"
 			},
-			new Integer[] {26, 30, 37});
+			new Integer[] {26, 30, 31, 32, 37});
 	}
 
 	@Test
@@ -328,7 +338,8 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 		test(
 			"SecureRandomNumberGeneration.testjava",
 			"Use SecureRandomUtil or com.liferay.portal.kernel.security." +
-				"SecureRandom instead of java.security.SecureRandom");
+				"SecureRandom instead of java.security.SecureRandom, see " +
+					"LPS-39058");
 	}
 
 	@Test

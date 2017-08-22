@@ -53,6 +53,14 @@ public class DocumentFixture {
 		return document;
 	}
 
+	public void mockProperty(String property, String value) {
+		Mockito.when(
+			props.get(property)
+		).thenReturn(
+			value
+		);
+	}
+
 	public void setUp() {
 		setUpFastDateFormatFactoryUtil();
 		setUpPropsUtil();
@@ -61,14 +69,6 @@ public class DocumentFixture {
 	public void tearDown() {
 		tearDownFastDateFormatFactoryUtil();
 		tearDownPropsUtil();
-	}
-
-	protected void mockProperty(String property, String value) {
-		Mockito.when(
-			props.get(property)
-		).thenReturn(
-			value
-		);
 	}
 
 	protected void setUpFastDateFormatFactoryUtil() {
@@ -102,7 +102,6 @@ public class DocumentFixture {
 		mockProperty(
 			PropsKeys.INDEX_SEARCH_COLLATED_SPELL_CHECK_RESULT_SCORES_THRESHOLD,
 			"50");
-		mockProperty(PropsKeys.INDEX_SEARCH_HIGHLIGHT_ENABLED, "true");
 		mockProperty(PropsKeys.INDEX_SEARCH_HIGHLIGHT_FRAGMENT_SIZE, "80");
 		mockProperty(
 			PropsKeys.INDEX_SEARCH_HIGHLIGHT_REQUIRE_FIELD_MATCH, "true");
@@ -115,6 +114,8 @@ public class DocumentFixture {
 		mockProperty(
 			PropsKeys.INDEX_SEARCH_QUERY_SUGGESTION_SCORES_THRESHOLD, "0");
 		mockProperty(PropsKeys.INDEX_SEARCH_SCORING_ENABLED, "true");
+		mockProperty(
+			PropsKeys.INDEX_SORTABLE_TEXT_FIELDS_TRUNCATED_LENGTH, "255");
 
 		PropsUtil.setProps(props);
 	}

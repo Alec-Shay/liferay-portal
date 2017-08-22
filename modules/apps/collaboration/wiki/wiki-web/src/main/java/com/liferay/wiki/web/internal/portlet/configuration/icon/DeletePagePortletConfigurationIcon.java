@@ -21,10 +21,10 @@ import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.HtmlUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.trash.kernel.util.TrashUtil;
+import com.liferay.trash.TrashHelper;
 import com.liferay.wiki.constants.WikiPortletKeys;
 import com.liferay.wiki.model.WikiPage;
 import com.liferay.wiki.service.permission.WikiPagePermissionChecker;
@@ -36,6 +36,7 @@ import javax.portlet.PortletResponse;
 import javax.portlet.PortletURL;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Roberto Díaz
@@ -75,7 +76,7 @@ public class DeletePagePortletConfigurationIcon
 		try {
 			WikiPage page = ActionUtil.getPage(portletRequest);
 
-			PortletURL portletURL = PortalUtil.getControlPanelPortletURL(
+			PortletURL portletURL = _portal.getControlPanelPortletURL(
 				portletRequest, WikiPortletKeys.WIKI_ADMIN,
 				PortletRequest.ACTION_PHASE);
 
@@ -93,7 +94,7 @@ public class DeletePagePortletConfigurationIcon
 					"version", String.valueOf(page.getVersion()));
 			}
 
-			PortletURL redirectURL = PortalUtil.getControlPanelPortletURL(
+			PortletURL redirectURL = _portal.getControlPanelPortletURL(
 				portletRequest, WikiPortletKeys.WIKI_ADMIN,
 				PortletRequest.ACTION_PHASE);
 
@@ -152,7 +153,7 @@ public class DeletePagePortletConfigurationIcon
 
 	protected boolean isTrashEnabled(long groupId) {
 		try {
-			if (TrashUtil.isTrashEnabled(groupId)) {
+			if (_trashHelper.isTrashEnabled(groupId)) {
 				return true;
 			}
 		}
@@ -161,5 +162,11 @@ public class DeletePagePortletConfigurationIcon
 
 		return false;
 	}
+
+	@Reference
+	private Portal _portal;
+
+	@Reference
+	private TrashHelper _trashHelper;
 
 }

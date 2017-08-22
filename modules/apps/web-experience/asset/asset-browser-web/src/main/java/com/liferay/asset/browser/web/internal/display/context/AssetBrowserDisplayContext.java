@@ -338,8 +338,7 @@ public class AssetBrowserDisplayContext {
 
 		Group group = GroupLocalServiceUtil.fetchGroup(getGroupId());
 
-		return HtmlUtil.escape(
-			group.getDescriptiveName(themeDisplay.getLocale()));
+		return group.getDescriptiveName(themeDisplay.getLocale());
 	}
 
 	public String getOrderByCol() {
@@ -408,14 +407,10 @@ public class AssetBrowserDisplayContext {
 	}
 
 	public long[] getSelectedGroupIds() {
-		if (_selectedGroupIds != null) {
-			return _selectedGroupIds;
-		}
-
-		_selectedGroupIds = StringUtil.split(
+		long[] selectedGroupIds = StringUtil.split(
 			ParamUtil.getString(_request, "selectedGroupIds"), 0L);
 
-		return _selectedGroupIds;
+		return selectedGroupIds;
 	}
 
 	public int[] getStatuses() {
@@ -522,7 +517,6 @@ public class AssetBrowserDisplayContext {
 	private final RenderRequest _renderRequest;
 	private final RenderResponse _renderResponse;
 	private final HttpServletRequest _request;
-	private long[] _selectedGroupIds;
 	private Boolean _showNonindexable;
 	private Boolean _showScheduled;
 	private Long _subtypeSelectionId;

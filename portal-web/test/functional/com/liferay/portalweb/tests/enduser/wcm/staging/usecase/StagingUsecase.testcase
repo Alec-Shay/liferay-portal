@@ -360,7 +360,10 @@
 		</execute>
 	</command>
 
-	<command name="PublishPortlet" priority="4">
+	<command name="PublishPortlet" priority="5">
+		<property name="portal.acceptance" value="pending" />
+		<property name="testray.component.names" value="Training" />
+
 		<execute macro="ProductMenu#gotoSite">
 			<var name="site" value="Site Name" />
 		</execute>
@@ -415,6 +418,60 @@
 		<execute macro="Team#viewCP">
 			<var name="teamDescription" value="Site Team Description" />
 			<var name="teamName" value="Site Team Name" />
+		</execute>
+	</command>
+
+	<command name="SearchPublishTemplate" priority="4">
+		<execute macro="SitePageNavigator#gotoPages">
+			<var name="page" value="Public Pages" />
+			<var name="site" value="Site Name" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoSitesPublishing">
+			<var name="portlet" value="Staging" />
+		</execute>
+
+		<execute macro="Staging#addPublishTemplate">
+			<var name="publishTemplateDescription" value="Publish Template Description" />
+			<var name="publishTemplateName" value="First Template" />
+		</execute>
+
+		<execute macro="Staging#savePublishTemplate">
+			<var name="publishTemplateDescription" value="Publish Template Description" />
+			<var name="publishTemplateName" value="First Template" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoSitesPublishing">
+			<var name="portlet" value="Staging" />
+		</execute>
+
+		<execute macro="Staging#addPublishTemplate">
+			<var name="publishTemplateDescription" value="Publish Template Description 2" />
+			<var name="publishTemplateName" value="Second Template" />
+		</execute>
+
+		<execute macro="Staging#savePublishTemplate">
+			<var name="publishTemplateDescription" value="Publish Template Description 2" />
+			<var name="publishTemplateName" value="Second Template" />
+		</execute>
+
+		<execute macro="Navigator#gotoStagedSitePage">
+			<var name="pageName" value="Staging Test Page" />
+			<var name="siteName" value="Site Name" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoSite">
+			<var name="site" value="Site Name" />
+		</execute>
+
+		<execute macro="Navigator#gotoStagedView" />
+
+		<execute macro="ProductMenu#gotoSitesPublishing">
+			<var name="portlet" value="Staging" />
+		</execute>
+
+		<execute macro="Staging#searchPublishTemplate">
+			<var name="searchTerm" value="Second" />
 		</execute>
 	</command>
 
@@ -669,6 +726,9 @@
 	</command>
 
 	<command name="TrashEntryReferencePublishing" priority="5">
+		<property name="portal.acceptance" value="pending" />
+		<property name="testray.component.names" value="Training" />
+
 		<execute macro="Navigator#gotoStagedSitePage">
 			<var name="pageName" value="Staging Test Page" />
 			<var name="siteName" value="Site Name" />

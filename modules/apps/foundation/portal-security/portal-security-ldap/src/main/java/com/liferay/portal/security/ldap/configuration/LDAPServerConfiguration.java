@@ -28,7 +28,7 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
 @Meta.OCD(
 	factory = true,
 	id = "com.liferay.portal.security.ldap.configuration.LDAPServerConfiguration",
-	localization = "content/Language", name = "ldap.server.configuration.name"
+	localization = "content/Language", name = "ldap-server-configuration-name"
 )
 public interface LDAPServerConfiguration {
 
@@ -52,7 +52,7 @@ public interface LDAPServerConfiguration {
 	@Meta.AD(deflt = "", required = false)
 	public String securityPrincipal();
 
-	@Meta.AD(deflt = "secret", required = false)
+	@Meta.AD(deflt = "secret", required = false, type = Meta.Type.Password)
 	public String securityCredential();
 
 	@Meta.AD(

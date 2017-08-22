@@ -14,8 +14,6 @@
 
 package com.liferay.knowledge.base.service.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.knowledge.base.constants.KBActionKeys;
 import com.liferay.knowledge.base.constants.KBFolderConstants;
 import com.liferay.knowledge.base.constants.KBPortletKeys;
@@ -77,7 +75,6 @@ import java.util.Map;
  * @author Peter Shin
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 
 	@Override
@@ -404,7 +401,7 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 
 		List<KBArticle> kbArticles = new ArrayList<>();
 
-		Long[][] params = new Long[][] {ArrayUtil.toArray(resourcePrimKeys)};
+		Long[][] params = {ArrayUtil.toArray(resourcePrimKeys)};
 
 		while ((params = KnowledgeBaseUtil.getParams(params[0])) != null) {
 			List<KBArticle> curKBArticles = null;
@@ -468,7 +465,7 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 
 		int count = 0;
 
-		Long[][] params = new Long[][] {ArrayUtil.toArray(resourcePrimKeys)};
+		Long[][] params = {ArrayUtil.toArray(resourcePrimKeys)};
 
 		while ((params = KnowledgeBaseUtil.getParams(params[0])) != null) {
 			if (status == WorkflowConstants.STATUS_ANY) {

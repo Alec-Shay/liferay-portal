@@ -12,6 +12,7 @@
 							},
 							path: 'fieldset_field.js',
 							requires: [
+								'liferay-ddm-form-field-fieldset-util',
 								'liferay-ddm-form-renderer-field'
 							]
 						},
@@ -19,9 +20,13 @@
 							condition: {
 								trigger: 'liferay-ddm-form-renderer'
 							},
-							path: 'fieldset.soy.js',
+							path: 'fieldset.js'
+						},
+						'liferay-ddm-form-field-fieldset-util': {
+							path: 'fieldset_field_util.js',
 							requires: [
-								'soyutils'
+								'aui-component',
+								'liferay-ddm-form-renderer-util'
 							]
 						}
 					},

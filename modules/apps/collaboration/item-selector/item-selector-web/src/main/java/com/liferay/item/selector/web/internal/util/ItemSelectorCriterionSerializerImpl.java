@@ -146,7 +146,7 @@ public class ItemSelectorCriterionSerializerImpl
 	}
 
 	private static final String[] _EXCLUDED_FIELD_NAMES =
-		new String[] {"availableItemSelectorReturnTypes", "class"};
+		{"availableItemSelectorReturnTypes", "class"};
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		ItemSelectorCriterionSerializerImpl.class);
@@ -164,8 +164,7 @@ public class ItemSelectorCriterionSerializerImpl
 		_itemSelectorViewReturnTypeProviderHandler;
 	private ServiceTracker
 		<ItemSelectorViewReturnTypeProvider,
-			ItemSelectorViewReturnTypeProvider>
-		_serviceTracker;
+			ItemSelectorViewReturnTypeProvider> _serviceTracker;
 	private ServiceTracker<ItemSelectorView, ItemSelectorView>
 		_serviceTrackerItemSelectorView;
 	private ServiceTrackerMap<String, ItemSelectorView> _serviceTrackerMap;

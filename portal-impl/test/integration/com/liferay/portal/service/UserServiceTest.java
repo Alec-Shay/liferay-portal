@@ -48,11 +48,11 @@ import com.liferay.portal.kernel.util.CalendarFactoryUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.UnicodeProperties;
+import com.liferay.portal.test.mail.MailServiceTestUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.SynchronousMailTestRule;
 import com.liferay.portal.util.PrefsPropsUtil;
 import com.liferay.portal.util.PropsUtil;
-import com.liferay.portal.util.test.MailServiceTestUtil;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -139,7 +139,8 @@ public class UserServiceTest {
 				UserGroupRoleLocalServiceUtil.getUserGroupRoles(
 					_user.getUserId(), groupId);
 
-			Assert.assertEquals(1, userGroupRoles.size());
+			Assert.assertEquals(
+				userGroupRoles.toString(), 1, userGroupRoles.size());
 
 			UserGroupRole userGroupRole = userGroupRoles.get(0);
 

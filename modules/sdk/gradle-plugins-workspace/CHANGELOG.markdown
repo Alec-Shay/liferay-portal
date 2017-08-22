@@ -61,7 +61,96 @@ default repository for module and WAR projects.
 ### Changed
 - [LPS-69501]: Update the [Liferay Gradle Plugins] dependency to version 3.0.47.
 
+## 1.2.3 - 2017-01-27
+
+### Changed
+- [LPS-70282]: Update the [Liferay Gradle Plugins] dependency to version 3.1.2.
+
+## 1.2.4 - 2017-01-30
+
+### Changed
+- [LPS-70336]: Update the [Liferay Gradle Plugins] dependency to version 3.1.3.
+- [LPS-70353]: Update the [Gradle Download Task] dependency to version 3.2.0.
+- [LPS-70362]: Use the Liferay CDN to download bundles by default.
+
+## 1.2.5 - 2017-02-08
+
+### Changed
+- [LPS-70515]: Update the [Liferay Gradle Plugins] dependency to version 3.1.8.
+
+## 1.3.0 - 2017-02-27
+
+### Added
+- [LPS-70677]: Add the ability to precompile the JSP files of OSGi modules via
+the `liferay.workspace.modules.jsp.precompile.enabled` property in
+`gradle.properties`.
+
+### Changed
+- [LPS-66853]: Update the [Liferay Gradle Plugins] dependency to version 3.2.9.
+
+### Fixed
+- [LPS-67573]: Move all properties available in the `gradle.liferayWorkspace`
+extension object into the public API.
+
+## 1.4.0 - 2017-05-05
+
+### Added
+- [LPS-71724]: Add the ability to download and upgrade the Plugins SDK
+directories by executing the `upgradePluginsSDK` task in the root project.
+- [LPS-71724]: Add [Liferay CDN](https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/public)
+as the default repository in the root project. This behavior can be disabled by
+setting the `liferay.workspace.default.repository.enabled` property to `false`
+in `gradle.properties`.
+
+### Changed
+- [LPS-72252]: Update the [Liferay Gradle Plugins] dependency to version 3.3.9.
+
+## 1.5.0 - 2017-07-05
+
+### Added
+- [LPS-73056]: Add the ability to download the Liferay bundle from
+[www.liferay.com](https://www.liferay.com) via authentication token. This
+behavior can be enabled by setting the `liferay.workspace.bundle.token.download`
+property to `true` in `gradle.properties`.
+
+### Changed
+- [LPS-73248]: Use Liferay 7.0.3 GA4 by default.
+- [LPS-73383]: Update the [Liferay Gradle Plugins] dependency to version 3.3.35.
+
+## 1.5.1 - 2017-07-21
+
+### Changed
+- [LPS-72705]: Update the [Liferay Gradle Plugins] dependency to version 3.4.11.
+- [LPS-73746]: Update the [Liferay Portal Tools Bundle Support] dependency to
+version 3.0.2.
+
+### Fixed
+- [LPS-73746]: Trim authentication token in case users add extra lines into
+their token file.
+
+## 1.6.0 - 2017-08-01
+
+### Added
+- [LPS-73913]: Add the ability to pass the Liferay bundle authentication token
+password from a file by setting the
+`liferay.workspace.bundle.token.password.file` property in `gradle.properties`.
+
+### Changed
+- [LPS-73855]: Update the [Liferay Gradle Plugins] dependency to version 3.4.17.
+- [LPS-73913]: Update the [Liferay Portal Tools Bundle Support] dependency to
+version 3.1.0.
+
+## 1.7.0 - *(Unreleased)*
+
+### Added
+- [LPS-74124]: Add the ability to configure the cache directory for downloaded
+Liferay bundles by setting the `liferay.workspace.bundle.cache.dir` property in
+`gradle.properties`.
+
+[Gradle Download Task]: https://github.com/michel-kraemer/gradle-download-task/
 [Liferay Gradle Plugins]: https://github.com/liferay/liferay-portal/tree/master/modules/sdk/gradle-plugins
+[Liferay Portal Tools Bundle Support]: https://github.com/liferay/liferay-portal/tree/master/modules/util/portal-tools-bundle-support
+[LPS-66853]: https://issues.liferay.com/browse/LPS-66853
 [LPS-66906]: https://issues.liferay.com/browse/LPS-66906
 [LPS-67352]: https://issues.liferay.com/browse/LPS-67352
 [LPS-67573]: https://issues.liferay.com/browse/LPS-67573
@@ -73,3 +162,19 @@ default repository for module and WAR projects.
 [LPS-69445]: https://issues.liferay.com/browse/LPS-69445
 [LPS-69473]: https://issues.liferay.com/browse/LPS-69473
 [LPS-69501]: https://issues.liferay.com/browse/LPS-69501
+[LPS-70282]: https://issues.liferay.com/browse/LPS-70282
+[LPS-70336]: https://issues.liferay.com/browse/LPS-70336
+[LPS-70353]: https://issues.liferay.com/browse/LPS-70353
+[LPS-70362]: https://issues.liferay.com/browse/LPS-70362
+[LPS-70515]: https://issues.liferay.com/browse/LPS-70515
+[LPS-70677]: https://issues.liferay.com/browse/LPS-70677
+[LPS-71724]: https://issues.liferay.com/browse/LPS-71724
+[LPS-72252]: https://issues.liferay.com/browse/LPS-72252
+[LPS-72705]: https://issues.liferay.com/browse/LPS-72705
+[LPS-73056]: https://issues.liferay.com/browse/LPS-73056
+[LPS-73248]: https://issues.liferay.com/browse/LPS-73248
+[LPS-73383]: https://issues.liferay.com/browse/LPS-73383
+[LPS-73746]: https://issues.liferay.com/browse/LPS-73746
+[LPS-73855]: https://issues.liferay.com/browse/LPS-73855
+[LPS-73913]: https://issues.liferay.com/browse/LPS-73913
+[LPS-74124]: https://issues.liferay.com/browse/LPS-74124

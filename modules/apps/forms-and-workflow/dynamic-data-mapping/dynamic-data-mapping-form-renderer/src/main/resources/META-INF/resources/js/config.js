@@ -25,7 +25,8 @@
 								'liferay-ddm-form-renderer-types',
 								'liferay-ddm-form-renderer-util',
 								'liferay-ddm-form-renderer-validation',
-								'liferay-ddm-form-soy'
+								'liferay-ddm-form-soy',
+								'liferay-ddm-soy-template-util'
 							]
 						},
 						'liferay-ddm-form-renderer-context': {
@@ -124,6 +125,7 @@
 							path: 'form_pagination_support.js',
 							requires: [
 								'aui-pagination',
+								'liferay-ddm-form-renderer-paginated',
 								'liferay-ddm-form-renderer-wizard'
 							]
 						},
@@ -166,6 +168,14 @@
 								'liferay-ddm-form-renderer-expressions-evaluator'
 							]
 						},
+						'liferay-ddm-form-renderer-paginated': {
+							path: 'paginated.js',
+							requires: [
+								'aui-component',
+								'aui-node',
+								'widget'
+							]
+						},
 						'liferay-ddm-form-renderer-wizard': {
 							path: 'wizard.js',
 							requires: [
@@ -173,6 +183,10 @@
 								'aui-node',
 								'widget'
 							]
+						},
+						'liferay-ddm-soy-template-util': {
+							path: 'soy_template_util.js',
+							requires: []
 						}
 					},
 					root: MODULE_PATH + '/js/'
@@ -182,10 +196,7 @@
 					combine: Liferay.AUI.getCombine(),
 					modules: {
 						'liferay-ddm-form-soy': {
-							path: 'form.soy.js',
-							requires: [
-								'soyutils'
-							]
+							path: 'form.js'
 						}
 					},
 					root: MODULE_PATH + '/'

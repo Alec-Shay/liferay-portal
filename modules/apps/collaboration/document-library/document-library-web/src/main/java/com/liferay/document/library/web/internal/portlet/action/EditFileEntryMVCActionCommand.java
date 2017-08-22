@@ -34,6 +34,7 @@ import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.service.DLAppService;
 import com.liferay.document.library.kernel.service.DLTrashService;
 import com.liferay.document.library.kernel.util.DLUtil;
+import com.liferay.document.library.kernel.util.DLValidator;
 import com.liferay.document.library.web.constants.DLPortletKeys;
 import com.liferay.document.library.web.internal.settings.DLPortletInstanceSettings;
 import com.liferay.dynamic.data.mapping.kernel.StorageFieldRequiredException;
@@ -68,11 +69,11 @@ import com.liferay.portal.kernel.upload.UploadPortletRequest;
 import com.liferay.portal.kernel.upload.UploadRequestSizeException;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ContentTypes;
-import com.liferay.portal.kernel.util.HttpUtil;
+import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.KeyValuePair;
 import com.liferay.portal.kernel.util.MimeTypesUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.StreamUtil;
 import com.liferay.portal.kernel.util.StringPool;
@@ -83,15 +84,16 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.util.PrefsPropsUtil;
-import com.liferay.trash.kernel.service.TrashEntryService;
-import com.liferay.trash.kernel.util.TrashUtil;
+import com.liferay.trash.service.TrashEntryService;
 
 import java.io.InputStream;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.portlet.ActionRequest;
@@ -247,7 +249,7 @@ public class EditFileEntryMVCActionCommand extends BaseMVCActionCommand {
 		throws Exception {
 
 		UploadPortletRequest uploadPortletRequest =
-			PortalUtil.getUploadPortletRequest(actionRequest);
+			_portal.getUploadPortletRequest(actionRequest);
 
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
@@ -377,14 +379,23 @@ public class EditFileEntryMVCActionCommand extends BaseMVCActionCommand {
 
 		FileEntry fileEntry = _dlAppService.getFileEntry(fileEntryId);
 
-		if (fileEntry.isRepositoryCapabilityProvided(TrashCapability.class)) {
-			fileEntry = _dlTrashService.moveFileEntryToTrash(fileEntryId);
+		if (!fileEntry.isRepositoryCapabilityProvided(TrashCapability.class)) {
+			hideDefaultSuccessMessage(actionRequest);
 
-			TrashUtil.addTrashSessionMessages(
-				actionRequest, (TrashedModel)fileEntry.getModel());
+			return;
 		}
 
-		hideDefaultSuccessMessage(actionRequest);
+		fileEntry = _dlTrashService.moveFileEntryToTrash(fileEntryId);
+
+		List<TrashedModel> trashedModels = new ArrayList<>();
+
+		trashedModels.add((TrashedModel)fileEntry.getModel());
+
+		Map<String, Object> data = new HashMap<>();
+
+		data.put("trashedModels", trashedModels);
+
+		addDeleteSuccessData(actionRequest, data);
 	}
 
 	protected void deleteTempFileEntry(
@@ -512,7 +523,7 @@ public class EditFileEntryMVCActionCommand extends BaseMVCActionCommand {
 			else if (cmd.equals(Constants.PREVIEW)) {
 				SessionMessages.add(
 					actionRequest,
-					PortalUtil.getPortletId(actionRequest) +
+					_portal.getPortletId(actionRequest) +
 						SessionMessages.KEY_SUFFIX_FORCE_SEND_REDIRECT);
 
 				hideDefaultSuccessMessage(actionRequest);
@@ -540,23 +551,23 @@ public class EditFileEntryMVCActionCommand extends BaseMVCActionCommand {
 				}
 				else {
 					if (windowState.equals(LiferayWindowState.POP_UP)) {
-						redirect = PortalUtil.escapeRedirect(
+						redirect = _portal.escapeRedirect(
 							ParamUtil.getString(actionRequest, "redirect"));
 
 						if (Validator.isNotNull(redirect)) {
 							if (cmd.equals(Constants.ADD) &&
 								(fileEntry != null)) {
 
-								String portletId = HttpUtil.getParameter(
+								String portletId = _http.getParameter(
 									redirect, "p_p_id", false);
 
-								String namespace =
-									PortalUtil.getPortletNamespace(portletId);
+								String namespace = _portal.getPortletNamespace(
+									portletId);
 
-								redirect = HttpUtil.addParameter(
+								redirect = _http.addParameter(
 									redirect, namespace + "className",
 									DLFileEntry.class.getName());
-								redirect = HttpUtil.addParameter(
+								redirect = _http.addParameter(
 									redirect, namespace + "classPK",
 									fileEntry.getFileEntryId());
 							}
@@ -631,18 +642,11 @@ public class EditFileEntryMVCActionCommand extends BaseMVCActionCommand {
 				"please-enter-a-file-with-a-valid-file-name");
 		}
 		else if (e instanceof FileSizeException) {
-			long fileMaxSize = PrefsPropsUtil.getLong(
-				PropsKeys.DL_FILE_MAX_SIZE);
-
-			if (fileMaxSize == 0) {
-				fileMaxSize = PrefsPropsUtil.getLong(
-					PropsKeys.UPLOAD_SERVLET_REQUEST_IMPL_MAX_SIZE);
-			}
-
 			errorMessage = themeDisplay.translate(
 				"please-enter-a-file-with-a-valid-file-size-no-larger-than-x",
 				TextFormatter.formatStorageSize(
-					fileMaxSize, themeDisplay.getLocale()));
+					_dlValidator.getMaxAllowableSize(),
+					themeDisplay.getLocale()));
 		}
 		else if (e instanceof InvalidFileEntryTypeException) {
 			errorMessage = themeDisplay.translate(
@@ -761,8 +765,8 @@ public class EditFileEntryMVCActionCommand extends BaseMVCActionCommand {
 				e instanceof FileSizeException ||
 				e instanceof UploadRequestSizeException) {
 
-				HttpServletResponse response =
-					PortalUtil.getHttpServletResponse(actionResponse);
+				HttpServletResponse response = _portal.getHttpServletResponse(
+					actionResponse);
 
 				response.setContentType(ContentTypes.TEXT_HTML);
 				response.setStatus(HttpServletResponse.SC_OK);
@@ -805,20 +809,12 @@ public class EditFileEntryMVCActionCommand extends BaseMVCActionCommand {
 					errorType = ServletResponseConstants.SC_FILE_NAME_EXCEPTION;
 				}
 				else if (e instanceof FileSizeException) {
-					long fileMaxSize = PrefsPropsUtil.getLong(
-						PropsKeys.DL_FILE_MAX_SIZE);
-
-					if (fileMaxSize == 0) {
-						fileMaxSize = PrefsPropsUtil.getLong(
-							PropsKeys.UPLOAD_SERVLET_REQUEST_IMPL_MAX_SIZE);
-					}
-
 					errorMessage = themeDisplay.translate(
 						"please-enter-a-file-with-a-valid-file-size-no-" +
 							"larger-than-x",
 						TextFormatter.formatStorageSize(
-							fileMaxSize, themeDisplay.getLocale()));
-
+							_dlValidator.getMaxAllowableSize(),
+							themeDisplay.getLocale()));
 					errorType = ServletResponseConstants.SC_FILE_SIZE_EXCEPTION;
 				}
 
@@ -913,7 +909,7 @@ public class EditFileEntryMVCActionCommand extends BaseMVCActionCommand {
 		throws Exception {
 
 		UploadPortletRequest uploadPortletRequest =
-			PortalUtil.getUploadPortletRequest(actionRequest);
+			_portal.getUploadPortletRequest(actionRequest);
 
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
@@ -1038,6 +1034,16 @@ public class EditFileEntryMVCActionCommand extends BaseMVCActionCommand {
 
 	private DLAppService _dlAppService;
 	private DLTrashService _dlTrashService;
+
+	@Reference
+	private DLValidator _dlValidator;
+
+	@Reference
+	private Http _http;
+
+	@Reference
+	private Portal _portal;
+
 	private TrashEntryService _trashEntryService;
 
 }

@@ -16,7 +16,7 @@ package com.liferay.dynamic.data.lists.form.web.internal.portlet;
 
 import com.liferay.dynamic.data.lists.form.web.configuration.DDLFormWebConfigurationActivator;
 import com.liferay.dynamic.data.lists.form.web.constants.DDLFormPortletKeys;
-import com.liferay.dynamic.data.lists.form.web.internal.converter.DDMFormRulesToDDLFormRulesConverter;
+import com.liferay.dynamic.data.lists.form.web.internal.converter.DDMFormRuleToDDLFormRuleConverter;
 import com.liferay.dynamic.data.lists.form.web.internal.display.context.DDLFormAdminDisplayContext;
 import com.liferay.dynamic.data.lists.model.DDLRecordSet;
 import com.liferay.dynamic.data.lists.model.DDLRecordSetSettings;
@@ -27,6 +27,7 @@ import com.liferay.dynamic.data.mapping.constants.DDMWebKeys;
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldTypeServicesTracker;
 import com.liferay.dynamic.data.mapping.form.renderer.DDMFormRenderer;
 import com.liferay.dynamic.data.mapping.form.renderer.DDMFormRenderingContext;
+import com.liferay.dynamic.data.mapping.form.renderer.DDMFormTemplateContextFactory;
 import com.liferay.dynamic.data.mapping.form.values.factory.DDMFormValuesFactory;
 import com.liferay.dynamic.data.mapping.io.DDMFormFieldTypesJSONSerializer;
 import com.liferay.dynamic.data.mapping.io.DDMFormJSONSerializer;
@@ -47,9 +48,8 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowEngineManager;
 
@@ -127,18 +127,18 @@ public class DDLFormAdminPortlet extends MVCPortlet {
 	protected DDMFormRenderingContext createDDMFormRenderingContext(
 		RenderRequest renderRequest, RenderResponse renderResponse) {
 
-		String languageId = ParamUtil.getString(renderRequest, "languageId");
+		ThemeDisplay themeDisplay = (ThemeDisplay)renderRequest.getAttribute(
+			WebKeys.THEME_DISPLAY);
 
 		DDMFormRenderingContext ddmFormRenderingContext =
 			new DDMFormRenderingContext();
 
 		ddmFormRenderingContext.setHttpServletRequest(
-			PortalUtil.getHttpServletRequest(renderRequest));
+			_portal.getHttpServletRequest(renderRequest));
 		ddmFormRenderingContext.setHttpServletResponse(
-			PortalUtil.getHttpServletResponse(renderResponse));
+			_portal.getHttpServletResponse(renderResponse));
 		ddmFormRenderingContext.setContainerId("settings");
-		ddmFormRenderingContext.setLocale(
-			LocaleUtil.fromLanguageId(languageId));
+		ddmFormRenderingContext.setLocale(themeDisplay.getLocale());
 		ddmFormRenderingContext.setPortletNamespace(
 			renderResponse.getNamespace());
 
@@ -262,7 +262,7 @@ public class DDLFormAdminPortlet extends MVCPortlet {
 
 	@Reference(unbind = "-")
 	protected void setDDMFormRulesToDDLFormRulesConverter(
-		DDMFormRulesToDDLFormRulesConverter
+		DDMFormRuleToDDLFormRuleConverter
 			ddmFormRulesToDDLFormRulesConverter) {
 
 		_ddmFormRulesToDDLFormRulesConverter =
@@ -332,7 +332,8 @@ public class DDLFormAdminPortlet extends MVCPortlet {
 				_ddmFormFieldTypeServicesTracker,
 				_ddmFormFieldTypesJSONSerializer, _ddmFormJSONSerializer,
 				_ddmFormLayoutJSONSerializer, _ddmFormRenderer,
-				_ddmFormRulesToDDLFormRulesConverter, _ddmFormValuesFactory,
+				_ddmFormRulesToDDLFormRulesConverter,
+				_ddmFormTemplateContextFactory, _ddmFormValuesFactory,
 				_ddmFormValuesMerger, _ddmStructureLocalService, _jsonFactory,
 				_storageEngine, _workflowEngineManager);
 
@@ -371,12 +372,20 @@ public class DDLFormAdminPortlet extends MVCPortlet {
 	private DDMFormJSONSerializer _ddmFormJSONSerializer;
 	private DDMFormLayoutJSONSerializer _ddmFormLayoutJSONSerializer;
 	private DDMFormRenderer _ddmFormRenderer;
-	private DDMFormRulesToDDLFormRulesConverter
+	private DDMFormRuleToDDLFormRuleConverter
 		_ddmFormRulesToDDLFormRulesConverter;
+
+	@Reference
+	private DDMFormTemplateContextFactory _ddmFormTemplateContextFactory;
+
 	private DDMFormValuesFactory _ddmFormValuesFactory;
 	private DDMFormValuesMerger _ddmFormValuesMerger;
 	private DDMStructureLocalService _ddmStructureLocalService;
 	private JSONFactory _jsonFactory;
+
+	@Reference
+	private Portal _portal;
+
 	private StorageEngine _storageEngine;
 	private WorkflowEngineManager _workflowEngineManager;
 

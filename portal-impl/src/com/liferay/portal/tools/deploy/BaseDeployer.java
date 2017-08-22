@@ -44,6 +44,7 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.SystemProperties;
 import com.liferay.portal.kernel.util.TextFormatter;
 import com.liferay.portal.kernel.util.Time;
+import com.liferay.portal.kernel.util.UnsafeConsumer;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
@@ -76,7 +77,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -170,7 +173,7 @@ public class BaseDeployer implements AutoDeployer, Deployer {
 			String extResource =
 				"ext-" + servletContextName + resource.substring(3);
 
-			String path = DeployUtil.getResourcePath(extResource);
+			String path = DeployUtil.getResourcePath(tempDirPaths, extResource);
 
 			if (_log.isDebugEnabled()) {
 				if (path == null) {
@@ -192,7 +195,7 @@ public class BaseDeployer implements AutoDeployer, Deployer {
 	public void addRequiredJar(List<String> jars, String resource)
 		throws Exception {
 
-		String path = DeployUtil.getResourcePath(resource);
+		String path = DeployUtil.getResourcePath(tempDirPaths, resource);
 
 		if (path == null) {
 			throw new RuntimeException(
@@ -243,17 +246,7 @@ public class BaseDeployer implements AutoDeployer, Deployer {
 				"The system property deployer.app.server.type is not set");
 		}
 
-		if (!appServerType.equals(ServerDetector.GLASSFISH_ID) &&
-			!appServerType.equals(ServerDetector.JBOSS_ID) &&
-			!appServerType.equals(ServerDetector.JONAS_ID) &&
-			!appServerType.equals(ServerDetector.JETTY_ID) &&
-			!appServerType.equals(ServerDetector.OC4J_ID) &&
-			!appServerType.equals(ServerDetector.RESIN_ID) &&
-			!appServerType.equals(ServerDetector.TOMCAT_ID) &&
-			!appServerType.equals(ServerDetector.WEBLOGIC_ID) &&
-			!appServerType.equals(ServerDetector.WEBSPHERE_ID) &&
-			!appServerType.equals(ServerDetector.WILDFLY_ID)) {
-
+		if (!ServerDetector.isSupported(appServerType)) {
 			throw new IllegalArgumentException(
 				appServerType + " is not a valid application server type");
 		}
@@ -280,33 +273,39 @@ public class BaseDeployer implements AutoDeployer, Deployer {
 	@Override
 	public AutoDeployer cloneAutoDeployer() throws AutoDeployException {
 		try {
-			Class<?> clazz = getClass();
+			Class<? extends BaseDeployer> clazz = getClass();
 
-			Deployer deployer = (Deployer)clazz.newInstance();
+			BaseDeployer baseDeployer = (BaseDeployer)clazz.newInstance();
 
-			deployer.setAppServerType(appServerType);
-			deployer.setAuiTaglibDTD(auiTaglibDTD);
-			deployer.setBaseDir(baseDir);
-			deployer.setDestDir(destDir);
-			deployer.setFilePattern(filePattern);
-			deployer.setJars(jars);
-			deployer.setJbossPrefix(jbossPrefix);
-			deployer.setPortletExtTaglibDTD(portletExtTaglibDTD);
-			deployer.setPortletTaglibDTD(portletTaglibDTD);
-			deployer.setSecurityTaglibDTD(securityTaglibDTD);
-			deployer.setThemeTaglibDTD(themeTaglibDTD);
-			deployer.setTomcatLibDir(tomcatLibDir);
-			deployer.setUiTaglibDTD(uiTaglibDTD);
-			deployer.setUnpackWar(unpackWar);
-			deployer.setUtilTaglibDTD(utilTaglibDTD);
-			deployer.setWars(wars);
-			deployer.setWildflyPrefix(wildflyPrefix);
+			baseDeployer.setAppServerType(appServerType);
+			baseDeployer.setAuiTaglibDTD(auiTaglibDTD);
+			baseDeployer.setBaseDir(baseDir);
+			baseDeployer.setDestDir(destDir);
+			baseDeployer.setFilePattern(filePattern);
+			baseDeployer.setJars(jars);
+			baseDeployer.setJbossPrefix(jbossPrefix);
+			baseDeployer.setPortletExtTaglibDTD(portletExtTaglibDTD);
+			baseDeployer.setPortletTaglibDTD(portletTaglibDTD);
+			baseDeployer.setSecurityTaglibDTD(securityTaglibDTD);
+			baseDeployer.setThemeTaglibDTD(themeTaglibDTD);
+			baseDeployer.setTomcatLibDir(tomcatLibDir);
+			baseDeployer.setUiTaglibDTD(uiTaglibDTD);
+			baseDeployer.setUnpackWar(unpackWar);
+			baseDeployer.setUtilTaglibDTD(utilTaglibDTD);
+			baseDeployer.setWars(wars);
+			baseDeployer.setWildflyPrefix(wildflyPrefix);
 
-			return (AutoDeployer)deployer;
+			return (AutoDeployer)baseDeployer;
 		}
 		catch (Exception e) {
 			throw new AutoDeployException(e);
 		}
+	}
+
+	@Override
+	public void close() throws IOException {
+		UnsafeConsumer.accept(
+			tempDirPaths, DeployUtil::deletePath, IOException.class);
 	}
 
 	@Override
@@ -345,7 +344,7 @@ public class BaseDeployer implements AutoDeployer, Deployer {
 				jarFullName.lastIndexOf("/") + 1);
 
 			if (!FileUtil.exists(jarFullName)) {
-				DeployUtil.getResourcePath(jarName);
+				DeployUtil.getResourcePath(tempDirPaths, jarName);
 			}
 
 			FileUtil.copyFile(
@@ -402,7 +401,8 @@ public class BaseDeployer implements AutoDeployer, Deployer {
 			}
 
 			try {
-				String portalTldPath = DeployUtil.getResourcePath(portalTld);
+				String portalTldPath = DeployUtil.getResourcePath(
+					tempDirPaths, portalTld);
 
 				FileUtil.copyFile(
 					portalTldPath, srcFile + "/WEB-INF/tld/" + portalTld, true);
@@ -550,7 +550,8 @@ public class BaseDeployer implements AutoDeployer, Deployer {
 			return;
 		}
 
-		String contextPath = DeployUtil.getResourcePath("context.xml");
+		String contextPath = DeployUtil.getResourcePath(
+			tempDirPaths, "context.xml");
 
 		String content = FileUtil.read(contextPath);
 
@@ -567,11 +568,15 @@ public class BaseDeployer implements AutoDeployer, Deployer {
 			File srcFile, String displayName, PluginPackage pluginPackage)
 		throws Exception {
 
-		if (appServerType.equals(ServerDetector.JBOSS_ID)) {
+		if (appServerType.equals(ServerDetector.JBOSS_ID) ||
+			appServerType.equals(ServerDetector.WILDFLY_ID)) {
+
+			File file = new File(PropsValues.LIFERAY_WEB_PORTAL_DIR);
+
 			copyDependencyXml(
-				"jboss-deployment-structure.xml", srcFile + "/WEB-INF");
-		}
-		else if (appServerType.equals(ServerDetector.WILDFLY_ID)) {
+				"jboss-all.xml", srcFile + "/WEB-INF",
+				Collections.singletonMap("root_war", file.getName()), true);
+
 			copyDependencyXml(
 				"jboss-deployment-structure.xml", srcFile + "/WEB-INF");
 		}
@@ -1295,7 +1300,8 @@ public class BaseDeployer implements AutoDeployer, Deployer {
 
 		if (ignoreFiltersEnabled) {
 			String ignoreFiltersContent = FileUtil.read(
-				DeployUtil.getResourcePath("ignore-filters-web.xml"));
+				DeployUtil.getResourcePath(
+					tempDirPaths, "ignore-filters-web.xml"));
 
 			return ignoreFiltersContent;
 		}
@@ -1307,6 +1313,7 @@ public class BaseDeployer implements AutoDeployer, Deployer {
 	public String getInvokerFilterContent() {
 		StringBundler sb = new StringBundler(4);
 
+		sb.append(getInvokerFilterContent("ASYNC"));
 		sb.append(getInvokerFilterContent("ERROR"));
 		sb.append(getInvokerFilterContent("FORWARD"));
 		sb.append(getInvokerFilterContent("INCLUDE"));
@@ -1316,7 +1323,7 @@ public class BaseDeployer implements AutoDeployer, Deployer {
 	}
 
 	public String getInvokerFilterContent(String dispatcher) {
-		StringBundler sb = new StringBundler(23);
+		StringBundler sb = new StringBundler(24);
 
 		sb.append("<filter>");
 		sb.append("<filter-name>Invoker Filter - ");
@@ -1325,6 +1332,7 @@ public class BaseDeployer implements AutoDeployer, Deployer {
 		sb.append("<filter-class>");
 		sb.append(InvokerFilter.class.getName());
 		sb.append("</filter-class>");
+		sb.append("<async-supported>true</async-supported>");
 		sb.append("<init-param>");
 		sb.append("<param-name>dispatcher</param-name>");
 		sb.append("<param-value>");
@@ -1549,12 +1557,13 @@ public class BaseDeployer implements AutoDeployer, Deployer {
 
 		return FileUtil.read(
 			DeployUtil.getResourcePath(
-				"servlet-context-include-filters-web.xml"));
+				tempDirPaths, "servlet-context-include-filters-web.xml"));
 	}
 
 	public String getSessionFiltersContent() throws Exception {
 		String sessionFiltersContent = FileUtil.read(
-			DeployUtil.getResourcePath("session-filters-web.xml"));
+			DeployUtil.getResourcePath(
+				tempDirPaths, "session-filters-web.xml"));
 
 		return sessionFiltersContent;
 	}
@@ -1571,7 +1580,8 @@ public class BaseDeployer implements AutoDeployer, Deployer {
 
 		if (speedFiltersEnabled) {
 			String speedFiltersContent = FileUtil.read(
-				DeployUtil.getResourcePath("speed-filters-web.xml"));
+				DeployUtil.getResourcePath(
+					tempDirPaths, "speed-filters-web.xml"));
 
 			return speedFiltersContent;
 		}
@@ -1789,7 +1799,7 @@ public class BaseDeployer implements AutoDeployer, Deployer {
 			}
 		}
 		catch (Exception e) {
-			_log.error(file.getPath() + ": " + e.toString());
+			_log.error(file.getPath() + ": " + e.toString(), e);
 		}
 		finally {
 			if (is != null) {
@@ -2062,7 +2072,7 @@ public class BaseDeployer implements AutoDeployer, Deployer {
 				getExtraFiltersContent(webXmlVersion, srcFile);
 
 		String liferayWebXmlContent = FileUtil.read(
-			DeployUtil.getResourcePath("web.xml"));
+			DeployUtil.getResourcePath(tempDirPaths, "web.xml"));
 
 		int z = liferayWebXmlContent.indexOf("</web-app>");
 
@@ -2216,6 +2226,7 @@ public class BaseDeployer implements AutoDeployer, Deployer {
 	protected String portletExtTaglibDTD;
 	protected String portletTaglibDTD;
 	protected String securityTaglibDTD;
+	protected final Set<Path> tempDirPaths = new HashSet<>();
 	protected String themeTaglibDTD;
 	protected String tomcatLibDir;
 	protected String uiTaglibDTD;

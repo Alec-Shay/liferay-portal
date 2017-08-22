@@ -14,6 +14,7 @@
 
 package com.liferay.site.browser.web.internal.display.context;
 
+import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
@@ -227,14 +228,12 @@ public class SiteBrowserDisplayContext {
 			start = groupSearch.getStart() - additionalSites;
 		}
 
-		int end = groupSearch.getEnd() - additionalSites;
-
 		List<Group> groups = null;
 
 		if (type.equals("layoutScopes")) {
 			groups = GroupLocalServiceUtil.getGroups(
 				company.getCompanyId(), Layout.class.getName(), getGroupId(),
-				start, end);
+				start, groupSearch.getResultEnd() - additionalSites);
 
 			groups = _filterLayoutGroups(groups, isPrivateLayout());
 		}
@@ -258,7 +257,8 @@ public class SiteBrowserDisplayContext {
 		else {
 			groups = GroupLocalServiceUtil.search(
 				company.getCompanyId(), classNameIds,
-				groupSearchTerms.getKeywords(), getGroupParams(), start, end,
+				groupSearchTerms.getKeywords(), getGroupParams(),
+				QueryUtil.ALL_POS, QueryUtil.ALL_POS,
 				groupSearch.getOrderByComparator());
 
 			groups = _filterGroups(groups, themeDisplay.getPermissionChecker());
@@ -268,6 +268,9 @@ public class SiteBrowserDisplayContext {
 			total += additionalSites;
 
 			groupSearch.setTotal(total);
+
+			groups = groups.subList(
+				start, groupSearch.getResultEnd() - additionalSites);
 		}
 
 		results.addAll(groups);
@@ -424,7 +427,7 @@ public class SiteBrowserDisplayContext {
 		return filteredGroups;
 	}
 
-	private static final long[] _CLASS_NAME_IDS = new long[] {
+	private static final long[] _CLASS_NAME_IDS = {
 		PortalUtil.getClassNameId(Group.class),
 		PortalUtil.getClassNameId(Organization.class)
 	};

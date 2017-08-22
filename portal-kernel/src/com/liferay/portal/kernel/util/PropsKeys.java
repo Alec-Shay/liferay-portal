@@ -159,6 +159,8 @@ public interface PropsKeys {
 
 	public static final String AUTH_TOKEN_SHARED_SECRET = "auth.token.shared.secret";
 
+	public static final String AUTH_USER_UUID_STORE_ENABLED = "auth.user.uuid.store.enabled";
+
 	public static final String AUTH_VERIFIER = "auth.verifier.";
 
 	public static final String AUTH_VERIFIER_PIPELINE = "auth.verifier.pipeline";
@@ -299,40 +301,112 @@ public interface PropsKeys {
 
 	public static final String CALENDAR_PUBLISH_TO_LIVE_BY_DEFAULT = "calendar.publish.to.live.by.default";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String CAPTCHA_CHECK_PORTAL_CREATE_ACCOUNT = "captcha.check.portal.create_account";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String CAPTCHA_CHECK_PORTAL_SEND_PASSWORD = "captcha.check.portal.send_password";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String CAPTCHA_CHECK_PORTLET_MESSAGE_BOARDS_EDIT_CATEGORY = "captcha.check.portlet.message_boards.edit_category";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String CAPTCHA_CHECK_PORTLET_MESSAGE_BOARDS_EDIT_MESSAGE = "captcha.check.portlet.message_boards.edit_message";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String CAPTCHA_ENGINE_IMPL = "captcha.engine.impl";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String CAPTCHA_ENGINE_RECAPTCHA_KEY_PRIVATE = "captcha.engine.recaptcha.key.private";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String CAPTCHA_ENGINE_RECAPTCHA_KEY_PUBLIC = "captcha.engine.recaptcha.key.public";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String CAPTCHA_ENGINE_RECAPTCHA_URL_NOSCRIPT = "captcha.engine.recaptcha.url.noscript";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String CAPTCHA_ENGINE_RECAPTCHA_URL_SCRIPT = "captcha.engine.recaptcha.url.script";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String CAPTCHA_ENGINE_RECAPTCHA_URL_VERIFY = "captcha.engine.recaptcha.url.verify";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String CAPTCHA_ENGINE_SIMPLECAPTCHA_BACKGROUND_PRODUCERS = "captcha.engine.simplecaptcha.background.producers";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String CAPTCHA_ENGINE_SIMPLECAPTCHA_GIMPY_RENDERERS = "captcha.engine.simplecaptcha.gimpy.renderers";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String CAPTCHA_ENGINE_SIMPLECAPTCHA_HEIGHT = "captcha.engine.simplecaptcha.height";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String CAPTCHA_ENGINE_SIMPLECAPTCHA_NOISE_PRODUCERS = "captcha.engine.simplecaptcha.noise.producers";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String CAPTCHA_ENGINE_SIMPLECAPTCHA_TEXT_PRODUCERS = "captcha.engine.simplecaptcha.text.producers";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String CAPTCHA_ENGINE_SIMPLECAPTCHA_WIDTH = "captcha.engine.simplecaptcha.width";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String CAPTCHA_ENGINE_SIMPLECAPTCHA_WORD_RENDERERS = "captcha.engine.simplecaptcha.word.renderers";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String CAPTCHA_MAX_CHALLENGES = "captcha.max.challenges";
 
 	public static final String CAS_AUTH_ENABLED = "cas.auth.enabled";
@@ -759,13 +833,35 @@ public interface PropsKeys {
 
 	public static final String EHCACHE_BOOTSTRAP_CACHE_LOADER_PROPERTIES_DEFAULT = "ehcache.bootstrap.cache.loader.properties.default";
 
+	/**
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             #EHCACHE_REPLICATOR_PROPERTIES}
+	 */
+	@Deprecated
 	public static final String EHCACHE_CLUSTER_LINK_REPLICATOR_PROPERTIES = "ehcache.cluster.link.replicator.properties";
 
+	/**
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             #EHCACHE_REPLICATOR_PROPERTIES_DEFAULT}
+	 */
+	@Deprecated
 	public static final String EHCACHE_CLUSTER_LINK_REPLICATOR_PROPERTIES_DEFAULT = "ehcache.cluster.link.replicator.properties.default";
 
 	public static final String EHCACHE_MULTI_VM_CONFIG_LOCATION = "ehcache.multi.vm.config.location";
 
 	public static final String EHCACHE_PORTAL_CACHE_MANAGER_JMX_ENABLED = "ehcache.portal.cache.manager.jmx.enabled";
+
+	public static final String EHCACHE_REPLICATOR_PROPERTIES = "ehcache.replicator.properties";
+
+	public static final String EHCACHE_REPLICATOR_PROPERTIES_DEFAULT = "ehcache.replicator.properties.default";
+
+	public static final String EHCACHE_RMI_PEER_LISTENER_FACTORY_CLASS = "ehcache.rmi.peer.listener.factory.class";
+
+	public static final String EHCACHE_RMI_PEER_LISTENER_FACTORY_PROPERTIES = "ehcache.rmi.peer.listener.factory.properties";
+
+	public static final String EHCACHE_RMI_PEER_PROVIDER_FACTORY_CLASS = "ehcache.rmi.peer.provider.factory.class";
+
+	public static final String EHCACHE_RMI_PEER_PROVIDER_FACTORY_PROPERTIES = "ehcache.rmi.peer.provider.factory.properties";
 
 	public static final String EHCACHE_SINGLE_VM_CONFIG_LOCATION = "ehcache.single.vm.config.location";
 
@@ -797,10 +893,31 @@ public interface PropsKeys {
 
 	public static final String FIELD_EDITABLE_USER_TYPES = "field.editable.user.types";
 
+	public static final String FIELD_ENABLE_COM_LIFERAY_PORTAL_KERNEL_MODEL_CONTACT_BIRTHDAY = "field.enable.com.liferay.portal.kernel.model.Contact.birthday";
+
+	public static final String FIELD_ENABLE_COM_LIFERAY_PORTAL_KERNEL_MODEL_CONTACT_MALE = "field.enable.com.liferay.portal.kernel.model.Contact.male";
+
+	public static final String FIELD_ENABLE_COM_LIFERAY_PORTAL_KERNEL_MODEL_ORGANIZATION_STATUS = "field.enable.com.liferay.portal.kernel.model.Organization.status";
+
+	/**
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             #FIELD_ENABLE_COM_LIFERAY_PORTAL_KERNEL_MODEL_CONTACT_BIRTHDAY}
+	 */
+	@Deprecated
 	public static final String FIELD_ENABLE_COM_LIFERAY_PORTAL_MODEL_CONTACT_BIRTHDAY = "field.enable.com.liferay.portal.kernel.model.Contact.birthday";
 
+	/**
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             #FIELD_ENABLE_COM_LIFERAY_PORTAL_KERNEL_MODEL_CONTACT_MALE}
+	 */
+	@Deprecated
 	public static final String FIELD_ENABLE_COM_LIFERAY_PORTAL_MODEL_CONTACT_MALE = "field.enable.com.liferay.portal.kernel.model.Contact.male";
 
+	/**
+	 * @deprecated As of 7.0.0, replaced by {@link
+	 *             #FIELD_ENABLE_COM_LIFERAY_PORTAL_KERNEL_MODEL_ORGANIZATION_STATUS}
+	 */
+	@Deprecated
 	public static final String FIELD_ENABLE_COM_LIFERAY_PORTAL_MODEL_ORGANIZATION_STATUS = "field.enable.com.liferay.portal.kernel.model.Organization.status";
 
 	public static final String FINALIZE_MANAGER_THREAD_ENABLED = "finalize.manager.thread.enabled";
@@ -824,6 +941,8 @@ public interface PropsKeys {
 	public static final String HIBERNATE_GENERATE_STATISTICS = "hibernate.generate_statistics";
 
 	public static final String HIBERNATE_JDBC_BATCH_SIZE = "hibernate.jdbc.batch_size";
+
+	public static final String HIBERNATE_SESSION_FACTORY_IMPORTED_CLASS_NAME_REGEXP = "hibernate.session.factory.imported.class.name.regexp";
 
 	public static final String HOT_DEPLOY_DEPENDENCY_MANAGEMENT_ENABLED = "hot.deploy.dependency.management.enabled";
 
@@ -885,6 +1004,10 @@ public interface PropsKeys {
 
 	public static final String INDEX_SEARCH_ENGINE_ID = "index.search.engine.id";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String INDEX_SEARCH_HIGHLIGHT_ENABLED = "index.search.highlight.enabled";
 
 	public static final String INDEX_SEARCH_HIGHLIGHT_FRAGMENT_SIZE = "index.search.highlight.fragment.size";
@@ -991,8 +1114,16 @@ public interface PropsKeys {
 
 	public static final String JNDI_ENVIRONMENT = "jndi.environment.";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String JOURNAL_IMAGE_EXTENSIONS = "journal.image.extensions";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String JOURNAL_IMAGE_SMALL_MAX_SIZE = "journal.image.small.max.size";
 
 	public static final String JSON_SERVICE_AUTH_TOKEN_ENABLED = "json.service.auth.token.enabled";
@@ -1014,6 +1145,8 @@ public interface PropsKeys {
 	public static final String JSONWS_WEB_SERVICE_PATHS_INCLUDES = "jsonws.web.service.paths.includes";
 
 	public static final String JSONWS_WEB_SERVICE_STRICT_HTTP_METHOD = "jsonws.web.service.strict.http.method";
+
+	public static final String JSP_PAGE_CONTEXT_FORCE_GET_ATTRIBUTE = "jsp.page.context.force.get.attribute";
 
 	public static final String JSP_WRITER_BUFFER_SIZE = "jsp.writer.buffer.size";
 
@@ -1387,6 +1520,8 @@ public interface PropsKeys {
 
 	public static final String MODULE_FRAMEWORK_STATE_DIR = "module.framework.state.dir";
 
+	public static final String MODULE_FRAMEWORK_STATIC_JARS = "module.framework.static.jars";
+
 	public static final String MODULE_FRAMEWORK_STOP_WAIT_TIMEOUT = "module.framework.stop.wait.timeout";
 
 	public static final String MODULE_FRAMEWORK_SYSTEM_PACKAGES_EXTRA = "module.framework.system.packages.extra";
@@ -1477,16 +1612,32 @@ public interface PropsKeys {
 
 	public static final String OPEN_SSO_SERVICE_URL = "open.sso.service.url";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String OPENOFFICE_CACHE_ENABLED = "openoffice.cache.enabled";
 
 	public static final String OPENOFFICE_CONVERSION_SOURCE_EXTENSIONS = "openoffice.conversion.source.extensions";
 
 	public static final String OPENOFFICE_CONVERSION_TARGET_EXTENSIONS = "openoffice.conversion.target.extensions";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String OPENOFFICE_SERVER_ENABLED = "openoffice.server.enabled";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String OPENOFFICE_SERVER_HOST = "openoffice.server.host";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String OPENOFFICE_SERVER_PORT = "openoffice.server.port";
 
 	public static final String ORGANIZATIONS_ASSIGNMENT_STRICT = "organizations.assignment.strict";
@@ -1765,6 +1916,8 @@ public interface PropsKeys {
 
 	public static final String PORTLET_RESOURCE_ID_BANNED_PATHS_REGEXP = "portlet.resource.id.banned.paths.regexp";
 
+	public static final String PORTLET_SESSION_REPLICATE_ENABLED = "portlet.session.replicate.enabled";
+
 	public static final String PORTLET_URL_ANCHOR_ENABLE = "portlet.url.anchor.enable";
 
 	public static final String PORTLET_URL_APPEND_PARAMETERS = "portlet.url.append.parameters";
@@ -1819,6 +1972,10 @@ public interface PropsKeys {
 
 	public static final String RETRY_DATA_SOURCE_MAX_RETRIES = "retry.data.source.max.retries";
 
+	public static final String RETRY_JDBC_ON_STARTUP_DELAY = "retry.jdbc.on.startup.delay";
+
+	public static final String RETRY_JDBC_ON_STARTUP_MAX_RETRIES = "retry.jdbc.on.startup.max.retries";
+
 	public static final String ROBOTS_TXT_WITH_SITEMAP = "robots.txt.with.sitemap";
 
 	public static final String ROBOTS_TXT_WITHOUT_SITEMAP = "robots.txt.without.sitemap";
@@ -1854,6 +2011,8 @@ public interface PropsKeys {
 	public static final String SCHEDULER_GROUP_NAME_MAX_LENGTH = "scheduler.group.name.max.length";
 
 	public static final String SCHEDULER_JOB_NAME_MAX_LENGTH = "scheduler.job.name.max.length";
+
+	public static final String SCHEMA_MODULE_BUILD_AUTO_UPGRADE = "schema.module.build.auto.upgrade";
 
 	public static final String SCHEMA_RUN_ENABLED = "schema.run.enabled";
 
@@ -1917,6 +2076,8 @@ public interface PropsKeys {
 
 	public static final String SESSION_TIMEOUT_AUTO_EXTEND = "session.timeout.auto.extend";
 
+	public static final String SESSION_TIMEOUT_AUTO_EXTEND_OFFSET = "session.timeout.auto.extend.offset";
+
 	public static final String SESSION_TIMEOUT_REDIRECT_ON_EXPIRE = "session.timeout.redirect.on.expire";
 
 	public static final String SESSION_TIMEOUT_WARNING = "session.timeout.warning";
@@ -1937,6 +2098,10 @@ public interface PropsKeys {
 
 	public static final String SETUP_DATABASE_JAR_URL = "setup.database.jar.url";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String SETUP_DATABASE_TYPES = "setup.database.types";
 
 	public static final String SETUP_DATABASE_URL = "setup.database.url";
@@ -2153,6 +2318,10 @@ public interface PropsKeys {
 
 	public static final String STAGING_REMOTE_TRANSFER_BUFFER_SIZE = "staging.remote.transfer.buffer.size";
 
+	public static final String STAGING_SYSTEM_EVENT_CHECK_INTERVAL = "staging.system.event.check.interval";
+
+	public static final String STAGING_SYSTEM_EVENT_MAX_AGE = "staging.system.event.max.age";
+
 	public static final String STRIP_CSS_SASS_ENABLED = "strip.css.sass.enabled";
 
 	public static final String STRIP_IGNORE_PATHS = "strip.ignore.paths";
@@ -2242,12 +2411,22 @@ public interface PropsKeys {
 
 	public static final String TUNNELING_SERVLET_SHARED_SECRET_HEX = "tunneling.servlet.shared.secret.hex";
 
+	public static final String TUNNELING_SERVLET_TIMEOUT = "tunneling.servlet.timeout";
+
 	public static final String UPGRADE_DATABASE_TRANSACTIONS_DISABLED = "upgrade.database.transactions.disabled";
 
 	public static final String UPGRADE_PROCESSES = "upgrade.processes";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String UPLOAD_SERVLET_REQUEST_IMPL_MAX_SIZE = "com.liferay.portal.upload.UploadServletRequestImpl.max.size";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String UPLOAD_SERVLET_REQUEST_IMPL_TEMP_DIR = "com.liferay.portal.upload.UploadServletRequestImpl.temp.dir";
 
 	public static final String USER_GROUPS_COPY_LAYOUTS_TO_USER_PERSONAL_SITE = "user.groups.copy.layouts.to.user.personal.site";
@@ -2298,12 +2477,34 @@ public interface PropsKeys {
 
 	public static final String USERS_FULL_NAME_VALIDATOR = "users.full.name.validator";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String USERS_IMAGE_CHECK_TOKEN = "users.image.check.token";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
+	public static final String USERS_IMAGE_DEFAULT_USE_INITIALS = "users.image.default.use.initials";
+
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String USERS_IMAGE_MAX_HEIGHT = "users.image.max.height";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String USERS_IMAGE_MAX_SIZE = "users.image.max.size";
 
+	/**
+	 * @deprecated As of 7.0.0, with no direct replacement
+	 */
+	@Deprecated
 	public static final String USERS_IMAGE_MAX_WIDTH = "users.image.max.width";
 
 	public static final String USERS_LIST_VIEWS = "users.list.views";
@@ -2415,6 +2616,8 @@ public interface PropsKeys {
 	public static final String WIDGET_SERVLET_MAPPING = "widget.servlet.mapping";
 
 	public static final String XML_SECURITY_ENABLED = "xml.security.enabled";
+
+	public static final String XML_SITEMAP_INDEX_ENABLED = "xml.sitemap.index.enabled";
 
 	public static final String XML_VALIDATION_ENABLED = "xml.validation.enabled";
 

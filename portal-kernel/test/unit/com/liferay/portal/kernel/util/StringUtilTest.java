@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.util;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -507,9 +508,8 @@ public class StringUtilTest {
 	public void testShortenStringWith4ByteChars() {
 		int space = CharPool.SPACE;
 
-		int[] codePoints = new int[] {
-			128515, 128516, space, 128517, 128518, 128519, 128520, 128521
-		};
+		int[] codePoints =
+			{128515, 128516, space, 128517, 128518, 128519, 128520, 128521};
 
 		String string = new String(codePoints, 0, codePoints.length);
 
@@ -541,8 +541,8 @@ public class StringUtilTest {
 			new double[] {1.0, 2.0, 3.0}, StringUtil.split("1.0,2.0,3.0", 1.0),
 			0.0001);
 		Assert.assertArrayEquals(
-			new float[] {1.0f, 2.0f, 3.0f},
-			StringUtil.split("1.0,2.0,3.0", 1.0f), .0001f);
+			new float[] {1.0F, 2.0F, 3.0F},
+			StringUtil.split("1.0,2.0,3.0", 1.0F), .0001F);
 		Assert.assertArrayEquals(
 			new int[] {1, 2, 3}, StringUtil.split("1,2,3", 1));
 		Assert.assertArrayEquals(
@@ -555,14 +555,14 @@ public class StringUtilTest {
 
 		String[] lines = StringUtil.splitLines(singleLine);
 
-		Assert.assertEquals(1, lines.length);
+		Assert.assertEquals(Arrays.toString(lines), 1, lines.length);
 		Assert.assertEquals(singleLine, lines[0]);
 
 		String splitByReturn = "abcd\refg\rhijk\rlmn\r";
 
 		lines = StringUtil.splitLines(splitByReturn);
 
-		Assert.assertEquals(4, lines.length);
+		Assert.assertEquals(Arrays.toString(lines), 4, lines.length);
 		Assert.assertEquals("abcd", lines[0]);
 		Assert.assertEquals("efg", lines[1]);
 		Assert.assertEquals("hijk", lines[2]);
@@ -572,7 +572,7 @@ public class StringUtilTest {
 
 		lines = StringUtil.splitLines(splitByNewLine);
 
-		Assert.assertEquals(4, lines.length);
+		Assert.assertEquals(Arrays.toString(lines), 4, lines.length);
 		Assert.assertEquals("abcd", lines[0]);
 		Assert.assertEquals("efg", lines[1]);
 		Assert.assertEquals("hijk", lines[2]);
@@ -582,7 +582,7 @@ public class StringUtilTest {
 
 		lines = StringUtil.splitLines(splitByBoth);
 
-		Assert.assertEquals(4, lines.length);
+		Assert.assertEquals(Arrays.toString(lines), 4, lines.length);
 		Assert.assertEquals("abcd", lines[0]);
 		Assert.assertEquals("efg", lines[1]);
 		Assert.assertEquals("hijk", lines[2]);
@@ -592,7 +592,7 @@ public class StringUtilTest {
 
 		lines = StringUtil.splitLines(splitByMix);
 
-		Assert.assertEquals(5, lines.length);
+		Assert.assertEquals(Arrays.toString(lines), 5, lines.length);
 		Assert.assertEquals("abcd", lines[0]);
 		Assert.assertEquals("efg", lines[1]);
 		Assert.assertEquals("hijk", lines[2]);
@@ -732,6 +732,10 @@ public class StringUtilTest {
 		// Surrounding spaces
 
 		Assert.assertEquals("ab", StringUtil.trim(" \t\r\nab \t\r\n"));
+
+		// UTF-8 spaces
+
+		Assert.assertEquals("ab", StringUtil.trim("\u3000ab\u3000"));
 	}
 
 	@Test

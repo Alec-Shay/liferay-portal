@@ -20,6 +20,7 @@ import com.liferay.portal.kernel.io.unsync.UnsyncBufferedWriter;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
 import com.liferay.portal.kernel.language.LanguageConstants;
 import com.liferay.portal.kernel.language.LanguageValidator;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.NaturalOrderStringComparator;
 import com.liferay.portal.kernel.util.PropertiesUtil;
@@ -31,8 +32,8 @@ import com.liferay.portal.tools.ArgumentsUtil;
 import com.liferay.portal.tools.GitException;
 import com.liferay.portal.tools.GitUtil;
 
-import com.memetix.mst.language.Language;
-import com.memetix.mst.translate.Translate;
+import io.github.firemaples.language.Language;
+import io.github.firemaples.translate.Translate;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -71,6 +72,9 @@ public class LangBuilder {
 
 		System.setProperty("line.separator", StringPool.NEW_LINE);
 
+		String excludedLanguageIdsString = GetterUtil.getString(
+			arguments.get("lang.excluded.language.ids"),
+			StringUtil.merge(LangBuilderArgs.EXCLUDED_LANGUAGE_IDS));
 		String langDirName = GetterUtil.getString(
 			arguments.get(LanguageConstants.KEY_DIR),
 			LangBuilderArgs.LANG_DIR_NAME);
@@ -82,30 +86,32 @@ public class LangBuilder {
 			"lang.portal.language.properties.file");
 		boolean translate = GetterUtil.getBoolean(
 			arguments.get("lang.translate"), LangBuilderArgs.TRANSLATE);
-		String translateClientId = arguments.get("lang.translate.client.id");
-		String translateClientSecret = arguments.get(
-			"lang.translate.client.secret");
+		String translateSubscriptionKey = arguments.get(
+			"lang.translate.subscription.key");
 
 		boolean buildCurrentBranch = ArgumentsUtil.getBoolean(
 			arguments, "build.current.branch", false);
+
+		String[] excludedLanguageIds = StringUtil.split(
+			excludedLanguageIdsString);
 
 		if (buildCurrentBranch) {
 			String gitWorkingBranchName = ArgumentsUtil.getString(
 				arguments, "git.working.branch.name", "master");
 
 			_processCurrentBranch(
-				langFileName, plugin, portalLanguagePropertiesFileName,
-				translate, translateClientId, translateClientSecret,
-				gitWorkingBranchName);
+				excludedLanguageIds, langFileName, plugin,
+				portalLanguagePropertiesFileName, translate,
+				translateSubscriptionKey, gitWorkingBranchName);
 
 			return;
 		}
 
 		try {
 			new LangBuilder(
-				langDirName, langFileName, plugin,
-				portalLanguagePropertiesFileName, translate, translateClientId,
-				translateClientSecret);
+				excludedLanguageIds, langDirName, langFileName, plugin,
+				portalLanguagePropertiesFileName, translate,
+				translateSubscriptionKey);
 		}
 		catch (Exception e) {
 			ArgumentsUtil.processMainException(arguments, e);
@@ -113,17 +119,18 @@ public class LangBuilder {
 	}
 
 	public LangBuilder(
-			String langDirName, String langFileName, boolean plugin,
+			String[] excludedLanguageIds, String langDirName,
+			String langFileName, boolean plugin,
 			String portalLanguagePropertiesFileName, boolean translate,
-			String translateClientId, String translateClientSecret)
+			String translateSubscriptionKey)
 		throws Exception {
 
+		_excludedLanguageIds = excludedLanguageIds;
 		_langDirName = langDirName;
 		_langFileName = langFileName;
 		_translate = translate;
 
-		Translate.setClientId(translateClientId);
-		Translate.setClientSecret(translateClientSecret);
+		Translate.setSubscriptionKey(translateSubscriptionKey);
 
 		_initKeysWithUpdatedValues();
 
@@ -249,10 +256,9 @@ public class LangBuilder {
 	}
 
 	private static void _processCurrentBranch(
-			String langFileName, boolean plugin,
+			String[] excludedLanguageIds, String langFileName, boolean plugin,
 			String portalLanguagePropertiesFileName, boolean translate,
-			String translateClientId, String translateClientSecret,
-			String gitWorkingBranchName)
+			String translateSubscriptionKey, String gitWorkingBranchName)
 		throws Exception {
 
 		try {
@@ -272,9 +278,9 @@ public class LangBuilder {
 				String langDirName = basedir + fileName.substring(0, pos + 7);
 
 				new LangBuilder(
-					langDirName, langFileName, plugin,
+					excludedLanguageIds, langDirName, langFileName, plugin,
 					portalLanguagePropertiesFileName, translate,
-					translateClientId, translateClientSecret);
+					translateSubscriptionKey);
 			}
 		}
 		catch (GitException ge) {
@@ -388,13 +394,8 @@ public class LangBuilder {
 					}
 
 					if (translatedText != null) {
-						if (translatedText.contains("Babel Fish") ||
-							translatedText.contains("Yahoo! - 999")) {
-
+						if (translatedText.endsWith(AUTOMATIC_COPY)) {
 							translatedText = "";
-						}
-						else if (translatedText.endsWith(AUTOMATIC_COPY)) {
-							translatedText = value + AUTOMATIC_COPY;
 						}
 					}
 
@@ -464,14 +465,6 @@ public class LangBuilder {
 					}
 
 					if (Validator.isNotNull(translatedText)) {
-						if (translatedText.contains("Babel Fish") ||
-							translatedText.contains("Yahoo! - 999")) {
-
-							throw new IOException(
-								"IP was blocked because of over usage. " +
-									"Please use another IP.");
-						}
-
 						translatedText = _fixTranslation(translatedText);
 
 						if (firstLine) {
@@ -578,7 +571,8 @@ public class LangBuilder {
 			if (value.contains(".") || value.contains("?") ||
 				value.contains(":") ||
 				key.equals(
-					"the-url-of-the-page-comparing-this-page-content-with-the-previous-version")) {
+					"the-url-of-the-page-comparing-this-page-content-with-" +
+						"the-previous-version")) {
 			}
 			else {
 				value = StringUtil.replace(value, " this ", " This ");
@@ -780,11 +774,7 @@ public class LangBuilder {
 
 		// LPS-61961
 
-		if (toLanguageId.equals("da") || toLanguageId.equals("de") ||
-			toLanguageId.equals("fi") || toLanguageId.equals("ja") ||
-			toLanguageId.equals("nl") || toLanguageId.equals("pt_PT") ||
-			toLanguageId.equals("sv")) {
-
+		if (ArrayUtil.contains(_excludedLanguageIds, toLanguageId)) {
 			return null;
 		}
 
@@ -836,6 +826,7 @@ public class LangBuilder {
 		return toText;
 	}
 
+	private final String[] _excludedLanguageIds;
 	private final Set<String> _keysWithUpdatedValues = new HashSet<>();
 	private final String _langDirName;
 	private final String _langFileName;

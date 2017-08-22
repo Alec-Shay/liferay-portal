@@ -17,6 +17,8 @@ package com.liferay.jenkins.results.parser;
 import java.util.List;
 import java.util.Map;
 
+import org.dom4j.Element;
+
 import org.json.JSONObject;
 
 /**
@@ -28,9 +30,19 @@ public interface Build {
 
 	public void archive(String archiveName);
 
+	public String getAppServer();
+
 	public String getArchivePath();
 
 	public List<String> getBadBuildURLs();
+
+	public String getBaseRepositoryName();
+
+	public String getBaseRepositorySHA(String repositoryName);
+
+	public String getBranchName();
+
+	public String getBrowser();
 
 	public JSONObject getBuildJSONObject();
 
@@ -42,17 +54,37 @@ public interface Build {
 
 	public String getConsoleText();
 
+	public String getDatabase();
+
+	public String getDisplayName();
+
 	public int getDownstreamBuildCount(String status);
 
 	public List<Build> getDownstreamBuilds(String status);
 
+	public long getDuration();
+
+	public Element getGitHubMessageBuildAnchorElement();
+
+	public Element getGitHubMessageElement();
+
+	public Element getGitHubMessageUpstreamJobFailureElement();
+
 	public String getInvocationURL();
+
+	public String getJDK();
 
 	public String getJobName();
 
 	public String getJobURL();
 
+	public String getJobVariant();
+
+	public Long getLatestStartTimestamp();
+
 	public String getMaster();
+
+	public String getOperatingSystem();
 
 	public Map<String, String> getParameters();
 
@@ -62,7 +94,9 @@ public interface Build {
 
 	public String getResult();
 
-	public Map<String, String> getStartPropertiesMap();
+	public Map<String, String> getStartPropertiesTempMap();
+
+	public Long getStartTimestamp();
 
 	public String getStatus();
 
@@ -74,7 +108,7 @@ public interface Build {
 
 	public String getStatusSummary();
 
-	public Map<String, String> getStopPropertiesMap();
+	public Map<String, String> getStopPropertiesTempMap();
 
 	public JSONObject getTestReportJSONObject();
 
@@ -86,7 +120,11 @@ public interface Build {
 
 	public void reinvoke();
 
+	public void reinvoke(ReinvokeRule reinvokeRule);
+
 	public String replaceBuildURL(String text);
+
+	public void setCompareToUpstream(boolean compareToUpstream);
 
 	public void update();
 
