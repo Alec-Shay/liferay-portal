@@ -25,6 +25,7 @@ import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.model.JournalArticleModel;
 import com.liferay.journal.model.JournalArticleSoap;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -673,12 +674,17 @@ public class JournalArticleModelImpl extends BaseModelImpl<JournalArticle>
 			return user.getUuid();
 		}
 		catch (PortalException pe) {
-			return "";
+			if (Validator.isNotNull(_userUuid)) {
+				return _userUuid;
+			}
+
+			return StringPool.BLANK;
 		}
 	}
 
 	@Override
 	public void setUserUuid(String userUuid) {
+		_userUuid = userUuid;
 	}
 
 	public long getOriginalUserId() {
@@ -2163,4 +2169,5 @@ public class JournalArticleModelImpl extends BaseModelImpl<JournalArticle>
 	private Date _statusDate;
 	private long _columnBitmask;
 	private JournalArticle _escapedModel;
+	private String _userUuid;
 }
