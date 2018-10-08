@@ -35,12 +35,7 @@
 </tr>
 <tr>
 	<td>CATEGORY_SELECT</td>
-	<td>//button[contains(@title,'Select') and contains(@title,'${key_vocabularyName}')] | //button[contains(@title,'Select Categories')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CATEGORY_SELECT_CHILD_SITE</td>
-	<td>//label[text()=' ${key_vocabularyName} ']/following-sibling::div//button[contains(@title,'Select')]</td>
+	<td>//span[label[normalize-space()='${key_vocabularyName}']]//button[normalize-space()='Select']</td>
 	<td></td>
 </tr>
 <tr>
@@ -105,12 +100,12 @@
 </tr>
 <tr>
 	<td>TAG</td>
-	<td>//div[contains(@class,'lfr-tags-selector-content')]//span[contains(@class,'textboxlistentry-text') and contains(.,'${key_tagName}')]</td>
+	<td>//div[contains(@class,'tagselector')]//span[@class='textboxlistentry-text'][contains(.,'${key_tagName}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>TAG_CHECKBOX</td>
-	<td>//div[contains(.,'${key_tagName}')]//input[@type='checkbox']</td>
+	<td>//tr[contains(.,'${key_tagName}')]//input[@type='checkbox']</td>
 	<td></td>
 </tr>
 <tr>
@@ -135,6 +130,11 @@
 </tr>
 <tr>
 	<td>TAG_AUTOCOMPLETE</td>
+	<td>//div[contains(@class,'autocomplete-results-content')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TAG_AUTOCOMPLETE_SPECIFIC</td>
 	<td>//div[contains(@class,'autocomplete-results-content')]//li[.='${key_tagName}']</td>
 	<td></td>
 </tr>
@@ -142,6 +142,11 @@
 	<td>TAGS_ADD_BUTTON</td>
 	<td>//button[@title='Add Tags']</td>
 	<td></td>
+</tr>
+<tr>
+	<td>TAGS_DUPLICATE_WARNING</td>
+	<td>//div[contains(@class,'help-block')]</td>
+	<td>q</td>
 </tr>
 <tr>
 	<td>TAGS_SELECT_BUTTON</td>

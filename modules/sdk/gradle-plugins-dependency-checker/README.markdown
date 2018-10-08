@@ -1,12 +1,12 @@
 # Dependency Checker Gradle Plugin
 
-The Dependency Checker Gradle plugin lets you warn the users if a dependency in
-a specific configuration is not the latest one available on the Maven central
-repository, and eventually fail the build if the dependency age (that is, the
-difference between the timestamp of the current version and the one of the
-latest version) is above a predetermined threshold.
+The Dependency Checker Gradle plugin lets you warn users if a specific
+configuration dependency is not the latest one available from the Maven central
+repository. The plugin eventually fails the build if the dependency age (the
+difference between the timestamp of the current version and the latest version)
+is above a predetermined threshold.
 
-The plugin has been successfully tested with Gradle 2.5 up to 3.2.1.
+The plugin has been successfully tested with Gradle 2.5 up to 3.5.1.
 
 ## Usage
 
@@ -15,12 +15,12 @@ To use the plugin, include it in your build script:
 ```gradle
 buildscript {
 	dependencies {
-		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.dependency.checker", version: "1.0.0"
+		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.dependency.checker", version: "1.0.1"
 	}
 
 	repositories {
 		maven {
-			url "https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/public"
+			url "https://repository-cdn.liferay.com/nexus/content/groups/public"
 		}
 	}
 }
@@ -35,7 +35,7 @@ the extension named `dependencyChecker`:
 
 Property Name | Type | Default Value | Description
 ------------- | ---- | ------------- | -----------
-<a name="ignorefailures"></a>`ignoreFailures` | `boolean` | `true` | Whether to print an error message instead of failing the build in case the dependency check fails, either for a network error or because the dependency is out-of-date.
+<a name="ignorefailures"></a>`ignoreFailures` | `boolean` | `true` | Whether to print an error message instead of failing the build when the dependency check fails, either for a network error or because the dependency is out-of-date.
 
 The same extension exposes the following methods:
 

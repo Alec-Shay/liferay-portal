@@ -35,8 +35,10 @@ import javax.portlet.PortletURL;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * @author Julio Camarero
+ * @author     Julio Camarero
+ * @deprecated As of Judson (7.1.x)
  */
+@Deprecated
 @ProviderType
 public interface Trash {
 

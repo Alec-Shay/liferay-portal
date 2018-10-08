@@ -15,12 +15,12 @@ dependencies {
 }
 
 dependencyChecker {
-	maxAge configuration: configurations.sourceFormatter.name, group: "com.liferay", name: "com.liferay.source.formatter", maxAge: TimeCategory.getDays(1)
+	maxAge configuration: configurations.sourceFormatter.name, group: "com.liferay", name: "com.liferay.source.formatter", maxAge: TimeCategory.getDays(1), throwError: false
 }
 
 repositories {
 	maven {
-		url "https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/public"
+		url "https://repository-cdn.liferay.com/nexus/content/groups/public"
 	}
 }
 

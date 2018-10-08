@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.test.util;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
@@ -29,10 +30,10 @@ import com.liferay.portal.kernel.service.UserGroupRoleLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserServiceUtil;
 import com.liferay.portal.kernel.test.randomizerbumpers.NumericStringRandomizerBumper;
+import com.liferay.portal.kernel.test.randomizerbumpers.UniqueStringRandomizerBumper;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.Calendar;
@@ -71,7 +72,7 @@ public class UserTestUtil {
 		User groupUser = addUser(group.getGroupId());
 
 		Role role = RoleLocalServiceUtil.getRole(
-			TestPropsValues.getCompanyId(), roleName);
+			group.getCompanyId(), roleName);
 
 		long[] userIds = {groupUser.getUserId()};
 
@@ -120,7 +121,9 @@ public class UserTestUtil {
 	public static User addUser() throws Exception {
 		return addUser(
 			TestPropsValues.getCompanyId(), TestPropsValues.getUserId(),
-			RandomTestUtil.randomString(NumericStringRandomizerBumper.INSTANCE),
+			RandomTestUtil.randomString(
+				NumericStringRandomizerBumper.INSTANCE,
+				UniqueStringRandomizerBumper.INSTANCE),
 			LocaleUtil.getDefault(), RandomTestUtil.randomString(),
 			RandomTestUtil.randomString(),
 			new long[] {TestPropsValues.getGroupId()},
@@ -183,7 +186,9 @@ public class UserTestUtil {
 	public static User addUser(Company company) throws Exception {
 		return addUser(
 			company.getCompanyId(), TestPropsValues.getUserId(),
-			RandomTestUtil.randomString(NumericStringRandomizerBumper.INSTANCE),
+			RandomTestUtil.randomString(
+				NumericStringRandomizerBumper.INSTANCE,
+				UniqueStringRandomizerBumper.INSTANCE),
 			LocaleUtil.getDefault(), RandomTestUtil.randomString(),
 			RandomTestUtil.randomString(),
 			new long[] {TestPropsValues.getGroupId()},
@@ -193,7 +198,9 @@ public class UserTestUtil {
 	public static User addUser(long... groupIds) throws Exception {
 		return addUser(
 			TestPropsValues.getCompanyId(), TestPropsValues.getUserId(),
-			RandomTestUtil.randomString(NumericStringRandomizerBumper.INSTANCE),
+			RandomTestUtil.randomString(
+				NumericStringRandomizerBumper.INSTANCE,
+				UniqueStringRandomizerBumper.INSTANCE),
 			LocaleUtil.getDefault(), RandomTestUtil.randomString(),
 			RandomTestUtil.randomString(), groupIds,
 			ServiceContextTestUtil.getServiceContext());
@@ -202,7 +209,9 @@ public class UserTestUtil {
 	public static User addUser(long groupId, Locale locale) throws Exception {
 		return addUser(
 			TestPropsValues.getCompanyId(), TestPropsValues.getUserId(),
-			RandomTestUtil.randomString(NumericStringRandomizerBumper.INSTANCE),
+			RandomTestUtil.randomString(
+				NumericStringRandomizerBumper.INSTANCE,
+				UniqueStringRandomizerBumper.INSTANCE),
 			locale, RandomTestUtil.randomString(),
 			RandomTestUtil.randomString(), new long[] {groupId},
 			ServiceContextTestUtil.getServiceContext());
@@ -214,6 +223,21 @@ public class UserTestUtil {
 			ServiceContext serviceContext)
 		throws Exception {
 
+		String emailAddress =
+			RandomTestUtil.randomString() + RandomTestUtil.nextLong() +
+				"@liferay.com";
+
+		return addUser(
+			companyId, userId, StringPool.BLANK, emailAddress, screenName,
+			locale, firstName, lastName, groupIds, serviceContext);
+	}
+
+	public static User addUser(
+			long companyId, long userId, String password, String emailAddress,
+			String screenName, Locale locale, String firstName, String lastName,
+			long[] groupIds, ServiceContext serviceContext)
+		throws Exception {
+
 		User user = UserLocalServiceUtil.fetchUserByScreenName(
 			companyId, screenName);
 
@@ -222,11 +246,8 @@ public class UserTestUtil {
 		}
 
 		boolean autoPassword = true;
-		String password1 = StringPool.BLANK;
-		String password2 = StringPool.BLANK;
-		String emailAddress =
-			RandomTestUtil.randomString() + RandomTestUtil.nextLong() +
-				"@liferay.com";
+		String password1 = password;
+		String password2 = password;
 		long facebookId = 0;
 		String openId = StringPool.BLANK;
 		String middleName = StringPool.BLANK;

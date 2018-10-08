@@ -23,18 +23,21 @@ import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.LiferayPortletURL;
 import com.liferay.portal.kernel.portlet.PortletModeFactory;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryConstants;
+import com.liferay.portal.kernel.portlet.PortletQName;
 import com.liferay.portal.kernel.portlet.WindowStateFactory;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.taglib.util.ParamAndPropertyAncestorTagImpl;
+import com.liferay.taglib.util.TypedParamAccessorTag;
 
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.portlet.ActionRequest;
+import javax.portlet.MimeResponse;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 import javax.portlet.PortletURL;
@@ -45,8 +48,10 @@ import javax.servlet.jsp.JspWriter;
 
 /**
  * @author Brian Wing Shun Chan
+ * @author Neil Griffin
  */
-public class ActionURLTag extends ParamAndPropertyAncestorTagImpl {
+public class ActionURLTag
+	extends ParamAndPropertyAncestorTagImpl implements TypedParamAccessorTag {
 
 	public static PortletURL doTag(
 			String lifecycle, String windowState, String portletMode,
@@ -64,7 +69,7 @@ public class ActionURLTag extends ParamAndPropertyAncestorTagImpl {
 		}
 
 		LiferayPortletURL liferayPortletURL = _getLiferayPortletURL(
-			request, plid, portletName, lifecycle);
+			request, plid, portletName, lifecycle, copyCurrentRenderParameters);
 
 		if (liferayPortletURL == null) {
 			_log.error(
@@ -165,9 +170,21 @@ public class ActionURLTag extends ParamAndPropertyAncestorTagImpl {
 		}
 
 		if (parameterMap != null) {
-			for (Entry<String, String[]> entry : parameterMap.entrySet()) {
-				liferayPortletURL.setParameter(
-					entry.getKey(), entry.getValue(), false);
+			for (Map.Entry<String, String[]> entry : parameterMap.entrySet()) {
+				String key = entry.getKey();
+
+				if (key.startsWith(_ACTION_PARAMETER_NAMESPACE)) {
+					key = key.substring(_ACTION_PARAMETER_NAMESPACE.length());
+
+					String portletNamespace = PortalUtil.getPortletNamespace(
+						portletName);
+
+					if (!key.startsWith(portletNamespace)) {
+						key = portletNamespace.concat(key);
+					}
+				}
+
+				liferayPortletURL.setParameter(key, entry.getValue(), false);
 			}
 		}
 
@@ -181,6 +198,21 @@ public class ActionURLTag extends ParamAndPropertyAncestorTagImpl {
 		liferayPortletURL.setRemovedParameterNames(removedParameterNames);
 
 		return liferayPortletURL;
+	}
+
+	@Override
+	public void addParam(String name, String type, String value) {
+		if (Validator.isNotNull(name)) {
+			if (Objects.equals(type, "action")) {
+				name = _ACTION_PARAMETER_NAMESPACE.concat(name);
+			}
+			else if (Objects.equals(type, "render")) {
+				name = PortletQName.PRIVATE_RENDER_PARAMETER_NAMESPACE.concat(
+					name);
+			}
+		}
+
+		super.addParam(name, value);
 	}
 
 	@Override
@@ -308,7 +340,7 @@ public class ActionURLTag extends ParamAndPropertyAncestorTagImpl {
 
 	private static LiferayPortletURL _getLiferayPortletURL(
 		HttpServletRequest request, long plid, String portletName,
-		String lifecycle) {
+		String lifecycle, Boolean copyCurrentRenderParameters) {
 
 		PortletRequest portletRequest = (PortletRequest)request.getAttribute(
 			JavaConstants.JAVAX_PORTLET_REQUEST);
@@ -322,6 +354,14 @@ public class ActionURLTag extends ParamAndPropertyAncestorTagImpl {
 
 		LiferayPortletResponse liferayPortletResponse =
 			PortalUtil.getLiferayPortletResponse(portletResponse);
+
+		if (((copyCurrentRenderParameters != null) &&
+			 copyCurrentRenderParameters) ||
+			lifecycle.equals(PortletRequest.RESOURCE_PHASE)) {
+
+			return liferayPortletResponse.createLiferayPortletURL(
+				plid, portletName, lifecycle, MimeResponse.Copy.ALL);
+		}
 
 		return liferayPortletResponse.createLiferayPortletURL(
 			plid, portletName, lifecycle);
@@ -341,6 +381,8 @@ public class ActionURLTag extends ParamAndPropertyAncestorTagImpl {
 
 		return liferayPortletConfig.getPortletId();
 	}
+
+	private static final String _ACTION_PARAMETER_NAMESPACE = "p_action_p_";
 
 	private static final Log _log = LogFactoryUtil.getLog(ActionURLTag.class);
 

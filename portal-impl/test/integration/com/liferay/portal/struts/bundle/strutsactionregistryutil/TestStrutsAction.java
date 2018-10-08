@@ -15,9 +15,8 @@
 package com.liferay.portal.struts.bundle.strutsactionregistryutil;
 
 import com.liferay.portal.kernel.struts.StrutsAction;
-import com.liferay.portal.kernel.util.StackTraceUtil;
 
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -32,7 +31,8 @@ import org.osgi.service.component.annotations.Reference;
 	immediate = true,
 	property = {
 		"path=TestStrutsAction", "service.ranking:Integer=" + Integer.MAX_VALUE
-	}
+	},
+	service = StrutsAction.class
 )
 public class TestStrutsAction implements StrutsAction {
 
@@ -48,16 +48,16 @@ public class TestStrutsAction implements StrutsAction {
 		StrutsAction originalStrutsAction, HttpServletRequest request,
 		HttpServletResponse response) {
 
-		_atomicReference.set(StackTraceUtil.getCallerKey());
+		_atomicBoolean.set(Boolean.TRUE);
 
 		return null;
 	}
 
 	@Reference(target = "(test=AtomicState)")
-	protected void setAtomicReference(AtomicReference<String> atomicReference) {
-		_atomicReference = atomicReference;
+	protected void setAtomicBoolean(AtomicBoolean atomicBoolean) {
+		_atomicBoolean = atomicBoolean;
 	}
 
-	private AtomicReference<String> _atomicReference;
+	private AtomicBoolean _atomicBoolean;
 
 }

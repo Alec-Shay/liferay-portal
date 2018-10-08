@@ -14,21 +14,27 @@
 
 package com.liferay.portlet.expando.service.impl;
 
+import com.liferay.expando.kernel.exception.NoSuchRowException;
 import com.liferay.expando.kernel.model.ExpandoColumn;
 import com.liferay.expando.kernel.model.ExpandoColumnConstants;
 import com.liferay.expando.kernel.model.ExpandoRow;
 import com.liferay.expando.kernel.model.ExpandoTable;
 import com.liferay.expando.kernel.model.ExpandoTableConstants;
 import com.liferay.expando.kernel.model.ExpandoValue;
+import com.liferay.expando.kernel.util.ExpandoValueDeleteHandler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.typeconverter.DateArrayConverter;
 import com.liferay.portal.typeconverter.NumberArrayConverter;
 import com.liferay.portal.typeconverter.NumberConverter;
 import com.liferay.portlet.expando.model.impl.ExpandoValueImpl;
 import com.liferay.portlet.expando.service.base.ExpandoValueLocalServiceBaseImpl;
+import com.liferay.registry.collections.ServiceTrackerCollections;
+import com.liferay.registry.collections.ServiceTrackerList;
 
 import java.io.Serializable;
 
@@ -567,11 +573,10 @@ public class ExpandoValueLocalServiceImpl
 				companyId, className, tableName, columnName, classPK,
 				(String)data);
 		}
-		else {
-			return expandoValueLocalService.addValue(
-				companyId, className, tableName, columnName, classPK,
-				(Map<Locale, ?>)data, Locale.getDefault());
-		}
+
+		return expandoValueLocalService.addValue(
+			companyId, className, tableName, columnName, classPK,
+			(Map<Locale, ?>)data, Locale.getDefault());
 	}
 
 	@Override
@@ -866,6 +871,34 @@ public class ExpandoValueLocalServiceImpl
 	@Override
 	public void deleteValue(ExpandoValue value) {
 		expandoValuePersistence.remove(value);
+
+		// Notify delete handlers
+
+		ServiceTrackerList<ExpandoValueDeleteHandler> serviceTrackerList =
+			ServiceTrackerCollections.openList(
+				ExpandoValueDeleteHandler.class,
+				"(model.class.name=" + value.getClassName() + ")");
+
+		for (ExpandoValueDeleteHandler expandoValueDeleteHandler :
+				serviceTrackerList) {
+
+			expandoValueDeleteHandler.deletedExpandoValue(value.getClassPK());
+		}
+
+		List<ExpandoValue> values = expandoValuePersistence.findByRowId(
+			value.getRowId());
+
+		if (values.isEmpty()) {
+			try {
+				expandoRowPersistence.remove(value.getRowId());
+			}
+			catch (NoSuchRowException nsre) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(
+						"Row " + value.getRowId() + " does not exist", nsre);
+				}
+			}
+		}
 	}
 
 	@Override
@@ -978,10 +1011,9 @@ public class ExpandoValueLocalServiceImpl
 			return expandoValuePersistence.findByT_C(
 				table.getTableId(), column.getColumnId(), start, end);
 		}
-		else {
-			return expandoValuePersistence.findByT_C_D(
-				table.getTableId(), column.getColumnId(), data, start, end);
-		}
+
+		return expandoValuePersistence.findByT_C_D(
+			table.getTableId(), column.getColumnId(), data, start, end);
 	}
 
 	@Override
@@ -1042,10 +1074,9 @@ public class ExpandoValueLocalServiceImpl
 			return expandoValuePersistence.countByT_C(
 				table.getTableId(), column.getColumnId());
 		}
-		else {
-			return expandoValuePersistence.countByT_C_D(
-				table.getTableId(), column.getColumnId(), data);
-		}
+
+		return expandoValuePersistence.countByT_C_D(
+			table.getTableId(), column.getColumnId(), data);
 	}
 
 	@Override
@@ -1132,9 +1163,8 @@ public class ExpandoValueLocalServiceImpl
 		if (value == null) {
 			return defaultData;
 		}
-		else {
-			return value.getBoolean();
-		}
+
+		return value.getBoolean();
 	}
 
 	@Override
@@ -1149,9 +1179,8 @@ public class ExpandoValueLocalServiceImpl
 		if (value == null) {
 			return defaultData;
 		}
-		else {
-			return value.getBooleanArray();
-		}
+
+		return value.getBooleanArray();
 	}
 
 	@Override
@@ -1166,9 +1195,8 @@ public class ExpandoValueLocalServiceImpl
 		if (value == null) {
 			return defaultData;
 		}
-		else {
-			return value.getDate();
-		}
+
+		return value.getDate();
 	}
 
 	@Override
@@ -1183,9 +1211,8 @@ public class ExpandoValueLocalServiceImpl
 		if (value == null) {
 			return defaultData;
 		}
-		else {
-			return value.getDateArray();
-		}
+
+		return value.getDateArray();
 	}
 
 	@Override
@@ -1200,9 +1227,8 @@ public class ExpandoValueLocalServiceImpl
 		if (value == null) {
 			return defaultData;
 		}
-		else {
-			return value.getDouble();
-		}
+
+		return value.getDouble();
 	}
 
 	@Override
@@ -1217,9 +1243,8 @@ public class ExpandoValueLocalServiceImpl
 		if (value == null) {
 			return defaultData;
 		}
-		else {
-			return value.getDoubleArray();
-		}
+
+		return value.getDoubleArray();
 	}
 
 	@Override
@@ -1234,9 +1259,8 @@ public class ExpandoValueLocalServiceImpl
 		if (value == null) {
 			return defaultData;
 		}
-		else {
-			return value.getFloat();
-		}
+
+		return value.getFloat();
 	}
 
 	@Override
@@ -1251,9 +1275,8 @@ public class ExpandoValueLocalServiceImpl
 		if (value == null) {
 			return defaultData;
 		}
-		else {
-			return value.getFloatArray();
-		}
+
+		return value.getFloatArray();
 	}
 
 	@Override
@@ -1268,9 +1291,8 @@ public class ExpandoValueLocalServiceImpl
 		if (value == null) {
 			return defaultData;
 		}
-		else {
-			return value.getInteger();
-		}
+
+		return value.getInteger();
 	}
 
 	@Override
@@ -1285,9 +1307,8 @@ public class ExpandoValueLocalServiceImpl
 		if (value == null) {
 			return defaultData;
 		}
-		else {
-			return value.getIntegerArray();
-		}
+
+		return value.getIntegerArray();
 	}
 
 	@Override
@@ -1302,9 +1323,8 @@ public class ExpandoValueLocalServiceImpl
 		if (value == null) {
 			return defaultData;
 		}
-		else {
-			return value.getGeolocationJSONObject();
-		}
+
+		return value.getGeolocationJSONObject();
 	}
 
 	@Override
@@ -1319,9 +1339,8 @@ public class ExpandoValueLocalServiceImpl
 		if (value == null) {
 			return defaultData;
 		}
-		else {
-			return value.getLong();
-		}
+
+		return value.getLong();
 	}
 
 	@Override
@@ -1336,9 +1355,8 @@ public class ExpandoValueLocalServiceImpl
 		if (value == null) {
 			return defaultData;
 		}
-		else {
-			return value.getLongArray();
-		}
+
+		return value.getLongArray();
 	}
 
 	@Override
@@ -1361,9 +1379,8 @@ public class ExpandoValueLocalServiceImpl
 		if (type == ExpandoColumnConstants.STRING_ARRAY_LOCALIZED) {
 			return value.getStringArrayMap();
 		}
-		else {
-			return value.getStringMap();
-		}
+
+		return value.getStringMap();
 	}
 
 	@Override
@@ -1378,9 +1395,8 @@ public class ExpandoValueLocalServiceImpl
 		if (value == null) {
 			return defaultData;
 		}
-		else {
-			return value.getNumber();
-		}
+
+		return value.getNumber();
 	}
 
 	@Override
@@ -1395,9 +1411,8 @@ public class ExpandoValueLocalServiceImpl
 		if (value == null) {
 			return defaultData;
 		}
-		else {
-			return value.getNumberArray();
-		}
+
+		return value.getNumberArray();
 	}
 
 	@Override
@@ -1412,9 +1427,8 @@ public class ExpandoValueLocalServiceImpl
 		if (value == null) {
 			return defaultData;
 		}
-		else {
-			return value.getShort();
-		}
+
+		return value.getShort();
 	}
 
 	@Override
@@ -1429,9 +1443,8 @@ public class ExpandoValueLocalServiceImpl
 		if (value == null) {
 			return defaultData;
 		}
-		else {
-			return value.getShortArray();
-		}
+
+		return value.getShortArray();
 	}
 
 	@Override
@@ -1446,9 +1459,8 @@ public class ExpandoValueLocalServiceImpl
 		if (value == null) {
 			return defaultData;
 		}
-		else {
-			return value.getString();
-		}
+
+		return value.getString();
 	}
 
 	@Override
@@ -1463,9 +1475,8 @@ public class ExpandoValueLocalServiceImpl
 		if (value == null) {
 			return defaultData;
 		}
-		else {
-			return value.getStringArray();
-		}
+
+		return value.getStringArray();
 	}
 
 	@Override
@@ -1836,11 +1847,10 @@ public class ExpandoValueLocalServiceImpl
 				companyId, className, tableName, columnName, classPK,
 				value.getString());
 		}
-		else {
-			return (Serializable)expandoValueLocalService.getData(
-				companyId, className, tableName, columnName, classPK,
-				new HashMap<Object, Object>());
-		}
+
+		return (Serializable)expandoValueLocalService.getData(
+			companyId, className, tableName, columnName, classPK,
+			new HashMap<Object, Object>());
 	}
 
 	protected Object handleCollections(int type, Object object) {
@@ -1860,7 +1870,7 @@ public class ExpandoValueLocalServiceImpl
 
 		String string = (String)object;
 
-		if (string.startsWith(StringPool.OPEN_BRACKET) &&
+		if (isTypeArray(type) && string.startsWith(StringPool.OPEN_BRACKET) &&
 			string.endsWith(StringPool.CLOSE_BRACKET)) {
 
 			string = string.substring(1, string.length() - 1);
@@ -1885,5 +1895,8 @@ public class ExpandoValueLocalServiceImpl
 
 		return false;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		ExpandoValueLocalServiceImpl.class);
 
 }

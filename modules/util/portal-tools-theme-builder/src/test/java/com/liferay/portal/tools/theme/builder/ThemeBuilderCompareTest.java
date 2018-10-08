@@ -53,7 +53,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -65,7 +64,7 @@ import org.w3c.dom.NodeList;
 @RunWith(Parameterized.class)
 public class ThemeBuilderCompareTest {
 
-	@Parameters(name = "{1}")
+	@Parameterized.Parameters(name = "{1}")
 	public static Iterable<Object[]> getTestThemes() throws Exception {
 		Properties properties = new Properties();
 
@@ -120,10 +119,11 @@ public class ThemeBuilderCompareTest {
 
 		_diffsDir = diffsDir;
 		_name = name;
-		_parentDir = _getParentDir(parentName);
 		_parentName = parentName;
 		_templateExtension = templateExtension;
 		_warFile = warFile;
+
+		_parentDir = _getParentDir(parentName);
 	}
 
 	@Test
@@ -157,7 +157,8 @@ public class ThemeBuilderCompareTest {
 			warDir.toPath(), excludePatterns);
 
 		Assert.assertEquals(
-			outputFileNameDigests.size(), warFileNameDigests.size());
+			warFileNameDigests.toString(), outputFileNameDigests.size(),
+			warFileNameDigests.size());
 
 		for (Map.Entry<String, byte[]> entry :
 				outputFileNameDigests.entrySet()) {
@@ -256,20 +257,21 @@ public class ThemeBuilderCompareTest {
 
 		File diffsDir = new File(dir, "src");
 
-		JSONObject packageJSON;
+		JSONObject packageJSONObject;
 
 		try (FileReader fileReader = new FileReader(
 				new File(dir, "package.json"))) {
 
-			packageJSON = (JSONObject)JSONValue.parseWithException(fileReader);
+			packageJSONObject = (JSONObject)JSONValue.parseWithException(
+				fileReader);
 		}
 
-		String name = (String)packageJSON.get("name");
+		String name = (String)packageJSONObject.get("name");
 
-		JSONObject liferayThemeJSON = (JSONObject)packageJSON.get(
+		JSONObject liferayThemeJSONObject = (JSONObject)packageJSONObject.get(
 			"liferayTheme");
 
-		String parentName = (String)liferayThemeJSON.get("baseTheme");
+		String parentName = (String)liferayThemeJSONObject.get("baseTheme");
 
 		if (parentName.equals("styled")) {
 			parentName = ThemeBuilder.STYLED;
@@ -281,6 +283,10 @@ public class ThemeBuilderCompareTest {
 			throw new IllegalArgumentException(
 				"Unsupported base theme " + parentName);
 		}
+
+		documentBuilderFactory.setFeature(
+			"http://apache.org/xml/features/nonvalidating/load-external-dtd",
+			false);
 
 		DocumentBuilder documentBuilder =
 			documentBuilderFactory.newDocumentBuilder();

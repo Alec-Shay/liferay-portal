@@ -17,10 +17,12 @@ package com.liferay.portlet.documentlibrary.service.impl;
 import com.liferay.document.library.kernel.exception.FileEntryLockException;
 import com.liferay.document.library.kernel.exception.NoSuchFileEntryException;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
+import com.liferay.document.library.kernel.model.DLVersionNumberIncrease;
 import com.liferay.document.library.kernel.util.DLProcessorRegistryUtil;
 import com.liferay.document.library.kernel.util.comparator.FolderNameComparator;
 import com.liferay.document.library.kernel.util.comparator.RepositoryModelModifiedDateComparator;
 import com.liferay.document.library.kernel.util.comparator.RepositoryModelTitleComparator;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.NoSuchGroupException;
@@ -47,6 +49,11 @@ import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionFactory;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionHelper;
+import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
+import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermissionFactory;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.transaction.TransactionCommitCallbackUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -56,13 +63,11 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.MimeTypesUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.TempFileEntryUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portlet.documentlibrary.constants.DLConstants;
 import com.liferay.portlet.documentlibrary.service.base.DLAppServiceBaseImpl;
-import com.liferay.portlet.documentlibrary.service.permission.DLFolderPermission;
-import com.liferay.portlet.documentlibrary.service.permission.DLPermission;
 import com.liferay.portlet.documentlibrary.util.DLAppUtil;
 
 import java.io.File;
@@ -262,9 +267,10 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 		if (Validator.isNull(mimeType) ||
 			mimeType.equals(ContentTypes.APPLICATION_OCTET_STREAM)) {
 
-			String extension = DLAppUtil.getExtension(title, sourceFileName);
-
 			if (size == 0) {
+				String extension = DLAppUtil.getExtension(
+					title, sourceFileName);
+
 				mimeType = MimeTypesUtil.getExtensionContentType(extension);
 			}
 			else {
@@ -373,8 +379,9 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 			File file, String mimeType)
 		throws PortalException {
 
-		DLFolderPermission.check(
-			getPermissionChecker(), groupId, folderId, ActionKeys.ADD_DOCUMENT);
+		ModelResourcePermissionHelper.check(
+			_folderModelResourcePermission, getPermissionChecker(), groupId,
+			folderId, ActionKeys.ADD_DOCUMENT);
 
 		return TempFileEntryUtil.addTempFileEntry(
 			groupId, getUserId(), folderName, fileName, file, mimeType);
@@ -406,8 +413,9 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 			InputStream inputStream, String mimeType)
 		throws PortalException {
 
-		DLFolderPermission.check(
-			getPermissionChecker(), groupId, folderId, ActionKeys.ADD_DOCUMENT);
+		ModelResourcePermissionHelper.check(
+			_folderModelResourcePermission, getPermissionChecker(), groupId,
+			folderId, ActionKeys.ADD_DOCUMENT);
 
 		return TempFileEntryUtil.addTempFileEntry(
 			groupId, getUserId(), folderName, fileName, inputStream, mimeType);
@@ -452,6 +460,21 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 	}
 
 	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #checkInFileEntry(long, DLVersionNumberIncrease, String, ServiceContext)}
+	 */
+	@Deprecated
+	@Override
+	public void checkInFileEntry(
+			long fileEntryId, boolean majorVersion, String changeLog,
+			ServiceContext serviceContext)
+		throws PortalException {
+
+		checkInFileEntry(
+			fileEntryId, DLVersionNumberIncrease.fromMajorVersion(majorVersion),
+			changeLog, serviceContext);
+	}
+
+	/**
 	 * Checks in the file entry. If a user has not checked out the specified
 	 * file entry, invoking this method will result in no changes.
 	 *
@@ -467,7 +490,8 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 	 * </p>
 	 *
 	 * @param fileEntryId the primary key of the file entry to check in
-	 * @param majorVersion whether the new file version is a major version
+	 * @param dlVersionNumberIncrease the kind of version number increase to
+	 *        apply for these changes.
 	 * @param changeLog the file's version change log
 	 * @param serviceContext the service context to be applied
 	 * @see   #cancelCheckOut(long)
@@ -475,17 +499,18 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 	 */
 	@Override
 	public void checkInFileEntry(
-			long fileEntryId, boolean majorVersion, String changeLog,
-			ServiceContext serviceContext)
+			long fileEntryId, DLVersionNumberIncrease dlVersionNumberIncrease,
+			String changeLog, ServiceContext serviceContext)
 		throws PortalException {
 
 		Repository repository = repositoryProvider.getFileEntryRepository(
 			fileEntryId);
 
 		repository.checkInFileEntry(
-			getUserId(), fileEntryId, majorVersion, changeLog, serviceContext);
+			getUserId(), fileEntryId, dlVersionNumberIncrease, changeLog,
+			serviceContext);
 
-		FileEntry fileEntry = getFileEntry(fileEntryId);
+		FileEntry fileEntry = repository.getFileEntry(fileEntryId);
 
 		FileVersion fileVersion = fileEntry.getLatestFileVersion();
 
@@ -527,7 +552,7 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 		repository.checkInFileEntry(
 			getUserId(), fileEntryId, lockUuid, serviceContext);
 
-		FileEntry fileEntry = getFileEntry(fileEntryId);
+		FileEntry fileEntry = repository.getFileEntry(fileEntryId);
 
 		FileVersion fileVersion = fileEntry.getLatestFileVersion();
 
@@ -803,8 +828,9 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 			long groupId, long folderId, String folderName, String fileName)
 		throws PortalException {
 
-		DLFolderPermission.check(
-			getPermissionChecker(), groupId, folderId, ActionKeys.ADD_DOCUMENT);
+		ModelResourcePermissionHelper.check(
+			_folderModelResourcePermission, getPermissionChecker(), groupId,
+			folderId, ActionKeys.ADD_DOCUMENT);
 
 		TempFileEntryUtil.deleteTempFileEntry(
 			groupId, getUserId(), folderName, fileName);
@@ -1119,15 +1145,14 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 			return repository.getFileEntry(folderId, title);
 		}
 		catch (NoSuchFileEntryException nsfee) {
-			if (folderId != DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
-				Repository repository = repositoryProvider.getFolderRepository(
-					folderId);
-
-				return repository.getFileEntry(folderId, title);
-			}
-			else {
+			if (folderId == DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
 				throw nsfee;
 			}
+
+			Repository repository = repositoryProvider.getFolderRepository(
+				folderId);
+
+			return repository.getFileEntry(folderId, title);
 		}
 	}
 
@@ -1163,16 +1188,15 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 			}
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(5);
 
-		msg.append("No DLFileEntry exists with the key {");
-		msg.append("uuid=");
-		msg.append(uuid);
-		msg.append(", groupId=");
-		msg.append(groupId);
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		sb.append("No DLFileEntry exists with the key {uuid=");
+		sb.append(uuid);
+		sb.append(", groupId=");
+		sb.append(groupId);
+		sb.append(StringPool.CLOSE_CURLY_BRACE);
 
-		throw new NoSuchFileEntryException(msg.toString());
+		throw new NoSuchFileEntryException(sb.toString());
 	}
 
 	/**
@@ -1521,14 +1545,28 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 	@SuppressWarnings("rawtypes")
 	public List<Object> getFoldersAndFileEntriesAndFileShortcuts(
 			long repositoryId, long folderId, int status, String[] mimeTypes,
-			boolean includeMountFolders, int start, int end,
-			OrderByComparator<?> obc)
+			boolean includeMountFolders, boolean includeOwner, int start,
+			int end, OrderByComparator<?> obc)
 		throws PortalException {
 
 		Repository repository = getRepository(repositoryId);
 
 		return (List)repository.getFoldersAndFileEntriesAndFileShortcuts(
-			folderId, status, mimeTypes, includeMountFolders, start, end, obc);
+			folderId, status, mimeTypes, includeMountFolders, includeOwner,
+			start, end, obc);
+	}
+
+	@Override
+	@SuppressWarnings("rawtypes")
+	public List<Object> getFoldersAndFileEntriesAndFileShortcuts(
+			long repositoryId, long folderId, int status, String[] mimeTypes,
+			boolean includeMountFolders, int start, int end,
+			OrderByComparator<?> obc)
+		throws PortalException {
+
+		return getFoldersAndFileEntriesAndFileShortcuts(
+			repositoryId, folderId, status, mimeTypes, includeMountFolders,
+			true, start, end, obc);
 	}
 
 	/**
@@ -1559,10 +1597,21 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 			boolean includeMountFolders)
 		throws PortalException {
 
+		return getFoldersAndFileEntriesAndFileShortcutsCount(
+			repositoryId, folderId, status, mimeTypes, includeMountFolders,
+			true);
+	}
+
+	@Override
+	public int getFoldersAndFileEntriesAndFileShortcutsCount(
+			long repositoryId, long folderId, int status, String[] mimeTypes,
+			boolean includeMountFolders, boolean includeOwner)
+		throws PortalException {
+
 		Repository repository = getRepository(repositoryId);
 
 		return repository.getFoldersAndFileEntriesAndFileShortcutsCount(
-			folderId, status, mimeTypes, includeMountFolders);
+			folderId, status, mimeTypes, includeMountFolders, includeOwner);
 	}
 
 	/**
@@ -2013,8 +2062,9 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 			long groupId, long folderId, String folderName)
 		throws PortalException {
 
-		DLFolderPermission.check(
-			getPermissionChecker(), groupId, folderId, ActionKeys.ADD_DOCUMENT);
+		ModelResourcePermissionHelper.check(
+			_folderModelResourcePermission, getPermissionChecker(), groupId,
+			folderId, ActionKeys.ADD_DOCUMENT);
 
 		return TempFileEntryUtil.getTempFileNames(
 			groupId, getUserId(), folderName);
@@ -2076,6 +2126,7 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 
 		Repository fromRepository = repositoryProvider.getFileEntryRepository(
 			fileEntryId);
+
 		Repository toRepository = getFolderRepository(
 			newFolderId, serviceContext.getScopeGroupId());
 
@@ -2118,6 +2169,7 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 
 		Repository fromRepository = repositoryProvider.getFolderRepository(
 			folderId);
+
 		Repository toRepository = getFolderRepository(
 			parentFolderId, serviceContext.getScopeGroupId());
 
@@ -2220,7 +2272,7 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 		repository.revertFileEntry(
 			getUserId(), fileEntryId, version, serviceContext);
 
-		FileEntry fileEntry = getFileEntry(fileEntryId);
+		FileEntry fileEntry = repository.getFileEntry(fileEntryId);
 
 		dlAppHelperLocalService.updateFileEntry(
 			getUserId(), fileEntry, null, fileEntry.getFileVersion(),
@@ -2300,7 +2352,7 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 	public void subscribeFileEntryType(long groupId, long fileEntryTypeId)
 		throws PortalException {
 
-		DLPermission.check(
+		_portletResourcePermission.check(
 			getPermissionChecker(), groupId, ActionKeys.SUBSCRIBE);
 
 		dlAppLocalService.subscribeFileEntryType(
@@ -2318,8 +2370,9 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 	public void subscribeFolder(long groupId, long folderId)
 		throws PortalException {
 
-		DLFolderPermission.check(
-			getPermissionChecker(), groupId, folderId, ActionKeys.SUBSCRIBE);
+		ModelResourcePermissionHelper.check(
+			_folderModelResourcePermission, getPermissionChecker(), groupId,
+			folderId, ActionKeys.SUBSCRIBE);
 
 		dlAppLocalService.subscribeFolder(getUserId(), groupId, folderId);
 	}
@@ -2370,7 +2423,7 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 	public void unsubscribeFileEntryType(long groupId, long fileEntryTypeId)
 		throws PortalException {
 
-		DLPermission.check(
+		_portletResourcePermission.check(
 			getPermissionChecker(), groupId, ActionKeys.SUBSCRIBE);
 
 		dlAppLocalService.unsubscribeFileEntryType(
@@ -2388,10 +2441,63 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 	public void unsubscribeFolder(long groupId, long folderId)
 		throws PortalException {
 
-		DLFolderPermission.check(
-			getPermissionChecker(), groupId, folderId, ActionKeys.SUBSCRIBE);
+		ModelResourcePermissionHelper.check(
+			_folderModelResourcePermission, getPermissionChecker(), groupId,
+			folderId, ActionKeys.SUBSCRIBE);
 
 		dlAppLocalService.unsubscribeFolder(getUserId(), groupId, folderId);
+	}
+
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #updateFileEntry(long, String, String, String, String, String, DLVersionNumberIncrease, byte[], ServiceContext)}
+	 */
+	@Deprecated
+	@Override
+	public FileEntry updateFileEntry(
+			long fileEntryId, String sourceFileName, String mimeType,
+			String title, String description, String changeLog,
+			boolean majorVersion, byte[] bytes, ServiceContext serviceContext)
+		throws PortalException {
+
+		return updateFileEntry(
+			fileEntryId, sourceFileName, mimeType, title, description,
+			changeLog, DLVersionNumberIncrease.fromMajorVersion(majorVersion),
+			bytes, serviceContext);
+	}
+
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #updateFileEntry(long, String, String, String, String, String, DLVersionNumberIncrease, File, ServiceContext)}
+	 */
+	@Deprecated
+	@Override
+	public FileEntry updateFileEntry(
+			long fileEntryId, String sourceFileName, String mimeType,
+			String title, String description, String changeLog,
+			boolean majorVersion, File file, ServiceContext serviceContext)
+		throws PortalException {
+
+		return updateFileEntry(
+			fileEntryId, sourceFileName, mimeType, title, description,
+			changeLog, DLVersionNumberIncrease.fromMajorVersion(majorVersion),
+			file, serviceContext);
+	}
+
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #updateFileEntry(long, String, String, String, String, String, DLVersionNumberIncrease, InputStream, long, ServiceContext)}
+	 */
+	@Deprecated
+	@Override
+	public FileEntry updateFileEntry(
+			long fileEntryId, String sourceFileName, String mimeType,
+			String title, String description, String changeLog,
+			boolean majorVersion, InputStream is, long size,
+			ServiceContext serviceContext)
+		throws PortalException {
+
+		return updateFileEntry(
+			fileEntryId, sourceFileName, mimeType, title, description,
+			changeLog, DLVersionNumberIncrease.fromMajorVersion(majorVersion),
+			is, size, serviceContext);
 	}
 
 	/**
@@ -2417,7 +2523,8 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 	 * @param  description the file's new description
 	 * @param  changeLog the file's version change log (optionally
 	 *         <code>null</code>)
-	 * @param  majorVersion whether the new file version is a major version
+	 * @param  dlVersionNumberIncrease the kind of version number increase to
+	 *         apply for these changes.
 	 * @param  bytes the file's data (optionally <code>null</code>)
 	 * @param  serviceContext the service context to be applied. Can set the
 	 *         asset category IDs, asset tag names, and expando bridge
@@ -2431,7 +2538,8 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 	public FileEntry updateFileEntry(
 			long fileEntryId, String sourceFileName, String mimeType,
 			String title, String description, String changeLog,
-			boolean majorVersion, byte[] bytes, ServiceContext serviceContext)
+			DLVersionNumberIncrease dlVersionNumberIncrease, byte[] bytes,
+			ServiceContext serviceContext)
 		throws PortalException {
 
 		File file = null;
@@ -2443,7 +2551,7 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 
 			return updateFileEntry(
 				fileEntryId, sourceFileName, mimeType, title, description,
-				changeLog, majorVersion, file, serviceContext);
+				changeLog, dlVersionNumberIncrease, file, serviceContext);
 		}
 		catch (IOException ioe) {
 			throw new SystemException("Unable to write temporary file", ioe);
@@ -2476,7 +2584,8 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 	 * @param  description the file's new description
 	 * @param  changeLog the file's version change log (optionally
 	 *         <code>null</code>)
-	 * @param  majorVersion whether the new file version is a major version
+	 * @param  dlVersionNumberIncrease the kind of version number increase to
+	 *         apply for these changes.
 	 * @param  file the file's data (optionally <code>null</code>)
 	 * @param  serviceContext the service context to be applied. Can set the
 	 *         asset category IDs, asset tag names, and expando bridge
@@ -2490,13 +2599,14 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 	public FileEntry updateFileEntry(
 			long fileEntryId, String sourceFileName, String mimeType,
 			String title, String description, String changeLog,
-			boolean majorVersion, File file, ServiceContext serviceContext)
+			DLVersionNumberIncrease dlVersionNumberIncrease, File file,
+			ServiceContext serviceContext)
 		throws PortalException {
 
 		if ((file == null) || !file.exists() || (file.length() == 0)) {
 			return updateFileEntry(
 				fileEntryId, sourceFileName, mimeType, title, description,
-				changeLog, majorVersion, null, 0, serviceContext);
+				changeLog, dlVersionNumberIncrease, null, 0, serviceContext);
 		}
 
 		mimeType = DLAppUtil.getMimeType(sourceFileName, mimeType, title, file);
@@ -2506,7 +2616,8 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 
 		FileEntry fileEntry = repository.updateFileEntry(
 			getUserId(), fileEntryId, sourceFileName, mimeType, title,
-			description, changeLog, majorVersion, file, serviceContext);
+			description, changeLog, dlVersionNumberIncrease, file,
+			serviceContext);
 
 		dlAppHelperLocalService.updateFileEntry(
 			getUserId(), fileEntry, null, fileEntry.getLatestFileVersion(),
@@ -2538,7 +2649,8 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 	 * @param  description the file's new description
 	 * @param  changeLog the file's version change log (optionally
 	 *         <code>null</code>)
-	 * @param  majorVersion whether the new file version is a major version
+	 * @param  dlVersionNumberIncrease the kind of version number increase to
+	 *         apply for these changes.
 	 * @param  is the file's data (optionally <code>null</code>)
 	 * @param  size the file's size (optionally <code>0</code>)
 	 * @param  serviceContext the service context to be applied. Can set the
@@ -2553,16 +2665,17 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 	public FileEntry updateFileEntry(
 			long fileEntryId, String sourceFileName, String mimeType,
 			String title, String description, String changeLog,
-			boolean majorVersion, InputStream is, long size,
-			ServiceContext serviceContext)
+			DLVersionNumberIncrease dlVersionNumberIncrease, InputStream is,
+			long size, ServiceContext serviceContext)
 		throws PortalException {
 
 		if (Validator.isNull(mimeType) ||
 			mimeType.equals(ContentTypes.APPLICATION_OCTET_STREAM)) {
 
-			String extension = DLAppUtil.getExtension(title, sourceFileName);
-
 			if (size == 0) {
+				String extension = DLAppUtil.getExtension(
+					title, sourceFileName);
+
 				mimeType = MimeTypesUtil.getExtensionContentType(extension);
 			}
 			else {
@@ -2573,7 +2686,7 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 
 					return updateFileEntry(
 						fileEntryId, sourceFileName, mimeType, title,
-						description, changeLog, majorVersion, file,
+						description, changeLog, dlVersionNumberIncrease, file,
 						serviceContext);
 				}
 				catch (IOException ioe) {
@@ -2591,7 +2704,8 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 
 		FileEntry fileEntry = repository.updateFileEntry(
 			getUserId(), fileEntryId, sourceFileName, mimeType, title,
-			description, changeLog, majorVersion, is, size, serviceContext);
+			description, changeLog, dlVersionNumberIncrease, is, size,
+			serviceContext);
 
 		dlAppHelperLocalService.updateFileEntry(
 			getUserId(), fileEntry, null, fileEntry.getLatestFileVersion(),
@@ -2600,6 +2714,10 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 		return fileEntry;
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x),  As of Judson (7.1.x), replaced by {@link #updateFileEntryAndCheckIn(long, String, String, String, String, String, DLVersionNumberIncrease, File, ServiceContext)}
+	 */
+	@Deprecated
 	@Override
 	public FileEntry updateFileEntryAndCheckIn(
 			long fileEntryId, String sourceFileName, String mimeType,
@@ -2607,21 +2725,57 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 			boolean majorVersion, File file, ServiceContext serviceContext)
 		throws PortalException {
 
+		return updateFileEntryAndCheckIn(
+			fileEntryId, sourceFileName, mimeType, title, description,
+			changeLog, DLVersionNumberIncrease.fromMajorVersion(majorVersion),
+			file, serviceContext);
+	}
+
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #updateFileEntryAndCheckIn(long, String, String, String, String, String, DLVersionNumberIncrease, InputStream, long, ServiceContext)}
+	 */
+	@Deprecated
+	@Override
+	public FileEntry updateFileEntryAndCheckIn(
+			long fileEntryId, String sourceFileName, String mimeType,
+			String title, String description, String changeLog,
+			boolean majorVersion, InputStream is, long size,
+			ServiceContext serviceContext)
+		throws PortalException {
+
+		return updateFileEntryAndCheckIn(
+			fileEntryId, sourceFileName, mimeType, title, description,
+			changeLog, DLVersionNumberIncrease.fromMajorVersion(majorVersion),
+			is, size, serviceContext);
+	}
+
+	@Override
+	public FileEntry updateFileEntryAndCheckIn(
+			long fileEntryId, String sourceFileName, String mimeType,
+			String title, String description, String changeLog,
+			DLVersionNumberIncrease dlVersionNumberIncrease, File file,
+			ServiceContext serviceContext)
+		throws PortalException {
+
 		if ((file == null) || !file.exists() || (file.length() == 0)) {
 			return updateFileEntryAndCheckIn(
 				fileEntryId, sourceFileName, mimeType, title, description,
-				changeLog, majorVersion, null, 0, serviceContext);
+				changeLog, dlVersionNumberIncrease, null, 0, serviceContext);
 		}
 
 		Repository repository = repositoryProvider.getFileEntryRepository(
 			fileEntryId);
 
-		FileEntry fileEntry = repository.updateFileEntry(
+		repository.updateFileEntry(
 			getUserId(), fileEntryId, sourceFileName, mimeType, title,
-			description, changeLog, majorVersion, file, serviceContext);
+			description, changeLog, dlVersionNumberIncrease, file,
+			serviceContext);
 
 		repository.checkInFileEntry(
-			getUserId(), fileEntryId, majorVersion, changeLog, serviceContext);
+			getUserId(), fileEntryId, dlVersionNumberIncrease, changeLog,
+			serviceContext);
+
+		FileEntry fileEntry = repository.getFileEntry(fileEntryId);
 
 		dlAppHelperLocalService.updateFileEntry(
 			getUserId(), fileEntry, null, fileEntry.getFileVersion(),
@@ -2634,19 +2788,23 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 	public FileEntry updateFileEntryAndCheckIn(
 			long fileEntryId, String sourceFileName, String mimeType,
 			String title, String description, String changeLog,
-			boolean majorVersion, InputStream is, long size,
-			ServiceContext serviceContext)
+			DLVersionNumberIncrease dlVersionNumberIncrease, InputStream is,
+			long size, ServiceContext serviceContext)
 		throws PortalException {
 
 		Repository repository = repositoryProvider.getFileEntryRepository(
 			fileEntryId);
 
-		FileEntry fileEntry = repository.updateFileEntry(
+		repository.updateFileEntry(
 			getUserId(), fileEntryId, sourceFileName, mimeType, title,
-			description, changeLog, majorVersion, is, size, serviceContext);
+			description, changeLog, dlVersionNumberIncrease, is, size,
+			serviceContext);
 
 		repository.checkInFileEntry(
-			getUserId(), fileEntryId, majorVersion, changeLog, serviceContext);
+			getUserId(), fileEntryId, dlVersionNumberIncrease, changeLog,
+			serviceContext);
+
+		FileEntry fileEntry = repository.getFileEntry(fileEntryId);
 
 		dlAppHelperLocalService.updateFileEntry(
 			getUserId(), fileEntry, null, fileEntry.getFileVersion(),
@@ -2804,7 +2962,9 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 					sourceFileName, fileVersion.getMimeType(),
 					fileVersion.getTitle(), fileVersion.getDescription(),
 					StringPool.BLANK,
-					DLAppUtil.isMajorVersion(previousFileVersion, fileVersion),
+					DLVersionNumberIncrease.fromMajorVersion(
+						DLAppUtil.isMajorVersion(
+							previousFileVersion, fileVersion)),
 					fileVersion.getContentStream(false), fileVersion.getSize(),
 					serviceContext);
 
@@ -3087,5 +3247,16 @@ public class DLAppServiceImpl extends DLAppServiceBaseImpl {
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		DLAppServiceImpl.class);
+
+	private static volatile ModelResourcePermission<Folder>
+		_folderModelResourcePermission =
+			ModelResourcePermissionFactory.getInstance(
+				DLAppServiceImpl.class, "_folderModelResourcePermission",
+				Folder.class);
+	private static volatile PortletResourcePermission
+		_portletResourcePermission =
+			PortletResourcePermissionFactory.getInstance(
+				DLAppServiceImpl.class, "_portletResourcePermission",
+				DLConstants.RESOURCE_NAME);
 
 }

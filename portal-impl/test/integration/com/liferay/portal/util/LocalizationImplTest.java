@@ -14,6 +14,7 @@
 
 package com.liferay.portal.util;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.settings.LocalizedValuesMap;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -21,7 +22,6 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Localization;
 import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.DocumentException;
 import com.liferay.portal.kernel.xml.UnsecureSAXReaderUtil;
@@ -82,7 +82,7 @@ public class LocalizationImplTest {
 
 	@Before
 	public void setUp() throws Exception {
-		StringBundler sb = new StringBundler();
+		StringBundler sb = new StringBundler(10);
 
 		sb.append("<?xml version=\"1.0\"?>");
 
@@ -124,12 +124,16 @@ public class LocalizationImplTest {
 		String[] documentAvailableLanguageIds =
 			LocalizationUtil.getAvailableLanguageIds(document);
 
-		Assert.assertEquals(2, documentAvailableLanguageIds.length);
+		Assert.assertEquals(
+			Arrays.toString(documentAvailableLanguageIds), 2,
+			documentAvailableLanguageIds.length);
 
 		String[] xmlAvailableLanguageIds =
 			LocalizationUtil.getAvailableLanguageIds(_xml);
 
-		Assert.assertEquals(2, xmlAvailableLanguageIds.length);
+		Assert.assertEquals(
+			Arrays.toString(xmlAvailableLanguageIds), 2,
+			xmlAvailableLanguageIds.length);
 
 		Arrays.sort(documentAvailableLanguageIds);
 		Arrays.sort(xmlAvailableLanguageIds);
@@ -150,7 +154,7 @@ public class LocalizationImplTest {
 		String languageIdsFromXml = LocalizationUtil.getDefaultLanguageId(_xml);
 
 		Assert.assertEquals(
-			"The default language ids from Document and XML don't match",
+			"The default language ids from Document and XML do not match",
 			languageIdsFromDoc, languageIdsFromXml);
 	}
 
@@ -161,7 +165,7 @@ public class LocalizationImplTest {
 
 		Map<Locale, String> map = LocalizationUtil.getMap(localizedValuesMap);
 
-		Assert.assertEquals(1, map.size());
+		Assert.assertEquals(map.toString(), 1, map.size());
 		Assert.assertEquals("defaultValue", map.get(LocaleUtil.getDefault()));
 	}
 
@@ -179,7 +183,7 @@ public class LocalizationImplTest {
 
 		Map<Locale, String> map = LocalizationUtil.getMap(localizedValuesMap);
 
-		Assert.assertEquals(locales.size(), map.size());
+		Assert.assertEquals(map.toString(), locales.size(), map.size());
 		Assert.assertEquals(_GERMAN_HELLO, map.get(LocaleUtil.GERMANY));
 		Assert.assertEquals(_ENGLISH_HELLO, map.get(LocaleUtil.US));
 	}
@@ -231,8 +235,12 @@ public class LocalizationImplTest {
 		List<Locale> modifiedLocales = LocalizationUtil.getModifiedLocales(
 			oldLocalizationMap, newLocalizationMap);
 
-		Assert.assertTrue(modifiedLocales.contains(LocaleUtil.getDefault()));
-		Assert.assertTrue(modifiedLocales.contains(LocaleUtil.GERMANY));
+		Assert.assertTrue(
+			modifiedLocales.toString(),
+			modifiedLocales.contains(LocaleUtil.getDefault()));
+		Assert.assertTrue(
+			modifiedLocales.toString(),
+			modifiedLocales.contains(LocaleUtil.GERMANY));
 	}
 
 	@Test
@@ -387,7 +395,7 @@ public class LocalizationImplTest {
 
 		localizationMap.put(LocaleUtil.US, _ENGLISH_HELLO);
 
-		StringBundler sb = new StringBundler();
+		StringBundler sb = new StringBundler(10);
 
 		sb.append("<?xml version='1.0' encoding='UTF-8'?>");
 		sb.append("<root available-locales=\"en_US,de_DE\" ");
@@ -435,6 +443,28 @@ public class LocalizationImplTest {
 			LocalizationUtil.getLocalization(xml, _ENGLISH_LANGUAGE_ID));
 	}
 
+	@Test
+	public void testUpdateLocalizationWithInvalidXmlCharacter() {
+		String xml = LocalizationUtil.updateLocalization(
+			StringPool.BLANK, "greeting", _INVALID_ENGLISH_HELLO,
+			_ENGLISH_LANGUAGE_ID, _ENGLISH_LANGUAGE_ID);
+
+		Assert.assertEquals(
+			_ENGLISH_HELLO,
+			LocalizationUtil.getLocalization(xml, _ENGLISH_LANGUAGE_ID));
+	}
+
+	@Test
+	public void testUpdateLocalizationWithUTF8() {
+		String xml = LocalizationUtil.updateLocalization(
+			StringPool.BLANK, "greeting", _HELLO_SURFER_UTF8,
+			_ENGLISH_LANGUAGE_ID, _ENGLISH_LANGUAGE_ID);
+
+		Assert.assertEquals(
+			_HELLO_SURFER_UTF8,
+			LocalizationUtil.getLocalization(xml, _ENGLISH_LANGUAGE_ID));
+	}
+
 	private static final String _ENGLISH_HELLO = "Hello World";
 
 	private static final String _ENGLISH_LANGUAGE_ID = LocaleUtil.toLanguageId(
@@ -444,6 +474,10 @@ public class LocalizationImplTest {
 
 	private static final String _GERMAN_LANGUAGE_ID = LocaleUtil.toLanguageId(
 		LocaleUtil.GERMANY);
+
+	private static final String _HELLO_SURFER_UTF8 = "Hello \uD83C\uDFC4";
+
+	private static final String _INVALID_ENGLISH_HELLO = "Hello\u0008 World";
 
 	private static final String _SPANISH_LANGUAGE_ID = LocaleUtil.toLanguageId(
 		LocaleUtil.SPAIN);

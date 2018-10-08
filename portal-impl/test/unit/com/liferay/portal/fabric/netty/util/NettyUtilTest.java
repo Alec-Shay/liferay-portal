@@ -14,13 +14,12 @@
 
 package com.liferay.portal.fabric.netty.util;
 
+import com.liferay.petra.concurrent.DefaultNoticeableFuture;
 import com.liferay.portal.fabric.netty.NettyTestUtil;
-import com.liferay.portal.kernel.concurrent.DefaultNoticeableFuture;
 import com.liferay.portal.kernel.test.CaptureHandler;
 import com.liferay.portal.kernel.test.JDKLoggerTestUtil;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
-import com.liferay.portal.kernel.util.Time;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
@@ -83,7 +82,7 @@ public class NettyUtilTest {
 
 			List<LogRecord> logRecords = captureHandler.getLogRecords();
 
-			Assert.assertTrue(logRecords.isEmpty());
+			Assert.assertTrue(logRecords.toString(), logRecords.isEmpty());
 		}
 	}
 
@@ -122,7 +121,7 @@ public class NettyUtilTest {
 
 			List<LogRecord> logRecords = captureHandler.getLogRecords();
 
-			Assert.assertEquals(1, logRecords.size());
+			Assert.assertEquals(logRecords.toString(), 1, logRecords.size());
 
 			LogRecord logRecord = logRecords.get(0);
 
@@ -171,7 +170,8 @@ public class NettyUtilTest {
 					NettyUtil.class.getName(), Level.OFF)) {
 
 			NettyUtil.scheduleCancellation(
-				_embeddedChannel, defaultNoticeableFuture, Time.HOUR);
+				_embeddedChannel, defaultNoticeableFuture,
+				TimeUnit.HOURS.toMillis(1));
 
 			ScheduledFuture<?> scheduledFuture =
 				mockEventLoopGroup.getScheduledFuture();
@@ -186,7 +186,7 @@ public class NettyUtilTest {
 
 			List<LogRecord> logRecords = captureHandler.getLogRecords();
 
-			Assert.assertTrue(logRecords.isEmpty());
+			Assert.assertTrue(logRecords.toString(), logRecords.isEmpty());
 		}
 
 		// Normal finish with log
@@ -198,7 +198,8 @@ public class NettyUtilTest {
 					NettyUtil.class.getName(), Level.FINEST)) {
 
 			NettyUtil.scheduleCancellation(
-				_embeddedChannel, defaultNoticeableFuture, Time.HOUR);
+				_embeddedChannel, defaultNoticeableFuture,
+				TimeUnit.HOURS.toMillis(1));
 
 			ScheduledFuture<?> scheduledFuture =
 				mockEventLoopGroup.getScheduledFuture();
@@ -213,7 +214,7 @@ public class NettyUtilTest {
 
 			List<LogRecord> logRecords = captureHandler.getLogRecords();
 
-			Assert.assertEquals(1, logRecords.size());
+			Assert.assertEquals(logRecords.toString(), 1, logRecords.size());
 
 			LogRecord logRecord = logRecords.get(0);
 
@@ -247,7 +248,7 @@ public class NettyUtilTest {
 
 			List<LogRecord> logRecords = captureHandler.getLogRecords();
 
-			Assert.assertTrue(logRecords.isEmpty());
+			Assert.assertTrue(logRecords.toString(), logRecords.isEmpty());
 		}
 
 		// Timeout cancel with log
@@ -274,7 +275,7 @@ public class NettyUtilTest {
 
 			List<LogRecord> logRecords = captureHandler.getLogRecords();
 
-			Assert.assertEquals(1, logRecords.size());
+			Assert.assertEquals(logRecords.toString(), 1, logRecords.size());
 
 			LogRecord logRecord = logRecords.get(0);
 

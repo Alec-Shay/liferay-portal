@@ -25,7 +25,7 @@ import java.io.Serializable;
  */
 public interface Query extends Serializable {
 
-	public static final float BOOST_DEFAULT = 1.0f;
+	public static final float BOOST_DEFAULT = 1.0F;
 
 	public <T> T accept(QueryVisitor<T> queryVisitor);
 
@@ -38,7 +38,7 @@ public interface Query extends Serializable {
 	public QueryConfig getQueryConfig();
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	public Object getWrappedQuery();

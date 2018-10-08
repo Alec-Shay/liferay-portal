@@ -14,8 +14,11 @@
 
 package com.liferay.portal.servlet;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.cache.PortalCache;
-import com.liferay.portal.kernel.cache.SingleVMPoolUtil;
+import com.liferay.portal.kernel.cache.PortalCacheHelperUtil;
+import com.liferay.portal.kernel.cache.PortalCacheManagerNames;
 import com.liferay.portal.kernel.exception.NoSuchLayoutException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -26,7 +29,6 @@ import com.liferay.portal.kernel.service.PortletLocalServiceUtil;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.servlet.RequestDispatcherUtil;
 import com.liferay.portal.kernel.servlet.ServletResponseUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.HttpUtil;
@@ -37,7 +39,6 @@ import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.Validator;
@@ -166,11 +167,28 @@ public class ComboServlet extends HttpServlet {
 		String[] modulePaths = modulePathsSet.toArray(
 			new String[modulePathsSet.size()]);
 
-		String firstModulePath = modulePaths[0];
+		String extension = StringPool.BLANK;
 
-		String resourcePath = getResourcePath(firstModulePath);
+		for (String modulePath : modulePaths) {
+			String pathExtension = _getModulePathExtension(modulePath);
 
-		String extension = FileUtil.getExtension(resourcePath);
+			if (Validator.isNull(pathExtension)) {
+				continue;
+			}
+
+			if (Validator.isNull(extension)) {
+				extension = pathExtension;
+			}
+
+			if (!extension.equals(pathExtension)) {
+				response.setHeader(
+					HttpHeaders.CACHE_CONTROL,
+					HttpHeaders.CACHE_CONTROL_NO_CACHE_VALUE);
+				response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+
+				return;
+			}
+		}
 
 		String minifierType = ParamUtil.getString(request, "minifierType");
 
@@ -209,7 +227,7 @@ public class ComboServlet extends HttpServlet {
 					response.setHeader(
 						HttpHeaders.CACHE_CONTROL,
 						HttpHeaders.CACHE_CONTROL_NO_CACHE_VALUE);
-					response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+					response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 
 					return;
 				}
@@ -386,7 +404,7 @@ public class ComboServlet extends HttpServlet {
 
 		Portlet portlet = PortletLocalServiceUtil.getPortletById(portletId);
 
-		if (portlet.isUndeployedPortlet()) {
+		if ((portlet == null) || portlet.isUndeployedPortlet()) {
 			return null;
 		}
 
@@ -399,8 +417,10 @@ public class ComboServlet extends HttpServlet {
 		if (!PortalUtil.isValidResourceId(resourcePath)) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
-					"Invalid resource " + request.getRequestURL() + "?" +
-						request.getQueryString());
+					StringBundler.concat(
+						"Invalid resource ",
+						String.valueOf(request.getRequestURL()), "?",
+						request.getQueryString()));
 			}
 
 			return null;
@@ -438,6 +458,18 @@ public class ComboServlet extends HttpServlet {
 		return validModuleExtension;
 	}
 
+	private String _getModulePathExtension(String modulePath) {
+		String resourcePath = getResourcePath(modulePath);
+
+		int index = resourcePath.indexOf(CharPool.QUESTION);
+
+		if (index != -1) {
+			resourcePath = resourcePath.substring(0, index);
+		}
+
+		return FileUtil.getExtension(resourcePath);
+	}
+
 	private static final String _CSS_EXTENSION = "css";
 
 	private static final String _CSS_MINIFIED_SUFFIX = "-min.css";
@@ -450,10 +482,11 @@ public class ComboServlet extends HttpServlet {
 	private static final Log _log = LogFactoryUtil.getLog(ComboServlet.class);
 
 	private static final PortalCache<String, byte[][]> _bytesArrayPortalCache =
-		SingleVMPoolUtil.getPortalCache(ComboServlet.class.getName());
+		PortalCacheHelperUtil.getPortalCache(
+			PortalCacheManagerNames.SINGLE_VM, ComboServlet.class.getName());
 	private static final PortalCache<String, FileContentBag>
-		_fileContentBagPortalCache = SingleVMPoolUtil.getPortalCache(
-			FileContentBag.class.getName());
+		_fileContentBagPortalCache = PortalCacheHelperUtil.getPortalCache(
+			PortalCacheManagerNames.SINGLE_VM, FileContentBag.class.getName());
 
 	private final Set<String> _protectedParameters = SetUtil.fromArray(
 		new String[] {

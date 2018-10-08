@@ -15,6 +15,7 @@
 package com.liferay.portal.repository.capabilities;
 
 import com.liferay.document.library.kernel.model.DLFolderConstants;
+import com.liferay.document.library.kernel.model.DLVersionNumberIncrease;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.lock.Lock;
 import com.liferay.portal.kernel.repository.Repository;
@@ -26,6 +27,7 @@ import com.liferay.portal.kernel.repository.model.FileShortcut;
 import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.repository.model.RepositoryEntry;
+import com.liferay.portal.kernel.repository.util.RepositoryUserUtil;
 import com.liferay.portal.kernel.search.Hits;
 import com.liferay.portal.kernel.search.Query;
 import com.liferay.portal.kernel.search.SearchContext;
@@ -92,8 +94,9 @@ public class CapabilityRepository
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, see {@link #addFileEntry(long, long, String,
-	 *             String, String, String, String, File, ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), see {@link #addFileEntry(long,
+	 *             long, String, String, String, String, String, File,
+	 *             ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -104,16 +107,14 @@ public class CapabilityRepository
 		throws PortalException {
 
 		return addFileEntry(
-			com.liferay.portal.kernel.repository.util.RepositoryUserUtil.
-				getUserId(),
-			folderId, sourceFileName, mimeType, title, description, changeLog,
-			file, serviceContext);
+			RepositoryUserUtil.getUserId(), folderId, sourceFileName, mimeType,
+			title, description, changeLog, file, serviceContext);
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, see {@link #addFileEntry(long, long, String,
-	 *             String, String, String, String, InputStream, long,
-	 *             ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), see {@link #addFileEntry(long,
+	 *             long, String, String, String, String, String, InputStream,
+	 *             long, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -124,10 +125,8 @@ public class CapabilityRepository
 		throws PortalException {
 
 		return addFileEntry(
-			com.liferay.portal.kernel.repository.util.RepositoryUserUtil.
-				getUserId(),
-			folderId, sourceFileName, mimeType, title, description, changeLog,
-			is, size, serviceContext);
+			RepositoryUserUtil.getUserId(), folderId, sourceFileName, mimeType,
+			title, description, changeLog, is, size, serviceContext);
 	}
 
 	@Override
@@ -165,8 +164,8 @@ public class CapabilityRepository
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #addFolder(long, long,
-	 *             String, String, ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #addFolder(long, long, String, String, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -176,9 +175,8 @@ public class CapabilityRepository
 		throws PortalException {
 
 		return addFolder(
-			com.liferay.portal.kernel.repository.util.RepositoryUserUtil.
-				getUserId(),
-			parentFolderId, name, description, serviceContext);
+			RepositoryUserUtil.getUserId(), parentFolderId, name, description,
+			serviceContext);
 	}
 
 	@Override
@@ -197,8 +195,9 @@ public class CapabilityRepository
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #checkInFileEntry(long, long,
-	 *             boolean, String, ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #checkInFileEntry(long, long, boolean, String,
+	 *             ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -208,21 +207,22 @@ public class CapabilityRepository
 		throws PortalException {
 
 		checkInFileEntry(
-			com.liferay.portal.kernel.repository.util.RepositoryUserUtil.
-				getUserId(),
-			fileEntryId, major, changeLog, serviceContext);
+			RepositoryUserUtil.getUserId(), fileEntryId, major, changeLog,
+			serviceContext);
 	}
 
 	@Override
 	public void checkInFileEntry(
-			long userId, long fileEntryId, boolean majorVersion,
-			String changeLog, ServiceContext serviceContext)
+			long userId, long fileEntryId,
+			DLVersionNumberIncrease dlVersionNumberIncrease, String changeLog,
+			ServiceContext serviceContext)
 		throws PortalException {
 
 		Repository repository = getRepository();
 
 		repository.checkInFileEntry(
-			userId, fileEntryId, majorVersion, changeLog, serviceContext);
+			userId, fileEntryId, dlVersionNumberIncrease, changeLog,
+			serviceContext);
 
 		FileEntry fileEntry = repository.getFileEntry(fileEntryId);
 
@@ -248,8 +248,8 @@ public class CapabilityRepository
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #checkInFileEntry(long, long,
-	 *             String, ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #checkInFileEntry(long, long, String, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -258,9 +258,8 @@ public class CapabilityRepository
 		throws PortalException {
 
 		checkInFileEntry(
-			com.liferay.portal.kernel.repository.util.RepositoryUserUtil.
-				getUserId(),
-			fileEntryId, lockUuid, serviceContext);
+			RepositoryUserUtil.getUserId(), fileEntryId, lockUuid,
+			serviceContext);
 	}
 
 	@Override
@@ -314,8 +313,8 @@ public class CapabilityRepository
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #copyFileEntry(long, long,
-	 *             long, long, ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #copyFileEntry(long, long, long, long, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -325,9 +324,8 @@ public class CapabilityRepository
 		throws PortalException {
 
 		return copyFileEntry(
-			com.liferay.portal.kernel.repository.util.RepositoryUserUtil.
-				getUserId(),
-			groupId, fileEntryId, destFolderId, serviceContext);
+			RepositoryUserUtil.getUserId(), groupId, fileEntryId, destFolderId,
+			serviceContext);
 	}
 
 	@Override
@@ -465,6 +463,16 @@ public class CapabilityRepository
 
 	@Override
 	public List<FileEntry> getFileEntries(
+			long folderId, String[] mimeTypes, int status, int start, int end,
+			OrderByComparator<FileEntry> obc)
+		throws PortalException {
+
+		return getRepository().getFileEntries(
+			folderId, mimeTypes, status, start, end, obc);
+	}
+
+	@Override
+	public List<FileEntry> getFileEntries(
 			long folderId, String[] mimeTypes, int start, int end,
 			OrderByComparator<FileEntry> obc)
 		throws PortalException {
@@ -523,6 +531,14 @@ public class CapabilityRepository
 		throws PortalException {
 
 		return getRepository().getFileEntriesCount(folderId, mimeTypes);
+	}
+
+	@Override
+	public int getFileEntriesCount(
+			long folderId, String[] mimeTypes, int status)
+		throws PortalException {
+
+		return getRepository().getFileEntriesCount(folderId, mimeTypes, status);
 	}
 
 	@Override
@@ -600,13 +616,25 @@ public class CapabilityRepository
 
 	@Override
 	public List<RepositoryEntry> getFoldersAndFileEntriesAndFileShortcuts(
-			long folderId, int status, String[] mimetypes,
+			long folderId, int status, String[] mimeTypes,
+			boolean includeMountFolders, boolean includeOwner, int start,
+			int end, OrderByComparator<?> obc)
+		throws PortalException {
+
+		return getRepository().getFoldersAndFileEntriesAndFileShortcuts(
+			folderId, status, mimeTypes, includeMountFolders, includeOwner,
+			start, end, obc);
+	}
+
+	@Override
+	public List<RepositoryEntry> getFoldersAndFileEntriesAndFileShortcuts(
+			long folderId, int status, String[] mimeTypes,
 			boolean includeMountFolders, int start, int end,
 			OrderByComparator<?> obc)
 		throws PortalException {
 
 		return getRepository().getFoldersAndFileEntriesAndFileShortcuts(
-			folderId, status, mimetypes, includeMountFolders, start, end, obc);
+			folderId, status, mimeTypes, includeMountFolders, start, end, obc);
 	}
 
 	@Override
@@ -620,12 +648,22 @@ public class CapabilityRepository
 
 	@Override
 	public int getFoldersAndFileEntriesAndFileShortcutsCount(
-			long folderId, int status, String[] mimetypes,
+			long folderId, int status, String[] mimeTypes,
 			boolean includeMountFolders)
 		throws PortalException {
 
 		return getRepository().getFoldersAndFileEntriesAndFileShortcutsCount(
-			folderId, status, mimetypes, includeMountFolders);
+			folderId, status, mimeTypes, includeMountFolders);
+	}
+
+	@Override
+	public int getFoldersAndFileEntriesAndFileShortcutsCount(
+			long folderId, int status, String[] mimeTypes,
+			boolean includeMountFolders, boolean includeOwner)
+		throws PortalException {
+
+		return getRepository().getFoldersAndFileEntriesAndFileShortcutsCount(
+			folderId, status, mimeTypes, includeMountFolders, includeOwner);
 	}
 
 	@Override
@@ -757,8 +795,8 @@ public class CapabilityRepository
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #moveFileEntry(long, long,
-	 *             long, ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #moveFileEntry(long, long, long, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -767,9 +805,8 @@ public class CapabilityRepository
 		throws PortalException {
 
 		return moveFileEntry(
-			com.liferay.portal.kernel.repository.util.RepositoryUserUtil.
-				getUserId(),
-			fileEntryId, newFolderId, serviceContext);
+			RepositoryUserUtil.getUserId(), fileEntryId, newFolderId,
+			serviceContext);
 	}
 
 	@Override
@@ -790,8 +827,8 @@ public class CapabilityRepository
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #moveFolder(long, long, long,
-	 *             ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #moveFolder(long, long, long, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -801,9 +838,8 @@ public class CapabilityRepository
 		throws PortalException {
 
 		return moveFolder(
-			com.liferay.portal.kernel.repository.util.RepositoryUserUtil.
-				getUserId(),
-			folderId, newParentFolderId, serviceContext);
+			RepositoryUserUtil.getUserId(), folderId, newParentFolderId,
+			serviceContext);
 	}
 
 	@Override
@@ -842,8 +878,8 @@ public class CapabilityRepository
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #revertFileEntry(long, long,
-	 *             String, ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #revertFileEntry(long, long, String, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -908,14 +944,15 @@ public class CapabilityRepository
 	public FileEntry updateFileEntry(
 			long userId, long fileEntryId, String sourceFileName,
 			String mimeType, String title, String description, String changeLog,
-			boolean majorVersion, File file, ServiceContext serviceContext)
+			DLVersionNumberIncrease dlVersionNumberIncrease, File file,
+			ServiceContext serviceContext)
 		throws PortalException {
 
 		Repository repository = getRepository();
 
 		FileEntry fileEntry = repository.updateFileEntry(
 			userId, fileEntryId, sourceFileName, mimeType, title, description,
-			changeLog, majorVersion, file, serviceContext);
+			changeLog, dlVersionNumberIncrease, file, serviceContext);
 
 		_repositoryEventTrigger.trigger(
 			RepositoryEventType.Update.class, FileEntry.class, fileEntry);
@@ -927,15 +964,15 @@ public class CapabilityRepository
 	public FileEntry updateFileEntry(
 			long userId, long fileEntryId, String sourceFileName,
 			String mimeType, String title, String description, String changeLog,
-			boolean majorVersion, InputStream is, long size,
-			ServiceContext serviceContext)
+			DLVersionNumberIncrease dlVersionNumberIncrease, InputStream is,
+			long size, ServiceContext serviceContext)
 		throws PortalException {
 
 		Repository repository = getRepository();
 
 		FileEntry fileEntry = repository.updateFileEntry(
 			userId, fileEntryId, sourceFileName, mimeType, title, description,
-			changeLog, majorVersion, is, size, serviceContext);
+			changeLog, dlVersionNumberIncrease, is, size, serviceContext);
 
 		_repositoryEventTrigger.trigger(
 			RepositoryEventType.Update.class, FileEntry.class, fileEntry);
@@ -944,9 +981,9 @@ public class CapabilityRepository
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #updateFileEntry(long, long,
-	 *             String, String, String, String, String, boolean, File,
-	 *             ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #updateFileEntry(long, long, String, String, String, String,
+	 *             String, boolean, File, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -969,9 +1006,9 @@ public class CapabilityRepository
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #updateFileEntry(long, long,
-	 *             String, String, String, String, String, boolean, InputStream,
-	 *             long, ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #updateFileEntry(long, long, String, String, String, String,
+	 *             String, boolean, InputStream, long, ServiceContext)}
 	 */
 	@Deprecated
 	@Override

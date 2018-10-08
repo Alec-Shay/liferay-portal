@@ -42,6 +42,7 @@ import com.liferay.portal.kernel.service.BaseLocalServiceImpl;
 import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistry;
 import com.liferay.portal.kernel.service.persistence.ClassNamePersistence;
 import com.liferay.portal.kernel.service.persistence.UserPersistence;
+import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.spring.extender.service.ServiceReference;
@@ -94,6 +95,7 @@ public abstract class ModuleLocalServiceBaseImpl extends BaseLocalServiceImpl
 	 * @return the new module
 	 */
 	@Override
+	@Transactional(enabled = false)
 	public Module createModule(long moduleId) {
 		return modulePersistence.create(moduleId);
 	}
@@ -210,6 +212,18 @@ public abstract class ModuleLocalServiceBaseImpl extends BaseLocalServiceImpl
 	}
 
 	/**
+	 * Returns the module with the matching UUID and company.
+	 *
+	 * @param uuid the module's UUID
+	 * @param companyId the primary key of the company
+	 * @return the matching module, or <code>null</code> if a matching module could not be found
+	 */
+	@Override
+	public Module fetchModuleByUuidAndCompanyId(String uuid, long companyId) {
+		return modulePersistence.fetchByUuid_C_First(uuid, companyId, null);
+	}
+
+	/**
 	 * Returns the module with the primary key.
 	 *
 	 * @param moduleId the primary key of the module
@@ -269,6 +283,20 @@ public abstract class ModuleLocalServiceBaseImpl extends BaseLocalServiceImpl
 	public PersistedModel getPersistedModel(Serializable primaryKeyObj)
 		throws PortalException {
 		return modulePersistence.findByPrimaryKey(primaryKeyObj);
+	}
+
+	/**
+	 * Returns the module with the matching UUID and company.
+	 *
+	 * @param uuid the module's UUID
+	 * @param companyId the primary key of the company
+	 * @return the matching module
+	 * @throws PortalException if a matching module could not be found
+	 */
+	@Override
+	public Module getModuleByUuidAndCompanyId(String uuid, long companyId)
+		throws PortalException {
+		return modulePersistence.findByUuid_C_First(uuid, companyId, null);
 	}
 
 	/**

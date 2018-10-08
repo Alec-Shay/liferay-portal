@@ -14,16 +14,15 @@
 
 package com.liferay.portal.kernel.io;
 
-import com.liferay.portal.kernel.io.Serializer.BufferNode;
-import com.liferay.portal.kernel.io.Serializer.BufferQueue;
+import com.liferay.petra.lang.ClassLoaderPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
+import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
 import com.liferay.portal.kernel.test.rule.NewEnv;
 import com.liferay.portal.kernel.test.rule.NewEnvTestRule;
-import com.liferay.portal.kernel.util.ClassLoaderPool;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -40,6 +39,7 @@ import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -89,8 +89,8 @@ public class SerializerTest {
 		Serializer.BufferOutputStream bufferOutputStream =
 			serializer.new BufferOutputStream();
 
-		for (int i = 0; i < data.length; i++) {
-			bufferOutputStream.write(data[i]);
+		for (byte b : data) {
+			bufferOutputStream.write(b);
 		}
 
 		byte[] result = serializer.toByteBuffer().array();
@@ -110,7 +110,7 @@ public class SerializerTest {
 
 	@Test
 	public void testBufferQueue() {
-		BufferQueue bufferQueue = new BufferQueue();
+		Serializer.BufferQueue bufferQueue = new Serializer.BufferQueue();
 
 		// Insert into empty queue
 
@@ -118,7 +118,7 @@ public class SerializerTest {
 
 		bufferQueue.enqueue(buffer2);
 
-		BufferNode bufferNode1 = bufferQueue.headBufferNode;
+		Serializer.BufferNode bufferNode1 = bufferQueue.headBufferNode;
 
 		Assert.assertSame(buffer2, bufferNode1.buffer);
 		Assert.assertNull(bufferNode1.next);
@@ -131,7 +131,7 @@ public class SerializerTest {
 
 		bufferNode1 = bufferQueue.headBufferNode;
 
-		BufferNode bufferNode2 = bufferNode1.next;
+		Serializer.BufferNode bufferNode2 = bufferNode1.next;
 
 		Assert.assertSame(buffer4, bufferNode1.buffer);
 		Assert.assertNotNull(bufferNode1.next);
@@ -149,7 +149,7 @@ public class SerializerTest {
 
 		bufferNode2 = bufferNode1.next;
 
-		BufferNode bufferNode3 = bufferNode2.next;
+		Serializer.BufferNode bufferNode3 = bufferNode2.next;
 
 		Assert.assertSame(buffer4, bufferNode1.buffer);
 		Assert.assertNotNull(bufferNode1.next);
@@ -170,7 +170,7 @@ public class SerializerTest {
 
 		bufferNode3 = bufferNode2.next;
 
-		BufferNode bufferNode4 = bufferNode3.next;
+		Serializer.BufferNode bufferNode4 = bufferNode3.next;
 
 		Assert.assertSame(buffer4, bufferNode1.buffer);
 		Assert.assertNotNull(bufferNode1.next);
@@ -207,13 +207,13 @@ public class SerializerTest {
 
 		bufferNode4 = bufferNode3.next;
 
-		BufferNode bufferNode5 = bufferNode4.next;
+		Serializer.BufferNode bufferNode5 = bufferNode4.next;
 
-		BufferNode bufferNode6 = bufferNode5.next;
+		Serializer.BufferNode bufferNode6 = bufferNode5.next;
 
-		BufferNode bufferNode7 = bufferNode6.next;
+		Serializer.BufferNode bufferNode7 = bufferNode6.next;
 
-		BufferNode bufferNode8 = bufferNode7.next;
+		Serializer.BufferNode bufferNode8 = bufferNode7.next;
 
 		Assert.assertSame(buffer10, bufferNode1.buffer);
 		Assert.assertNotNull(bufferNode1.next);
@@ -345,7 +345,8 @@ public class SerializerTest {
 
 		byte[] newBytes = serializer.getBuffer(1);
 
-		Assert.assertEquals(bytes.length * 2, newBytes.length);
+		Assert.assertEquals(
+			Arrays.toString(newBytes), bytes.length * 2, newBytes.length);
 
 		for (int i = 0; i < bytes.length; i++) {
 			Assert.assertEquals(bytes[i], newBytes[i]);
@@ -362,7 +363,8 @@ public class SerializerTest {
 
 		newBytes = serializer.getBuffer(_COUNT + 1);
 
-		Assert.assertEquals(bytes.length * 2 + 1, newBytes.length);
+		Assert.assertEquals(
+			Arrays.toString(newBytes), bytes.length * 2 + 1, newBytes.length);
 
 		for (int i = 0; i < bytes.length; i++) {
 			Assert.assertEquals(bytes[i], newBytes[i]);
@@ -385,7 +387,10 @@ public class SerializerTest {
 
 		serializer.toByteBuffer();
 
-		Assert.assertEquals(0, Serializer.bufferQueueThreadLocal.get().count);
+		Serializer.BufferQueue bufferQueue = ReflectionTestUtil.invoke(
+			serializer, "_getBufferQueue", new Class<?>[0]);
+
+		Assert.assertEquals(0, bufferQueue.count);
 
 		serializer = new Serializer();
 
@@ -396,8 +401,7 @@ public class SerializerTest {
 
 		serializer.writeTo(unsyncByteArrayOutputStream);
 
-		Assert.assertEquals(0, Serializer.bufferQueueThreadLocal.get().count);
-
+		Assert.assertEquals(0, bufferQueue.count);
 		Assert.assertEquals(
 			chars.length * 2 + 5, unsyncByteArrayOutputStream.size());
 	}

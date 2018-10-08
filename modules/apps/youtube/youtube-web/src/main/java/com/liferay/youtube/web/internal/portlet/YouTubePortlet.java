@@ -31,12 +31,11 @@ import org.osgi.service.component.annotations.Reference;
 	property = {
 		"com.liferay.portlet.css-class-wrapper=youtube-portlet",
 		"com.liferay.portlet.display-category=category.entertainment",
-		"com.liferay.portlet.header-portlet-css=/css/main.css",
 		"com.liferay.portlet.icon=/icons/youtube.png",
 		"com.liferay.portlet.use-default-template=true",
 		"javax.portlet.display-name=YouTube",
 		"javax.portlet.expiration-cache=0",
-		"javax.portlet.init-param.template-path=/",
+		"javax.portlet.init-param.template-path=/META-INF/resources/",
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + YouTubePortletKeys.YOUTUBE,
 		"javax.portlet.portlet-info.keywords=YouTube",

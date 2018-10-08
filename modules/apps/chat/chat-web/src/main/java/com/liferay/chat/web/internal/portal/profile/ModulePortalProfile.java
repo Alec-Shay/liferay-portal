@@ -14,6 +14,7 @@
 
 package com.liferay.chat.web.internal.portal.profile;
 
+import com.liferay.chat.web.internal.util.BuddyFinderUtil;
 import com.liferay.chat.web.portlet.ChatPortlet;
 import com.liferay.chat.web.portlet.route.ChatFriendlyURLMapper;
 import com.liferay.chat.web.upgrade.ChatWebUpgrade;
@@ -36,13 +37,14 @@ public class ModulePortalProfile extends BaseDSModulePortalProfile {
 
 	@Activate
 	public void activate(ComponentContext componentContext) {
-		Set<String> supportedPortalProfileNames = new HashSet<String>(
+		Set<String> supportedPortalProfileNames = new HashSet<>(
 			Arrays.asList(
 				PortalProfile.PORTAL_PROFILE_NAME_CE,
 				PortalProfile.PORTAL_PROFILE_NAME_DXP));
 
 		init(
 			componentContext, supportedPortalProfileNames,
+			BuddyFinderUtil.class.getName(),
 			ChatFriendlyURLMapper.class.getName(), ChatPortlet.class.getName(),
 			ChatWebUpgrade.class.getName());
 	}

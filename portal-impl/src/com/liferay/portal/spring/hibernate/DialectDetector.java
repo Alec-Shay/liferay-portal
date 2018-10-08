@@ -14,16 +14,17 @@
 
 package com.liferay.portal.spring.hibernate;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.dao.orm.hibernate.DB2Dialect;
 import com.liferay.portal.dao.orm.hibernate.HSQLDialect;
+import com.liferay.portal.dao.orm.hibernate.MariaDBDialect;
 import com.liferay.portal.dao.orm.hibernate.SQLServer2005Dialect;
 import com.liferay.portal.dao.orm.hibernate.SQLServer2008Dialect;
 import com.liferay.portal.dao.orm.hibernate.SybaseASE157Dialect;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -45,15 +46,20 @@ import org.hibernate.dialect.resolver.DialectFactory;
 public class DialectDetector {
 
 	public static Dialect getDialect(DataSource dataSource) {
-		String dialectKey = null;
+		int dbMajorVersion = 0;
+		int dbMinorVersion = 0;
+		String dbName = null;
 		Dialect dialect = null;
+		String dialectKey = null;
 
 		try (Connection connection = dataSource.getConnection()) {
 			DatabaseMetaData databaseMetaData = connection.getMetaData();
 
-			String dbName = databaseMetaData.getDatabaseProductName();
-			int dbMajorVersion = databaseMetaData.getDatabaseMajorVersion();
-			int dbMinorVersion = databaseMetaData.getDatabaseMinorVersion();
+			dbMajorVersion = databaseMetaData.getDatabaseMajorVersion();
+			dbMinorVersion = databaseMetaData.getDatabaseMinorVersion();
+			dbName = databaseMetaData.getDatabaseProductName();
+
+			String driverName = databaseMetaData.getDriverName();
 
 			StringBundler sb = new StringBundler(5);
 
@@ -71,10 +77,11 @@ public class DialectDetector {
 				return dialect;
 			}
 
-			if (_log.isInfoEnabled()) {
-				_log.info(
-					"Determine dialect for " + dbName + " " + dbMajorVersion +
-						"." + dbMinorVersion);
+			if (_log.isDebugEnabled()) {
+				_log.debug(
+					StringBundler.concat(
+						"Determine dialect for ", dbName, " ", dbMajorVersion,
+						".", dbMinorVersion));
 			}
 
 			if (dbName.startsWith("HSQL")) {
@@ -105,6 +112,9 @@ public class DialectDetector {
 			}
 			else if (dbName.startsWith("DB2") && (dbMajorVersion >= 9)) {
 				dialect = new DB2Dialect();
+			}
+			else if (driverName.startsWith("mariadb")) {
+				dialect = new MariaDBDialect();
 			}
 			else if (dbName.startsWith("Microsoft") && (dbMajorVersion == 9)) {
 				dialect = new SQLServer2005Dialect();
@@ -145,7 +155,10 @@ public class DialectDetector {
 			if (_log.isInfoEnabled()) {
 				Class<?> clazz = dialect.getClass();
 
-				_log.info("Found dialect " + clazz.getName());
+				_log.info(
+					StringBundler.concat(
+						"Using dialect ", clazz.getName(), " for ", dbName, " ",
+						dbMajorVersion, ".", dbMinorVersion));
 			}
 
 			_dialects.put(dialectKey, dialect);

@@ -14,6 +14,8 @@
 
 package com.liferay.taglib.portletext;
 
+import com.liferay.petra.lang.CentralizedThreadLocal;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.language.LanguageUtil;
@@ -22,8 +24,9 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutTypePortlet;
 import com.liferay.portal.kernel.model.Portlet;
-import com.liferay.portal.kernel.model.PortletInstance;
+import com.liferay.portal.kernel.model.PortletWrapper;
 import com.liferay.portal.kernel.portlet.PortletContainerUtil;
+import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.portlet.PortletJSONUtil;
 import com.liferay.portal.kernel.portlet.PortletLayoutListener;
 import com.liferay.portal.kernel.portlet.PortletParameterUtil;
@@ -38,16 +41,16 @@ import com.liferay.portal.kernel.service.PortletPreferencesLocalServiceUtil;
 import com.liferay.portal.kernel.service.permission.LayoutPermissionUtil;
 import com.liferay.portal.kernel.servlet.DynamicServletRequest;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.AutoResetThreadLocal;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.taglib.DirectTag;
 import com.liferay.taglib.servlet.PipingServletResponse;
 import com.liferay.taglib.util.PortalIncludeUtil;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Stack;
@@ -61,7 +64,7 @@ import javax.servlet.jsp.tagext.TagSupport;
 /**
  * @author Brian Wing Shun Chan
  */
-public class RuntimeTag extends TagSupport {
+public class RuntimeTag extends TagSupport implements DirectTag {
 
 	public static void doTag(
 			String portletName, PageContext pageContext,
@@ -154,35 +157,50 @@ public class RuntimeTag extends TagSupport {
 		throws Exception {
 
 		if (pageContext != null) {
-			response = new PipingServletResponse(
-				response, pageContext.getOut());
+			if (response == pageContext.getResponse()) {
+				response = PipingServletResponse.createPipingServletResponse(
+					pageContext);
+			}
+			else {
+				response = new PipingServletResponse(
+					response, pageContext.getOut());
+			}
 		}
 
-		PortletInstance portletInstance =
-			PortletInstance.fromPortletInstanceKey(portletName);
-
-		if (Validator.isNotNull(instanceId)) {
-			portletInstance = new PortletInstance(
-				portletInstance.getPortletName(), portletInstance.getUserId(),
-				instanceId);
-		}
+		HttpServletRequest originalRequest =
+			PortalUtil.getOriginalServletRequest(request);
 
 		RestrictPortletServletRequest restrictPortletServletRequest =
-			new RestrictPortletServletRequest(
-				PortalUtil.getOriginalServletRequest(request));
+			new RestrictPortletServletRequest(originalRequest);
 
-		queryString = PortletParameterUtil.addNamespace(
-			portletInstance.getPortletInstanceKey(), queryString);
+		Map<String, String[]> parameterMap = new HashMap<>(
+			request.getParameterMap());
 
-		Map<String, String[]> parameterMap = request.getParameterMap();
+		String portletInstanceKey = portletName;
+
+		if (Validator.isNotNull(instanceId)) {
+			portletInstanceKey = PortletIdCodec.encode(
+				PortletIdCodec.decodePortletName(portletName),
+				PortletIdCodec.decodeUserId(portletName), instanceId);
+		}
 
 		if (!Objects.equals(
-				portletInstance.getPortletInstanceKey(),
-				request.getParameter("p_p_id"))) {
+				portletInstanceKey, request.getParameter("p_p_id"))) {
 
 			parameterMap = MapUtil.filterByKeys(
-				parameterMap, (key) -> !key.startsWith("p_p_"));
+				parameterMap, key -> !key.startsWith("p_p_"));
 		}
+
+		String portletNamespace = PortalUtil.getPortletNamespace(
+			portletInstanceKey);
+
+		parameterMap.putAll(
+			MapUtil.filterByKeys(
+				originalRequest.getParameterMap(),
+				key -> key.startsWith(portletNamespace)));
+
+		queryString = PortletParameterUtil.addNamespace(
+			portletInstanceKey, queryString);
 
 		request = DynamicServletRequest.addQueryString(
 			restrictPortletServletRequest, parameterMap, queryString, false);
@@ -194,8 +212,7 @@ public class RuntimeTag extends TagSupport {
 				WebKeys.THEME_DISPLAY);
 
 			Portlet portlet = getPortlet(
-				themeDisplay.getCompanyId(),
-				portletInstance.getPortletInstanceKey());
+				themeDisplay.getCompanyId(), portletInstanceKey);
 
 			Stack<String> embeddedPortletIds = _embeddedPortletIds.get();
 
@@ -222,7 +239,7 @@ public class RuntimeTag extends TagSupport {
 					themeDisplay.getLayoutTypePortlet();
 
 				if (layoutTypePortlet.hasStateMaxPortletId(
-						portletInstance.getPortletInstanceKey())) {
+						portletInstanceKey)) {
 
 					// A portlet in the maximized state has already been
 					// processed
@@ -237,48 +254,42 @@ public class RuntimeTag extends TagSupport {
 
 			JSONObject jsonObject = null;
 
-			boolean writeJSONObject = false;
-
-			LayoutTypePortlet layoutTypePortlet =
-				themeDisplay.getLayoutTypePortlet();
+			boolean writeObject = false;
 
 			if (persistSettings &&
-				!layoutTypePortlet.isPortletEmbedded(portlet.getPortletId())) {
+				!layout.isPortletEmbedded(
+					portlet.getPortletId(), layout.getGroupId())) {
 
 				PortletPreferencesFactoryUtil.getLayoutPortletSetup(
 					themeDisplay.getCompanyId(), themeDisplay.getScopeGroupId(),
 					PortletKeys.PREFS_OWNER_TYPE_LAYOUT,
-					PortletKeys.PREFS_PLID_SHARED,
-					portletInstance.getPortletInstanceKey(),
+					PortletKeys.PREFS_PLID_SHARED, portletInstanceKey,
 					defaultPreferences);
 
-				writeJSONObject = true;
+				writeObject = true;
 			}
 
 			if (PortletPreferencesLocalServiceUtil.getPortletPreferencesCount(
 					PortletKeys.PREFS_OWNER_TYPE_LAYOUT, themeDisplay.getPlid(),
-					portletInstance.getPortletInstanceKey()) < 1) {
+					portletInstanceKey) < 1) {
 
 				PortletPreferencesFactoryUtil.getLayoutPortletSetup(
-					layout, portletInstance.getPortletInstanceKey(),
-					defaultPreferences);
+					layout, portletInstanceKey, defaultPreferences);
 				PortletPreferencesFactoryUtil.getPortletSetup(
-					request, portletInstance.getPortletInstanceKey(),
-					defaultPreferences);
+					request, portletInstanceKey, defaultPreferences);
 
 				PortletLayoutListener portletLayoutListener =
 					portlet.getPortletLayoutListenerInstance();
 
 				if (portletLayoutListener != null) {
 					portletLayoutListener.onAddToLayout(
-						portletInstance.getPortletInstanceKey(),
-						themeDisplay.getPlid());
+						portletInstanceKey, themeDisplay.getPlid());
 				}
 
-				writeJSONObject = true;
+				writeObject = true;
 			}
 
-			if (writeJSONObject) {
+			if (writeObject) {
 				jsonObject = JSONFactoryUtil.createJSONObject();
 
 				PortletJSONUtil.populatePortletJSONObject(
@@ -289,7 +300,7 @@ public class RuntimeTag extends TagSupport {
 				PortletJSONUtil.writeHeaderPaths(response, jsonObject);
 			}
 
-			embeddedPortletIds.push(portletInstance.getPortletInstanceKey());
+			embeddedPortletIds.push(portletInstanceKey);
 
 			PortletContainerUtil.render(request, response, portlet);
 
@@ -391,7 +402,26 @@ public class RuntimeTag extends TagSupport {
 		// non-instanceable portlets
 
 		if (!portlet.isInstanceable()) {
-			portlet = (Portlet)portlet.clone();
+			portlet = new PortletWrapper(portlet) {
+
+				@Override
+				public boolean getStatic() {
+					return _staticPortlet;
+				}
+
+				@Override
+				public boolean isStatic() {
+					return _staticPortlet;
+				}
+
+				@Override
+				public void setStatic(boolean staticPortlet) {
+					_staticPortlet = staticPortlet;
+				}
+
+				private boolean _staticPortlet;
+
+			};
 		}
 
 		portlet.setStatic(true);
@@ -408,7 +438,7 @@ public class RuntimeTag extends TagSupport {
 	private static final Log _log = LogFactoryUtil.getLog(RuntimeTag.class);
 
 	private static final ThreadLocal<Stack<String>> _embeddedPortletIds =
-		new AutoResetThreadLocal<>(RuntimeTag.class + "._embeddedPortletIds");
+		new CentralizedThreadLocal<>(RuntimeTag.class + "._embeddedPortletIds");
 
 	private String _defaultPreferences;
 	private String _instanceId;

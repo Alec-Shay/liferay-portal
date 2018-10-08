@@ -52,8 +52,7 @@ public class StrutsActionRegistryUtilTest {
 
 	@Test
 	public void testGetActions() throws Exception {
-		Map<String, org.apache.struts.action.Action> actions =
-			StrutsActionRegistryUtil.getActions();
+		Map<String, ?> actions = StrutsActionRegistryUtil.getActions();
 
 		ActionAdapter actionAdapter = (ActionAdapter)actions.get(
 			"TestStrutsAction");

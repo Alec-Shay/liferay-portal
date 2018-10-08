@@ -21,13 +21,13 @@ import org.osgi.service.component.annotations.Component;
 /**
  * @author Peter Fellwock
  */
-@Component
+@Component(service = ConfigurationBeanDeclaration.class)
 public class WebFormServiceConfigurationBeanDeclaration
 	implements ConfigurationBeanDeclaration {
 
 	@Override
 	public Class<?> getConfigurationBeanClass() {
-		return WebFormGroupServiceConfiguration.class;
+		return WebFormServiceConfiguration.class;
 	}
 
 }

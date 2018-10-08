@@ -24,6 +24,12 @@ import java.util.concurrent.Callable;
 @ProviderType
 public interface ExportImportProcessCallbackRegistry {
 
+	/**
+	 * @deprecated As of Judson (7.1.x)
+	 */
+	@Deprecated
 	public void registerCallback(Callable<?> callable);
+
+	public void registerCallback(String processId, Callable<?> callable);
 
 }

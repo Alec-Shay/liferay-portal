@@ -1,10 +1,12 @@
 <definition>
 	<command name="addCategoryLogLevels">
-		<execute function="AssertClick" locator1="NavBar#LOG_LEVELS" value1="Log Levels" />
+		<execute macro="Navigator#gotoNavItem">
+			<var name="navItem" value="Log Levels" />
+		</execute>
 
 		<execute function="AssertClick" locator1="NavBar#ADD_CATEGORY" value1="Add Category" />
 
-		<execute function="Type" locator1="ServerAdministrationLogLevels#ADD_CATEGORY_NAME_FIELD" value1="${catagoryName}" />
+		<execute function="Type" locator1="ServerAdministrationLogLevels#ADD_CATEGORY_NAME_FIELD" value1="${categoryName}" />
 
 		<execute function="Select" locator1="ServerAdministrationLogLevels#ADD_CATEGORY_PRIORITY_SELECT" value1="${categoryPriority}" />
 
@@ -36,15 +38,13 @@
 			</and>
 			<then>
 				<execute macro="Panel#expandPanel">
-					<var name="panelHeading" value="Enabling Xuggler provides video conversion functionality." />
+					<var name="panel" value="Enabling Xuggler provides video conversion functionality." />
 				</execute>
-
-				<execute function="Select" locator1="ServerAdministrationExternalServices#XUGGLER_JAR_FILE_SELECT" value1="${xugglerJarFile}" />
 
 				<execute function="AssertClick" locator1="ServerAdministrationExternalServices#XUGGLER_INSTALL_BUTTON" value1="Install" />
 
 				<execute macro="Panel#expandPanel">
-					<var name="panelHeading" value="Enabling Xuggler provides video conversion functionality." />
+					<var name="panel" value="Enabling Xuggler provides video conversion functionality." />
 				</execute>
 
 				<execute function="AssertTextNotEquals" locator1="Message#INFO" value1="Xuggler requires the installation of native libraries that are distributed under the GPL license. If you are able to find your environment specified below, the server can automatically download and install the libraries for you. You will subsequently be required to restart the server. If your environment is not listed below, you will need to compile and install the libraries manually. Read more." />
@@ -60,7 +60,7 @@
 			<then>
 				<execute function="AssertTextEquals" locator1="Message#INFO" value1="Xuggler appears to be installed correctly. Enable to allow audio and video preview generation." />
 
-				<execute function="Check" locator1="ServerAdministrationExternalServices#XUGGLER_ENABLED_CHECKBOX"  />
+				<execute function="Check" locator1="ServerAdministrationExternalServices#XUGGLER_ENABLED_CHECKBOX" />
 			</then>
 		</if>
 
@@ -68,8 +68,6 @@
 	</command>
 
 	<command name="configureFileUploadOverallMaximumFileSize">
-		<execute function="AssertClick" locator1="NavBar#FILE_UPLOADS" value1="File Uploads" />
-
 		<execute function="Type" locator1="ServerAdministrationFileUploads#GENERAL_OVERALL_MAX_FILE_SIZE_FIELD" value1="${maxFileSize}" />
 
 		<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
@@ -120,7 +118,7 @@
 		<execute function="AssertClick" locator1="NavBar#RESOURCES" value1="Resources" />
 
 		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Clean Up Actions" />
+			<var name="panel" value="Clean Up Actions" />
 		</execute>
 
 		<var name="key_actionsDescription" value="${actionsDescription}" />
@@ -130,68 +128,12 @@
 		<execute function="AssertClick" locator1="ServerAdministrationResources#ACTIONS_TABLE_EXECUTE" value1="Execute" />
 
 		<execute macro="Alert#viewSuccessMessage" />
-
-		<var name="pauseCount" value="0" />
-
-		<if>
-			<equals arg1="${actionsDescription}" arg2="Reindex all search indexes." />
-			<then>
-				<while>
-					<and>
-						<condition function="IsElementPresent" locator1="ControlMenu#RELOAD_TOOLTIP" />
-						<not>
-							<equals arg1="${pauseCount}" arg2="24" />
-						</not>
-					</and>
-					<then>
-						<execute function="Pause" locator1="5000" />
-
-						<var method="MathUtil#sum('${pauseCount}', '1')" name="pauseCount" />
-
-						<echo>Pause count: ${pauseCount}</echo>
-					</then>
-				</while>
-
-				<if>
-					<equals arg1="${pauseCount}" arg2="24" />
-					<then>
-						<fail message="Reindex timed out after 2 minutes." />
-					</then>
-				</if>
-			</then>
-		</if>
-	</command>
-
-	<command name="searchPortalPropertiesCP">
-		<execute function="AssertClick" locator1="NavTab#PROPERTIES" value1="Properties" />
-
-		<execute function="AssertClick" locator1="NavTab#PORTAL_PROPERTIES" value1="Portal Properties" />
-
-		<execute function="Type" locator1="ServerAdministrationProperties#PORTAL_PROPERTIES_SEARCH_FIELD" value1="${propertyName}" />
-
-		<execute function="AssertClick" locator1="ServerAdministrationProperties#PORTAL_PROPERTIES_SEARCH_BUTTON" value1="Search" />
-
-		<var name="key_propertyName" value="${propertyName}" />
-
-		<execute function="AssertTextEquals" locator1="ServerAdministrationProperties#PORTAL_PROPERTIES_TABLE_PROPERTY" value1="${propertyName}" />
-
-		<if>
-			<isset var="propertyOveridden" />
-			<then>
-				<execute function="MouseOver" locator1="ServerAdministrationResources#SOURCE" />
-
-				<execute function="AssertTextEquals" locator1="ServerAdministrationProperties#PORTAL_PROPERTIES_TABLE_SOURCE" value1="The value of this property was overridden using the Control Panel and is stored in the database." />
-			</then>
-			<else>
-				<execute function="MouseOver" locator1="ServerAdministrationResources#SOURCE" />
-
-				<execute function="AssertTextEquals" locator1="ServerAdministrationProperties#PORTAL_PROPERTIES_TABLE_SOURCE" value1="The value of this property is read from a portal.properties file or one of its extension files." />
-			</else>
-		</if>
 	</command>
 
 	<command name="tearDownDMFileUploadSettings">
-		<execute macro="ProductMenu#gotoControlPanelConfiguration">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Configuration" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Server Administration" />
 		</execute>
 
@@ -203,7 +145,9 @@
 	</command>
 
 	<command name="tearDownMailServerSettings">
-		<execute macro="ProductMenu#gotoControlPanelConfiguration">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Configuration" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Server Administration" />
 		</execute>
 

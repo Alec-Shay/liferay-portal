@@ -17,8 +17,8 @@ package com.liferay.opensocial.service.impl;
 import com.liferay.opensocial.model.OAuthConsumer;
 import com.liferay.opensocial.model.OAuthConsumerConstants;
 import com.liferay.opensocial.service.base.OAuthConsumerLocalServiceBaseImpl;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.util.Date;
 import java.util.List;
@@ -29,6 +29,7 @@ import java.util.List;
 public class OAuthConsumerLocalServiceImpl
 	extends OAuthConsumerLocalServiceBaseImpl {
 
+	@Override
 	public OAuthConsumer addOAuthConsumer(
 		long companyId, String gadgetKey, String serviceName,
 		String consumerKey, String consumerSecret, String keyType) {
@@ -83,6 +84,7 @@ public class OAuthConsumerLocalServiceImpl
 		return oAuthConsumer;
 	}
 
+	@Override
 	public void deleteOAuthConsumers(String gadgetKey) {
 		List<OAuthConsumer> oAuthConsumers =
 			oAuthConsumerPersistence.findByGadgetKey(gadgetKey);
@@ -92,32 +94,38 @@ public class OAuthConsumerLocalServiceImpl
 		}
 	}
 
+	@Override
 	public OAuthConsumer fetchOAuthConsumer(
 		String gadgetKey, String serviceName) {
 
 		return oAuthConsumerPersistence.fetchByG_S(gadgetKey, serviceName);
 	}
 
+	@Override
 	public OAuthConsumer getOAuthConsumer(String gadgetKey, String serviceName)
 		throws PortalException {
 
 		return oAuthConsumerPersistence.findByG_S(gadgetKey, serviceName);
 	}
 
+	@Override
 	public List<OAuthConsumer> getOAuthConsumers(String gadgetKey) {
 		return oAuthConsumerPersistence.findByGadgetKey(gadgetKey);
 	}
 
+	@Override
 	public List<OAuthConsumer> getOAuthConsumers(
 		String gadgetKey, int start, int end) {
 
 		return oAuthConsumerPersistence.findByGadgetKey(gadgetKey, start, end);
 	}
 
+	@Override
 	public int getOAuthConsumersCount(String gadgetKey) {
 		return oAuthConsumerPersistence.countByGadgetKey(gadgetKey);
 	}
 
+	@Override
 	public OAuthConsumer updateOAuthConsumer(
 			long oAuthConsumerId, String consumerKey, String consumerSecret,
 			String keyType, String keyName, String callbackURL)

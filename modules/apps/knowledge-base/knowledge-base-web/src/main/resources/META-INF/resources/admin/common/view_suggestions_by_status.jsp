@@ -19,6 +19,7 @@
 <%
 KBSuggestionListDisplayContext kbSuggestionListDisplayContext = (KBSuggestionListDisplayContext)request.getAttribute(KBWebKeys.KNOWLEDGE_BASE_KB_SUGGESTION_LIST_DISPLAY_CONTEXT);
 
+KBSuggestionListManagementToolbarDisplayContext kbSuggestionListManagementToolbarDisplayContext = (KBSuggestionListManagementToolbarDisplayContext)request.getAttribute("view_suggestions.jsp-kbSuggestionListManagementToolbarDisplayContext");
 SearchContainer kbCommentsSearchContainer = (SearchContainer)request.getAttribute("view_suggestions.jsp-searchContainer");
 
 KBCommentResultRowSplitter resultRowSplitter = (KBCommentResultRowSplitter)request.getAttribute("view_suggestions.jsp-resultRowSplitter");
@@ -38,13 +39,26 @@ KBCommentResultRowSplitter resultRowSplitter = (KBCommentResultRowSplitter)reque
 			keyProperty="kbCommentId"
 			modelVar="kbComment"
 		>
+			<c:if test="<%= kbSuggestionListManagementToolbarDisplayContext != null %>">
+
+				<%
+				Map<String, Object> rowData = new HashMap<String, Object>();
+
+				rowData.put("actions", String.join(StringPool.COMMA, kbSuggestionListManagementToolbarDisplayContext.getAvailableActionDropdownItems(kbComment)));
+
+				row.setData(rowData);
+				%>
+
+			</c:if>
+
 			<liferay-ui:search-container-column-user
-				cssClass="user-icon-lg"
 				showDetails="<%= false %>"
 				userId="<%= kbComment.getUserId() %>"
 			/>
 
-			<liferay-ui:search-container-column-text colspan="<%= 2 %>">
+			<liferay-ui:search-container-column-text
+				colspan="<%= 2 %>"
+			>
 
 				<%
 				Date modifiedDate = kbComment.getModifiedDate();
@@ -53,7 +67,7 @@ KBCommentResultRowSplitter resultRowSplitter = (KBCommentResultRowSplitter)reque
 				%>
 
 				<h5 class="text-default">
-					<liferay-ui:message arguments="<%= new String[] {kbComment.getUserName(), modifiedDateDescription} %>" key="x-suggested-x-ago" />
+					<liferay-ui:message arguments="<%= new String[] {HtmlUtil.escape(kbComment.getUserName()), modifiedDateDescription} %>" key="x-suggested-x-ago" />
 				</h5>
 
 				<h4>
@@ -94,6 +108,10 @@ KBCommentResultRowSplitter resultRowSplitter = (KBCommentResultRowSplitter)reque
 			/>
 		</liferay-ui:search-container-row>
 
-		<liferay-ui:search-iterator displayStyle="descriptive" markupView="lexicon" resultRowSplitter="<%= resultRowSplitter %>" />
+		<liferay-ui:search-iterator
+			displayStyle="descriptive"
+			markupView="lexicon"
+			resultRowSplitter="<%= resultRowSplitter %>"
+		/>
 	</liferay-ui:search-container>
 </aui:form>

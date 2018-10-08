@@ -16,10 +16,10 @@ package com.liferay.portal.service.persistence.impl;
 
 import aQute.bnd.annotation.ProviderType;
 
+import com.liferay.petra.string.StringBundler;
+
 import com.liferay.portal.kernel.bean.BeanReference;
-import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
-import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
 import com.liferay.portal.kernel.dao.orm.Query;
@@ -35,12 +35,13 @@ import com.liferay.portal.kernel.service.persistence.CompanyProvider;
 import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.model.impl.BrowserTrackerImpl;
 import com.liferay.portal.model.impl.BrowserTrackerModelImpl;
 
 import java.io.Serializable;
+
+import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -116,7 +117,7 @@ public class BrowserTrackerPersistenceImpl extends BasePersistenceImpl<BrowserTr
 			msg.append("userId=");
 			msg.append(userId);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -153,7 +154,7 @@ public class BrowserTrackerPersistenceImpl extends BasePersistenceImpl<BrowserTr
 		Object result = null;
 
 		if (retrieveFromCache) {
-			result = finderCache.getResult(FINDER_PATH_FETCH_BY_USERID,
+			result = FinderCacheUtil.getResult(FINDER_PATH_FETCH_BY_USERID,
 					finderArgs, this);
 		}
 
@@ -188,7 +189,7 @@ public class BrowserTrackerPersistenceImpl extends BasePersistenceImpl<BrowserTr
 				List<BrowserTracker> list = q.list();
 
 				if (list.isEmpty()) {
-					finderCache.putResult(FINDER_PATH_FETCH_BY_USERID,
+					FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_USERID,
 						finderArgs, list);
 				}
 				else {
@@ -197,15 +198,11 @@ public class BrowserTrackerPersistenceImpl extends BasePersistenceImpl<BrowserTr
 					result = browserTracker;
 
 					cacheResult(browserTracker);
-
-					if ((browserTracker.getUserId() != userId)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_USERID,
-							finderArgs, browserTracker);
-					}
 				}
 			}
 			catch (Exception e) {
-				finderCache.removeResult(FINDER_PATH_FETCH_BY_USERID, finderArgs);
+				FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_USERID,
+					finderArgs);
 
 				throw processException(e);
 			}
@@ -248,7 +245,8 @@ public class BrowserTrackerPersistenceImpl extends BasePersistenceImpl<BrowserTr
 
 		Object[] finderArgs = new Object[] { userId };
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs,
+				this);
 
 		if (count == null) {
 			StringBundler query = new StringBundler(2);
@@ -272,10 +270,10 @@ public class BrowserTrackerPersistenceImpl extends BasePersistenceImpl<BrowserTr
 
 				count = (Long)q.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -300,11 +298,11 @@ public class BrowserTrackerPersistenceImpl extends BasePersistenceImpl<BrowserTr
 	 */
 	@Override
 	public void cacheResult(BrowserTracker browserTracker) {
-		entityCache.putResult(BrowserTrackerModelImpl.ENTITY_CACHE_ENABLED,
+		EntityCacheUtil.putResult(BrowserTrackerModelImpl.ENTITY_CACHE_ENABLED,
 			BrowserTrackerImpl.class, browserTracker.getPrimaryKey(),
 			browserTracker);
 
-		finderCache.putResult(FINDER_PATH_FETCH_BY_USERID,
+		FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_USERID,
 			new Object[] { browserTracker.getUserId() }, browserTracker);
 
 		browserTracker.resetOriginalValues();
@@ -318,7 +316,7 @@ public class BrowserTrackerPersistenceImpl extends BasePersistenceImpl<BrowserTr
 	@Override
 	public void cacheResult(List<BrowserTracker> browserTrackers) {
 		for (BrowserTracker browserTracker : browserTrackers) {
-			if (entityCache.getResult(
+			if (EntityCacheUtil.getResult(
 						BrowserTrackerModelImpl.ENTITY_CACHE_ENABLED,
 						BrowserTrackerImpl.class, browserTracker.getPrimaryKey()) == null) {
 				cacheResult(browserTracker);
@@ -333,43 +331,43 @@ public class BrowserTrackerPersistenceImpl extends BasePersistenceImpl<BrowserTr
 	 * Clears the cache for all browser trackers.
 	 *
 	 * <p>
-	 * The {@link EntityCache} and {@link FinderCache} are both cleared by this method.
+	 * The {@link com.liferay.portal.kernel.dao.orm.EntityCache} and {@link com.liferay.portal.kernel.dao.orm.FinderCache} are both cleared by this method.
 	 * </p>
 	 */
 	@Override
 	public void clearCache() {
-		entityCache.clearCache(BrowserTrackerImpl.class);
+		EntityCacheUtil.clearCache(BrowserTrackerImpl.class);
 
-		finderCache.clearCache(FINDER_CLASS_NAME_ENTITY);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_ENTITY);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 	}
 
 	/**
 	 * Clears the cache for the browser tracker.
 	 *
 	 * <p>
-	 * The {@link EntityCache} and {@link FinderCache} are both cleared by this method.
+	 * The {@link com.liferay.portal.kernel.dao.orm.EntityCache} and {@link com.liferay.portal.kernel.dao.orm.FinderCache} are both cleared by this method.
 	 * </p>
 	 */
 	@Override
 	public void clearCache(BrowserTracker browserTracker) {
-		entityCache.removeResult(BrowserTrackerModelImpl.ENTITY_CACHE_ENABLED,
+		EntityCacheUtil.removeResult(BrowserTrackerModelImpl.ENTITY_CACHE_ENABLED,
 			BrowserTrackerImpl.class, browserTracker.getPrimaryKey());
 
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 
 		clearUniqueFindersCache((BrowserTrackerModelImpl)browserTracker, true);
 	}
 
 	@Override
 	public void clearCache(List<BrowserTracker> browserTrackers) {
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 
 		for (BrowserTracker browserTracker : browserTrackers) {
-			entityCache.removeResult(BrowserTrackerModelImpl.ENTITY_CACHE_ENABLED,
+			EntityCacheUtil.removeResult(BrowserTrackerModelImpl.ENTITY_CACHE_ENABLED,
 				BrowserTrackerImpl.class, browserTracker.getPrimaryKey());
 
 			clearUniqueFindersCache((BrowserTrackerModelImpl)browserTracker,
@@ -381,9 +379,9 @@ public class BrowserTrackerPersistenceImpl extends BasePersistenceImpl<BrowserTr
 		BrowserTrackerModelImpl browserTrackerModelImpl) {
 		Object[] args = new Object[] { browserTrackerModelImpl.getUserId() };
 
-		finderCache.putResult(FINDER_PATH_COUNT_BY_USERID, args,
+		FinderCacheUtil.putResult(FINDER_PATH_COUNT_BY_USERID, args,
 			Long.valueOf(1), false);
-		finderCache.putResult(FINDER_PATH_FETCH_BY_USERID, args,
+		FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_USERID, args,
 			browserTrackerModelImpl, false);
 	}
 
@@ -392,8 +390,8 @@ public class BrowserTrackerPersistenceImpl extends BasePersistenceImpl<BrowserTr
 		if (clearCurrent) {
 			Object[] args = new Object[] { browserTrackerModelImpl.getUserId() };
 
-			finderCache.removeResult(FINDER_PATH_COUNT_BY_USERID, args);
-			finderCache.removeResult(FINDER_PATH_FETCH_BY_USERID, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_USERID, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_USERID, args);
 		}
 
 		if ((browserTrackerModelImpl.getColumnBitmask() &
@@ -402,8 +400,8 @@ public class BrowserTrackerPersistenceImpl extends BasePersistenceImpl<BrowserTr
 					browserTrackerModelImpl.getOriginalUserId()
 				};
 
-			finderCache.removeResult(FINDER_PATH_COUNT_BY_USERID, args);
-			finderCache.removeResult(FINDER_PATH_FETCH_BY_USERID, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_USERID, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_USERID, args);
 		}
 	}
 
@@ -480,8 +478,6 @@ public class BrowserTrackerPersistenceImpl extends BasePersistenceImpl<BrowserTr
 
 	@Override
 	protected BrowserTracker removeImpl(BrowserTracker browserTracker) {
-		browserTracker = toUnwrappedModel(browserTracker);
-
 		Session session = null;
 
 		try {
@@ -512,9 +508,23 @@ public class BrowserTrackerPersistenceImpl extends BasePersistenceImpl<BrowserTr
 
 	@Override
 	public BrowserTracker updateImpl(BrowserTracker browserTracker) {
-		browserTracker = toUnwrappedModel(browserTracker);
-
 		boolean isNew = browserTracker.isNew();
+
+		if (!(browserTracker instanceof BrowserTrackerModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(browserTracker.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(browserTracker);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in browserTracker proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom BrowserTracker implementation " +
+				browserTracker.getClass());
+		}
 
 		BrowserTrackerModelImpl browserTrackerModelImpl = (BrowserTrackerModelImpl)browserTracker;
 
@@ -539,13 +549,20 @@ public class BrowserTrackerPersistenceImpl extends BasePersistenceImpl<BrowserTr
 			closeSession(session);
 		}
 
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 
-		if (isNew || !BrowserTrackerModelImpl.COLUMN_BITMASK_ENABLED) {
-			finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		if (!BrowserTrackerModelImpl.COLUMN_BITMASK_ENABLED) {
+			FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		}
+		else
+		 if (isNew) {
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_ALL,
+				FINDER_ARGS_EMPTY);
+			FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_ALL,
+				FINDER_ARGS_EMPTY);
 		}
 
-		entityCache.putResult(BrowserTrackerModelImpl.ENTITY_CACHE_ENABLED,
+		EntityCacheUtil.putResult(BrowserTrackerModelImpl.ENTITY_CACHE_ENABLED,
 			BrowserTrackerImpl.class, browserTracker.getPrimaryKey(),
 			browserTracker, false);
 
@@ -555,25 +572,6 @@ public class BrowserTrackerPersistenceImpl extends BasePersistenceImpl<BrowserTr
 		browserTracker.resetOriginalValues();
 
 		return browserTracker;
-	}
-
-	protected BrowserTracker toUnwrappedModel(BrowserTracker browserTracker) {
-		if (browserTracker instanceof BrowserTrackerImpl) {
-			return browserTracker;
-		}
-
-		BrowserTrackerImpl browserTrackerImpl = new BrowserTrackerImpl();
-
-		browserTrackerImpl.setNew(browserTracker.isNew());
-		browserTrackerImpl.setPrimaryKey(browserTracker.getPrimaryKey());
-
-		browserTrackerImpl.setMvccVersion(browserTracker.getMvccVersion());
-		browserTrackerImpl.setBrowserTrackerId(browserTracker.getBrowserTrackerId());
-		browserTrackerImpl.setCompanyId(browserTracker.getCompanyId());
-		browserTrackerImpl.setUserId(browserTracker.getUserId());
-		browserTrackerImpl.setBrowserKey(browserTracker.getBrowserKey());
-
-		return browserTrackerImpl;
 	}
 
 	/**
@@ -621,7 +619,7 @@ public class BrowserTrackerPersistenceImpl extends BasePersistenceImpl<BrowserTr
 	 */
 	@Override
 	public BrowserTracker fetchByPrimaryKey(Serializable primaryKey) {
-		Serializable serializable = entityCache.getResult(BrowserTrackerModelImpl.ENTITY_CACHE_ENABLED,
+		Serializable serializable = EntityCacheUtil.getResult(BrowserTrackerModelImpl.ENTITY_CACHE_ENABLED,
 				BrowserTrackerImpl.class, primaryKey);
 
 		if (serializable == nullModel) {
@@ -643,12 +641,12 @@ public class BrowserTrackerPersistenceImpl extends BasePersistenceImpl<BrowserTr
 					cacheResult(browserTracker);
 				}
 				else {
-					entityCache.putResult(BrowserTrackerModelImpl.ENTITY_CACHE_ENABLED,
+					EntityCacheUtil.putResult(BrowserTrackerModelImpl.ENTITY_CACHE_ENABLED,
 						BrowserTrackerImpl.class, primaryKey, nullModel);
 				}
 			}
 			catch (Exception e) {
-				entityCache.removeResult(BrowserTrackerModelImpl.ENTITY_CACHE_ENABLED,
+				EntityCacheUtil.removeResult(BrowserTrackerModelImpl.ENTITY_CACHE_ENABLED,
 					BrowserTrackerImpl.class, primaryKey);
 
 				throw processException(e);
@@ -698,7 +696,7 @@ public class BrowserTrackerPersistenceImpl extends BasePersistenceImpl<BrowserTr
 		Set<Serializable> uncachedPrimaryKeys = null;
 
 		for (Serializable primaryKey : primaryKeys) {
-			Serializable serializable = entityCache.getResult(BrowserTrackerModelImpl.ENTITY_CACHE_ENABLED,
+			Serializable serializable = EntityCacheUtil.getResult(BrowserTrackerModelImpl.ENTITY_CACHE_ENABLED,
 					BrowserTrackerImpl.class, primaryKey);
 
 			if (serializable != nullModel) {
@@ -725,14 +723,14 @@ public class BrowserTrackerPersistenceImpl extends BasePersistenceImpl<BrowserTr
 		query.append(_SQL_SELECT_BROWSERTRACKER_WHERE_PKS_IN);
 
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
-			query.append(String.valueOf(primaryKey));
+			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 
@@ -752,7 +750,7 @@ public class BrowserTrackerPersistenceImpl extends BasePersistenceImpl<BrowserTr
 			}
 
 			for (Serializable primaryKey : uncachedPrimaryKeys) {
-				entityCache.putResult(BrowserTrackerModelImpl.ENTITY_CACHE_ENABLED,
+				EntityCacheUtil.putResult(BrowserTrackerModelImpl.ENTITY_CACHE_ENABLED,
 					BrowserTrackerImpl.class, primaryKey, nullModel);
 			}
 		}
@@ -845,7 +843,7 @@ public class BrowserTrackerPersistenceImpl extends BasePersistenceImpl<BrowserTr
 		List<BrowserTracker> list = null;
 
 		if (retrieveFromCache) {
-			list = (List<BrowserTracker>)finderCache.getResult(finderPath,
+			list = (List<BrowserTracker>)FinderCacheUtil.getResult(finderPath,
 					finderArgs, this);
 		}
 
@@ -894,10 +892,10 @@ public class BrowserTrackerPersistenceImpl extends BasePersistenceImpl<BrowserTr
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				FinderCacheUtil.putResult(finderPath, finderArgs, list);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -927,7 +925,7 @@ public class BrowserTrackerPersistenceImpl extends BasePersistenceImpl<BrowserTr
 	 */
 	@Override
 	public int countAll() {
-		Long count = (Long)finderCache.getResult(FINDER_PATH_COUNT_ALL,
+		Long count = (Long)FinderCacheUtil.getResult(FINDER_PATH_COUNT_ALL,
 				FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
@@ -940,11 +938,11 @@ public class BrowserTrackerPersistenceImpl extends BasePersistenceImpl<BrowserTr
 
 				count = (Long)q.uniqueResult();
 
-				finderCache.putResult(FINDER_PATH_COUNT_ALL, FINDER_ARGS_EMPTY,
-					count);
+				FinderCacheUtil.putResult(FINDER_PATH_COUNT_ALL,
+					FINDER_ARGS_EMPTY, count);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(FINDER_PATH_COUNT_ALL,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_ALL,
 					FINDER_ARGS_EMPTY);
 
 				throw processException(e);
@@ -969,16 +967,14 @@ public class BrowserTrackerPersistenceImpl extends BasePersistenceImpl<BrowserTr
 	}
 
 	public void destroy() {
-		entityCache.removeCache(BrowserTrackerImpl.class.getName());
-		finderCache.removeCache(FINDER_CLASS_NAME_ENTITY);
-		finderCache.removeCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.removeCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		EntityCacheUtil.removeCache(BrowserTrackerImpl.class.getName());
+		FinderCacheUtil.removeCache(FINDER_CLASS_NAME_ENTITY);
+		FinderCacheUtil.removeCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.removeCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 	}
 
 	@BeanReference(type = CompanyProviderWrapper.class)
 	protected CompanyProvider companyProvider;
-	protected EntityCache entityCache = EntityCacheUtil.getEntityCache();
-	protected FinderCache finderCache = FinderCacheUtil.getFinderCache();
 	private static final String _SQL_SELECT_BROWSERTRACKER = "SELECT browserTracker FROM BrowserTracker browserTracker";
 	private static final String _SQL_SELECT_BROWSERTRACKER_WHERE_PKS_IN = "SELECT browserTracker FROM BrowserTracker browserTracker WHERE browserTrackerId IN (";
 	private static final String _SQL_SELECT_BROWSERTRACKER_WHERE = "SELECT browserTracker FROM BrowserTracker browserTracker WHERE ";

@@ -14,16 +14,31 @@
 
 package com.liferay.css.builder.maven;
 
+import com.liferay.css.builder.CSSBuilder;
 import com.liferay.css.builder.CSSBuilderArgs;
-import com.liferay.css.builder.CSSBuilderInvoker;
-import com.liferay.portal.kernel.util.ArrayUtil;
 
 import java.io.File;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.descriptor.PluginDescriptor;
+import org.apache.maven.project.MavenProject;
 
+import org.codehaus.plexus.component.repository.ComponentDependency;
 import org.codehaus.plexus.util.Scanner;
+
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.resolution.ArtifactRequest;
+import org.eclipse.aether.resolution.ArtifactResolutionException;
+import org.eclipse.aether.resolution.ArtifactResult;
 
 import org.sonatype.plexus.build.incremental.BuildContext;
 
@@ -32,15 +47,52 @@ import org.sonatype.plexus.build.incremental.BuildContext;
  *
  * @author Andrea Di Giorgi
  * @author Gregory Amerson
- * @goal build-css
+ * @goal build
  */
 public class BuildCSSMojo extends AbstractMojo {
 
 	@Override
 	public void execute() throws MojoExecutionException {
 		try {
-			if (buildContext.isIncremental()) {
-				Scanner scanner = buildContext.newScanner(baseDir);
+			boolean artifactPresent = false;
+
+			if (_cssBuilderArgs.getImportDir() == null) {
+				for (Dependency dependency : _project.getDependencies()) {
+					String artifactId = dependency.getArtifactId();
+
+					if (artifactId.equals("com.liferay.frontend.css.common")) {
+						Artifact artifact = _resolveArtifact(dependency);
+
+						if (artifact != null) {
+							_cssBuilderArgs.setImportDir(artifact.getFile());
+						}
+
+						artifactPresent = true;
+
+						break;
+					}
+				}
+			}
+
+			if (!artifactPresent && (_cssBuilderArgs.getImportDir() == null)) {
+				for (ComponentDependency componentDependency :
+						_pluginDescriptor.getDependencies()) {
+
+					String artifactId = componentDependency.getArtifactId();
+
+					if (artifactId.equals("com.liferay.frontend.css.common")) {
+						Artifact artifact = _resolveArtifact(
+							componentDependency);
+
+						_cssBuilderArgs.setImportDir(artifact.getFile());
+
+						break;
+					}
+				}
+			}
+
+			if (_buildContext.isIncremental()) {
+				Scanner scanner = _buildContext.newScanner(_projectBaseDir);
 
 				String[] includes = {"", "**/*.scss"};
 
@@ -50,17 +102,33 @@ public class BuildCSSMojo extends AbstractMojo {
 
 				String[] includedFiles = scanner.getIncludedFiles();
 
-				if (ArrayUtil.isNotEmpty(includedFiles)) {
-					CSSBuilderInvoker.invoke(baseDir, _cssBuilderArgs);
+				if ((includedFiles != null) && (includedFiles.length > 0)) {
+					_execute();
 				}
 			}
 			else {
-				CSSBuilderInvoker.invoke(baseDir, _cssBuilderArgs);
+				_execute();
 			}
 		}
 		catch (Exception e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
+	}
+
+	/**
+	 * @parameter default-value="true"
+	 */
+	public void setAppendCssImportTimestamps(
+		boolean appendCssImportTimestamps) {
+
+		_cssBuilderArgs.setAppendCssImportTimestamps(appendCssImportTimestamps);
+	}
+
+	/**
+	 * @parameter default-value="${project.build.directory}/${project.build.finalName}"
+	 */
+	public void setBaseDir(File baseDir) {
+		_cssBuilderArgs.setBaseDir(baseDir);
 	}
 
 	/**
@@ -71,10 +139,18 @@ public class BuildCSSMojo extends AbstractMojo {
 	}
 
 	/**
-	 * @parameter default-value="${project.build.directory}/${project.build.finalName}"
+	 * @deprecated As of 2.1.0, replaced by {@link #setBaseDir(File)}
+	 * @parameter
 	 */
+	@Deprecated
 	public void setDocrootDirName(String docrootDirName) {
-		_cssBuilderArgs.setDocrootDirName(docrootDirName);
+		File baseDir = new File(docrootDirName);
+
+		if (!baseDir.isAbsolute()) {
+			baseDir = new File(_projectBaseDir, docrootDirName);
+		}
+
+		setBaseDir(baseDir);
 	}
 
 	/**
@@ -85,18 +161,26 @@ public class BuildCSSMojo extends AbstractMojo {
 	}
 
 	/**
-	 * @parameter default-value="/"
+	 * @parameter
+	 */
+	public void setImportDir(File importDir) {
+		_cssBuilderArgs.setImportDir(importDir);
+	}
+
+	/**
+	 * @parameter default-value=".sass-cache/"
 	 */
 	public void setOutputDirName(String outputDirName) {
 		_cssBuilderArgs.setOutputDirName(outputDirName);
 	}
 
 	/**
-	 * @parameter default-value="/"
-	 * @required
+	 * @deprecated As of 2.1.0, replaced by {@link #setImportDir(File)}
+	 * @parameter
 	 */
-	public void setPortalCommonPath(String portalCommonPath) {
-		_cssBuilderArgs.setPortalCommonPath(portalCommonPath);
+	@Deprecated
+	public void setPortalCommonPath(File portalCommonPath) {
+		setImportDir(portalCommonPath);
 	}
 
 	/**
@@ -120,17 +204,90 @@ public class BuildCSSMojo extends AbstractMojo {
 		_cssBuilderArgs.setSassCompilerClassName(sassCompilerClassName);
 	}
 
-	/**
-	 * @parameter default-value="${project.basedir}"
-	 * @readonly
-	 */
-	protected File baseDir;
+	private void _execute() throws Exception {
+		try (CSSBuilder cssBuilder = new CSSBuilder(_cssBuilderArgs)) {
+			cssBuilder.execute();
+		}
+	}
+
+	private Artifact _resolveArtifact(Artifact artifact)
+		throws ArtifactResolutionException {
+
+		ArtifactRequest artifactRequest = new ArtifactRequest();
+
+		artifactRequest.setArtifact(artifact);
+
+		List<RemoteRepository> repositories = new ArrayList<>();
+
+		repositories.addAll(_project.getRemotePluginRepositories());
+		repositories.addAll(_project.getRemoteProjectRepositories());
+
+		artifactRequest.setRepositories(repositories);
+
+		ArtifactResult artifactResult = _repositorySystem.resolveArtifact(
+			_repositorySystemSession, artifactRequest);
+
+		return artifactResult.getArtifact();
+	}
+
+	private Artifact _resolveArtifact(ComponentDependency componentDependency)
+		throws ArtifactResolutionException {
+
+		Artifact artifact = new DefaultArtifact(
+			componentDependency.getGroupId(),
+			componentDependency.getArtifactId(), componentDependency.getType(),
+			componentDependency.getVersion());
+
+		return _resolveArtifact(artifact);
+	}
+
+	private Artifact _resolveArtifact(Dependency dependency)
+		throws ArtifactResolutionException {
+
+		Artifact artifact = new DefaultArtifact(
+			dependency.getGroupId(), dependency.getArtifactId(),
+			dependency.getType(), dependency.getVersion());
+
+		return _resolveArtifact(artifact);
+	}
 
 	/**
 	 * @component
 	 */
-	protected BuildContext buildContext;
+	private BuildContext _buildContext;
 
 	private final CSSBuilderArgs _cssBuilderArgs = new CSSBuilderArgs();
+
+	/**
+	 * @parameter default-value="${plugin}"
+	 * @readonly
+	 * @required
+	 */
+	private PluginDescriptor _pluginDescriptor;
+
+	/**
+	 * @parameter property="project"
+	 * @required
+	 * @readonly
+	 */
+	private MavenProject _project;
+
+	/**
+	 * @parameter default-value="${project.basedir}"
+	 * @readonly
+	 */
+	private File _projectBaseDir;
+
+	/**
+	 * @component
+	 */
+	private RepositorySystem _repositorySystem;
+
+	/**
+	 * @parameter property="repositorySystemSession"
+	 * @readonly
+	 * @required
+	 */
+	private RepositorySystemSession _repositorySystemSession;
 
 }

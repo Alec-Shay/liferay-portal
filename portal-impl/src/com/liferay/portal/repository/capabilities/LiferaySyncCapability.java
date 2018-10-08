@@ -17,6 +17,8 @@ package com.liferay.portal.repository.capabilities;
 import com.liferay.document.library.kernel.model.DLSyncConstants;
 import com.liferay.document.library.kernel.model.DLSyncEvent;
 import com.liferay.document.library.kernel.service.DLSyncEventLocalService;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.DestinationNames;
 import com.liferay.portal.kernel.messaging.Message;
 import com.liferay.portal.kernel.messaging.MessageBusUtil;
@@ -28,6 +30,7 @@ import com.liferay.portal.kernel.repository.event.RepositoryEventType;
 import com.liferay.portal.kernel.repository.event.TrashRepositoryEventType;
 import com.liferay.portal.kernel.repository.event.WorkflowRepositoryEventType;
 import com.liferay.portal.kernel.repository.model.FileEntry;
+import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.repository.registry.RepositoryEventRegistry;
 import com.liferay.portal.kernel.transaction.TransactionCommitCallbackUtil;
@@ -40,8 +43,11 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 /**
- * @author Adolfo Pérez
+ * @author     Adolfo Pérez
+ * @deprecated As of Judson (7.1.x), replaced by {@link
+ *             com.liferay.document.library.internal.capabilities.LiferaySyncCapability}
  */
+@Deprecated
 public class LiferaySyncCapability
 	implements RepositoryEventAware, SyncCapability {
 
@@ -118,6 +124,17 @@ public class LiferaySyncCapability
 			return;
 		}
 
+		try {
+			FileVersion fileVersion = fileEntry.getFileVersion();
+
+			if (fileVersion.isPending()) {
+				return;
+			}
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+		}
+
 		registerDLSyncEventCallback(
 			event, DLSyncConstants.TYPE_FILE, fileEntry.getFileEntryId());
 	}
@@ -167,14 +184,16 @@ public class LiferaySyncCapability
 			});
 	}
 
+	private static final Log _log = LogFactoryUtil.getLog(
+		LiferaySyncCapability.class);
+
 	private final RepositoryEventListener
 		<RepositoryEventType.Add, Folder> _addFolderEventListener =
 			new SyncFolderRepositoryEventListener<>(DLSyncConstants.EVENT_ADD);
-	private final RepositoryEventListener
-		<RepositoryEventType.Delete, FileEntry>
-			_deleteFileEntryEventListener =
-				new SyncFileEntryRepositoryEventListener<>(
-					DLSyncConstants.EVENT_DELETE);
+	private final RepositoryEventListener<RepositoryEventType.Delete, FileEntry>
+		_deleteFileEntryEventListener =
+			new SyncFileEntryRepositoryEventListener<>(
+				DLSyncConstants.EVENT_DELETE);
 	private final RepositoryEventListener
 		<RepositoryEventType.Delete, Folder> _deleteFolderEventListener =
 			new SyncFolderRepositoryEventListener<>(
@@ -207,11 +226,10 @@ public class LiferaySyncCapability
 		<TrashRepositoryEventType.EntryTrashed, Folder>
 			_trashFolderEventListener = new SyncFolderRepositoryEventListener<>(
 				DLSyncConstants.EVENT_TRASH);
-	private final RepositoryEventListener
-		<RepositoryEventType.Update, FileEntry>
-			_updateFileEntryEventListener =
-				new SyncFileEntryRepositoryEventListener<>(
-					DLSyncConstants.EVENT_UPDATE);
+	private final RepositoryEventListener<RepositoryEventType.Update, FileEntry>
+		_updateFileEntryEventListener =
+			new SyncFileEntryRepositoryEventListener<>(
+				DLSyncConstants.EVENT_UPDATE);
 	private final RepositoryEventListener
 		<RepositoryEventType.Update, Folder> _updateFolderEventListener =
 			new SyncFolderRepositoryEventListener<>(

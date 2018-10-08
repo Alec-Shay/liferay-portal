@@ -15,11 +15,11 @@
 package com.liferay.portlet.documentlibrary.service.impl;
 
 import com.liferay.document.library.kernel.exception.NoSuchFileEntryException;
-import com.liferay.document.library.kernel.model.DLFileEntryType;
-import com.liferay.document.library.kernel.model.DLFileEntryTypeConstants;
 import com.liferay.document.library.kernel.model.DLFileRank;
 import com.liferay.document.library.kernel.model.DLFolder;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
+import com.liferay.document.library.kernel.model.DLVersionNumberIncrease;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.NoSuchGroupException;
@@ -45,10 +45,10 @@ import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.MimeTypesUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.repository.liferayrepository.model.LiferayFolder;
+import com.liferay.portal.util.RepositoryUtil;
 import com.liferay.portlet.documentlibrary.service.base.DLAppLocalServiceBaseImpl;
 import com.liferay.portlet.documentlibrary.util.DLAppUtil;
 
@@ -260,9 +260,10 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 		if (Validator.isNull(mimeType) ||
 			mimeType.equals(ContentTypes.APPLICATION_OCTET_STREAM)) {
 
-			String extension = DLAppUtil.getExtension(title, sourceFileName);
-
 			if (size == 0) {
+				String extension = DLAppUtil.getExtension(
+					title, sourceFileName);
+
 				mimeType = MimeTypesUtil.getExtensionContentType(extension);
 			}
 			else {
@@ -299,20 +300,25 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 	 * Adds the file rank to the existing file entry. This method is only
 	 * supported by the Liferay repository.
 	 *
-	 * @param  repositoryId the primary key of the repository
-	 * @param  companyId the primary key of the company
-	 * @param  userId the primary key of the file rank's creator/owner
-	 * @param  fileEntryId the primary key of the file entry
-	 * @param  serviceContext the service context to be applied
-	 * @return the file rank
+	 * @param      repositoryId the primary key of the repository
+	 * @param      companyId the primary key of the company
+	 * @param      userId the primary key of the file rank's creator/owner
+	 * @param      fileEntryId the primary key of the file entry
+	 * @param      serviceContext the service context to be applied
+	 * @return     the file rank
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             com.liferay.document.library.file.rank.service.DLFileRankLocalService#addFileRank}
 	 */
+	@Deprecated
 	@Override
 	public DLFileRank addFileRank(
 		long repositoryId, long companyId, long userId, long fileEntryId,
 		ServiceContext serviceContext) {
 
-		return dlFileRankLocalService.addFileRank(
-			repositoryId, companyId, userId, fileEntryId, serviceContext);
+		throw new UnsupportedOperationException(
+			"This method is deprecated and replaced by " +
+				"com.liferay.document.library.file.rank.service." +
+					"DLFileRankLocalService#addFileRank");
 	}
 
 	/**
@@ -423,22 +429,34 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 	 * Deletes the file ranks associated to a given file entry. This method is
 	 * only supported by the Liferay repository.
 	 *
-	 * @param fileEntryId the primary key of the file entry
+	 * @param      fileEntryId the primary key of the file entry
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             com.liferay.document.library.file.rank.service.DLFileRankLocalService#deleteFileRanksByFileEntryId}
 	 */
+	@Deprecated
 	@Override
 	public void deleteFileRanksByFileEntryId(long fileEntryId) {
-		dlFileRankLocalService.deleteFileRanksByFileEntryId(fileEntryId);
+		throw new UnsupportedOperationException(
+			"This method is deprecated and replaced by " +
+				"com.liferay.document.library.file.rank.service." +
+					"DLFileRankLocalService#deleteFileRanksByFileEntryId");
 	}
 
 	/**
 	 * Deletes the file ranks associated to a given user. This method is only
 	 * supported by the Liferay repository.
 	 *
-	 * @param userId the primary key of the user
+	 * @param      userId the primary key of the user
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             com.liferay.document.library.file.rank.service.DLFileRankLocalService#deleteFileRanksByUserId}
 	 */
+	@Deprecated
 	@Override
 	public void deleteFileRanksByUserId(long userId) {
-		dlFileRankLocalService.deleteFileRanksByUserId(userId);
+		throw new UnsupportedOperationException(
+			"This method is deprecated and replaced by " +
+				"com.liferay.document.library.file.rank.service." +
+					"DLFileRankLocalService#deleteFileRanksByUserId");
 	}
 
 	/**
@@ -539,15 +557,15 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 			return localRepository.getFileEntry(folderId, title);
 		}
 		catch (NoSuchFileEntryException nsfee) {
-			if (_log.isDebugEnabled()) {
-				_log.debug(nsfee, nsfee);
+			if (folderId == DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
+				throw nsfee;
 			}
+
+			LocalRepository localRepository =
+				repositoryProvider.getFolderLocalRepository(folderId);
+
+			return localRepository.getFileEntry(folderId, title);
 		}
-
-		LocalRepository localRepository =
-			repositoryProvider.getFolderLocalRepository(folderId);
-
-		return localRepository.getFileEntry(folderId, title);
 	}
 
 	/**
@@ -589,29 +607,34 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 			}
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(5);
 
-		msg.append("No DLFileEntry exists with the key {");
-		msg.append("uuid=");
-		msg.append(uuid);
-		msg.append(", groupId=");
-		msg.append(groupId);
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		sb.append("No DLFileEntry exists with the key {uuid=");
+		sb.append(uuid);
+		sb.append(", groupId=");
+		sb.append(groupId);
+		sb.append(StringPool.CLOSE_CURLY_BRACE);
 
-		throw new NoSuchFileEntryException(msg.toString());
+		throw new NoSuchFileEntryException(sb.toString());
 	}
 
 	/**
 	 * Returns the file ranks from the user. This method is only supported by
 	 * the Liferay repository.
 	 *
-	 * @param  repositoryId the primary key of the repository
-	 * @param  userId the primary key of the user
-	 * @return the file ranks from the user
+	 * @param      repositoryId the primary key of the repository
+	 * @param      userId the primary key of the user
+	 * @return     the file ranks from the user
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             com.liferay.document.library.file.rank.service.DLFileRankLocalService#getFileRanks}
 	 */
+	@Deprecated
 	@Override
 	public List<DLFileRank> getFileRanks(long repositoryId, long userId) {
-		return dlFileRankLocalService.getFileRanks(repositoryId, userId);
+		throw new UnsupportedOperationException(
+			"This method is deprecated and replaced by " +
+				"com.liferay.document.library.file.rank.service." +
+					"DLFileRankLocalService#getFileRanks");
 	}
 
 	/**
@@ -792,15 +815,6 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 	public void subscribeFileEntryType(
 			long userId, long groupId, long fileEntryTypeId)
 		throws PortalException {
-
-		if (fileEntryTypeId ==
-				DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT) {
-
-			fileEntryTypeId = groupId;
-		}
-
-		subscriptionLocalService.addSubscription(
-			userId, groupId, DLFileEntryType.class.getName(), fileEntryTypeId);
 	}
 
 	/**
@@ -814,13 +828,6 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 	@Override
 	public void subscribeFolder(long userId, long groupId, long folderId)
 		throws PortalException {
-
-		if (folderId == DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
-			folderId = groupId;
-		}
-
-		subscriptionLocalService.addSubscription(
-			userId, groupId, DLFolder.class.getName(), folderId);
 	}
 
 	/**
@@ -835,15 +842,6 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 	public void unsubscribeFileEntryType(
 			long userId, long groupId, long fileEntryTypeId)
 		throws PortalException {
-
-		if (fileEntryTypeId ==
-				DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT) {
-
-			fileEntryTypeId = groupId;
-		}
-
-		subscriptionLocalService.deleteSubscription(
-			userId, DLFileEntryType.class.getName(), fileEntryTypeId);
 	}
 
 	/**
@@ -857,13 +855,6 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 	@Override
 	public void unsubscribeFolder(long userId, long groupId, long folderId)
 		throws PortalException {
-
-		if (folderId == DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
-			folderId = groupId;
-		}
-
-		subscriptionLocalService.deleteSubscription(
-			userId, DLFolder.class.getName(), folderId);
 	}
 
 	/**
@@ -890,6 +881,58 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 	}
 
 	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #updateFileEntry(long, long, String, String, String, String, String, DLVersionNumberIncrease, byte[], ServiceContext)}
+	 */
+	@Deprecated
+	@Override
+	public FileEntry updateFileEntry(
+			long userId, long fileEntryId, String sourceFileName,
+			String mimeType, String title, String description, String changeLog,
+			boolean majorVersion, byte[] bytes, ServiceContext serviceContext)
+		throws PortalException {
+
+		return updateFileEntry(
+			userId, fileEntryId, sourceFileName, mimeType, title, description,
+			changeLog, DLVersionNumberIncrease.fromMajorVersion(majorVersion),
+			bytes, serviceContext);
+	}
+
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #updateFileEntry(long, long, String, String, String, String, String, DLVersionNumberIncrease, File, ServiceContext)}
+	 */
+	@Deprecated
+	@Override
+	public FileEntry updateFileEntry(
+			long userId, long fileEntryId, String sourceFileName,
+			String mimeType, String title, String description, String changeLog,
+			boolean majorVersion, File file, ServiceContext serviceContext)
+		throws PortalException {
+
+		return updateFileEntry(
+			userId, fileEntryId, sourceFileName, mimeType, title, description,
+			changeLog, DLVersionNumberIncrease.fromMajorVersion(majorVersion),
+			file, serviceContext);
+	}
+
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #updateFileEntry(long, long, String, String, String, String, String, boolean, InputStream, long, ServiceContext)}
+	 */
+	@Deprecated
+	@Override
+	public FileEntry updateFileEntry(
+			long userId, long fileEntryId, String sourceFileName,
+			String mimeType, String title, String description, String changeLog,
+			boolean majorVersion, InputStream is, long size,
+			ServiceContext serviceContext)
+		throws PortalException {
+
+		return updateFileEntry(
+			userId, fileEntryId, sourceFileName, mimeType, title, description,
+			changeLog, DLVersionNumberIncrease.fromMajorVersion(majorVersion),
+			is, size, serviceContext);
+	}
+
+	/**
 	 * Updates a file entry and associated metadata based on a byte array
 	 * object. If the file data is <code>null</code>, then only the associated
 	 * metadata (i.e., <code>title</code>, <code>description</code>, and
@@ -913,7 +956,8 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 	 * @param  description the file's new description
 	 * @param  changeLog the file's version change log (optionally
 	 *         <code>null</code>)
-	 * @param  majorVersion whether the new file version is a major version
+	 * @param  dlVersionNumberIncrease the kind of version number increase to
+	 *         apply for these changes.
 	 * @param  bytes the file's data (optionally <code>null</code>)
 	 * @param  serviceContext the service context to be applied. Can set the
 	 *         asset category IDs, asset tag names, and expando bridge
@@ -927,7 +971,8 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 	public FileEntry updateFileEntry(
 			long userId, long fileEntryId, String sourceFileName,
 			String mimeType, String title, String description, String changeLog,
-			boolean majorVersion, byte[] bytes, ServiceContext serviceContext)
+			DLVersionNumberIncrease dlVersionNumberIncrease, byte[] bytes,
+			ServiceContext serviceContext)
 		throws PortalException {
 
 		File file = null;
@@ -939,7 +984,8 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 
 			return updateFileEntry(
 				userId, fileEntryId, sourceFileName, mimeType, title,
-				description, changeLog, majorVersion, file, serviceContext);
+				description, changeLog, dlVersionNumberIncrease, file,
+				serviceContext);
 		}
 		catch (IOException ioe) {
 			throw new SystemException("Unable to write temporary file", ioe);
@@ -973,7 +1019,8 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 	 * @param  description the file's new description
 	 * @param  changeLog the file's version change log (optionally
 	 *         <code>null</code>)
-	 * @param  majorVersion whether the new file version is a major version
+	 * @param  dlVersionNumberIncrease the kind of version number increase to
+	 *         apply for these changes.
 	 * @param  file the file's data (optionally <code>null</code>)
 	 * @param  serviceContext the service context to be applied. Can set the
 	 *         asset category IDs, asset tag names, and expando bridge
@@ -987,13 +1034,15 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 	public FileEntry updateFileEntry(
 			long userId, long fileEntryId, String sourceFileName,
 			String mimeType, String title, String description, String changeLog,
-			boolean majorVersion, File file, ServiceContext serviceContext)
+			DLVersionNumberIncrease dlVersionNumberIncrease, File file,
+			ServiceContext serviceContext)
 		throws PortalException {
 
 		if ((file == null) || !file.exists() || (file.length() == 0)) {
 			return updateFileEntry(
 				userId, fileEntryId, sourceFileName, mimeType, title,
-				description, changeLog, majorVersion, null, 0, serviceContext);
+				description, changeLog, dlVersionNumberIncrease, null, 0,
+				serviceContext);
 		}
 
 		mimeType = DLAppUtil.getMimeType(sourceFileName, mimeType, title, file);
@@ -1003,7 +1052,7 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 
 		FileEntry fileEntry = localRepository.updateFileEntry(
 			userId, fileEntryId, sourceFileName, mimeType, title, description,
-			changeLog, majorVersion, file, serviceContext);
+			changeLog, dlVersionNumberIncrease, file, serviceContext);
 
 		dlAppHelperLocalService.updateFileEntry(
 			userId, fileEntry, null, fileEntry.getFileVersion(),
@@ -1036,7 +1085,8 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 	 * @param  description the file's new description
 	 * @param  changeLog the file's version change log (optionally
 	 *         <code>null</code>)
-	 * @param  majorVersion whether the new file version is a major version
+	 * @param  dlVersionNumberIncrease the kind of version number increase to
+	 *         apply for these changes.
 	 * @param  is the file's data (optionally <code>null</code>)
 	 * @param  size the file's size (optionally <code>0</code>)
 	 * @param  serviceContext the service context to be applied. Can set the
@@ -1051,16 +1101,17 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 	public FileEntry updateFileEntry(
 			long userId, long fileEntryId, String sourceFileName,
 			String mimeType, String title, String description, String changeLog,
-			boolean majorVersion, InputStream is, long size,
-			ServiceContext serviceContext)
+			DLVersionNumberIncrease dlVersionNumberIncrease, InputStream is,
+			long size, ServiceContext serviceContext)
 		throws PortalException {
 
 		if (Validator.isNull(mimeType) ||
 			mimeType.equals(ContentTypes.APPLICATION_OCTET_STREAM)) {
 
-			String extension = DLAppUtil.getExtension(title, sourceFileName);
-
 			if (size == 0) {
+				String extension = DLAppUtil.getExtension(
+					title, sourceFileName);
+
 				mimeType = MimeTypesUtil.getExtensionContentType(extension);
 			}
 			else {
@@ -1071,7 +1122,7 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 
 					return updateFileEntry(
 						userId, fileEntryId, sourceFileName, mimeType, title,
-						description, changeLog, majorVersion, file,
+						description, changeLog, dlVersionNumberIncrease, file,
 						serviceContext);
 				}
 				catch (IOException ioe) {
@@ -1089,7 +1140,7 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 
 		FileEntry fileEntry = localRepository.updateFileEntry(
 			userId, fileEntryId, sourceFileName, mimeType, title, description,
-			changeLog, majorVersion, is, size, serviceContext);
+			changeLog, dlVersionNumberIncrease, is, size, serviceContext);
 
 		dlAppHelperLocalService.updateFileEntry(
 			userId, fileEntry, null, fileEntry.getFileVersion(),
@@ -1102,20 +1153,25 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 	 * Updates a file rank to the existing file entry. This method is only
 	 * supported by the Liferay repository.
 	 *
-	 * @param  repositoryId the primary key of the file rank's repository
-	 * @param  companyId the primary key of the file rank's company
-	 * @param  userId the primary key of the file rank's creator/owner
-	 * @param  fileEntryId the primary key of the file rank's file entry
-	 * @param  serviceContext the service context to be applied
-	 * @return the file rank
+	 * @param      repositoryId the primary key of the file rank's repository
+	 * @param      companyId the primary key of the file rank's company
+	 * @param      userId the primary key of the file rank's creator/owner
+	 * @param      fileEntryId the primary key of the file rank's file entry
+	 * @param      serviceContext the service context to be applied
+	 * @return     the file rank
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             com.liferay.document.library.file.rank.service.DLFileRankLocalService#updateFileRank}
 	 */
+	@Deprecated
 	@Override
 	public DLFileRank updateFileRank(
 		long repositoryId, long companyId, long userId, long fileEntryId,
 		ServiceContext serviceContext) {
 
-		return dlFileRankLocalService.updateFileRank(
-			repositoryId, companyId, userId, fileEntryId, serviceContext);
+		throw new UnsupportedOperationException(
+			"This method is deprecated and replaced by " +
+				"com.liferay.document.library.file.rank.service." +
+					"DLFileRankLocalService#updateFileRank");
 	}
 
 	/**
@@ -1163,8 +1219,8 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #updateFileShortcuts(long,
-	 *             long)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #updateFileShortcuts(long, long)}
 	 */
 	@Deprecated
 	@Override
@@ -1374,9 +1430,13 @@ public class DLAppLocalServiceImpl extends DLAppLocalServiceBaseImpl {
 
 		long repositoryId = localRepository.getRepositoryId();
 
-		dlAppHelperLocalService.deleteRepositoryFileEntries(repositoryId);
+		if (!RepositoryUtil.isExternalRepository(
+				localRepository.getRepositoryId())) {
 
-		localRepository.deleteAll();
+			dlAppHelperLocalService.deleteRepositoryFileEntries(repositoryId);
+
+			localRepository.deleteAll();
+		}
 
 		repositoryLocalService.deleteRepository(repositoryId);
 	}

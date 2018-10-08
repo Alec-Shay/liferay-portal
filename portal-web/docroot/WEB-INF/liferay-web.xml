@@ -166,7 +166,7 @@
 		</init-param>
 		<init-param>
 			<param-name>Cache-Control</param-name>
-			<param-value>max-age=315360000, no-cache="Set-Cookie", public</param-value>
+			<param-value>max-age=315360000, public</param-value>
 		</init-param>
 		<init-param>
 			<param-name>Expires</param-name>
@@ -240,6 +240,10 @@
 			<param-name>url-regex-pattern</param-name>
 			<param-value>.+/(barebone|everything)\.jsp</param-value>
 		</init-param>
+	</filter>
+	<filter>
+		<filter-name>Password Modified Filter</filter-name>
+		<filter-class>com.liferay.portal.servlet.filters.password.modified.PasswordModifiedFilter</filter-class>
 	</filter>
 	<filter>
 		<filter-name>Remoting Servlet Filter</filter-name>
@@ -515,6 +519,12 @@
 	</filter-mapping>
 	<filter-mapping>
 		<filter-name>Auto Login Filter</filter-name>
+		<url-pattern>/c/portal/saml/auth_redirect</url-pattern>
+		<dispatcher>FORWARD</dispatcher>
+		<dispatcher>REQUEST</dispatcher>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>Auto Login Filter</filter-name>
 		<url-pattern>/c/portal/update_password</url-pattern>
 		<dispatcher>FORWARD</dispatcher>
 		<dispatcher>REQUEST</dispatcher>
@@ -716,24 +726,6 @@
 		<url-pattern>*.jsp</url-pattern>
 	</filter-mapping>
 	<filter-mapping>
-		<filter-name>I18n Filter</filter-name>
-		<url-pattern>/group/*</url-pattern>
-		<dispatcher>FORWARD</dispatcher>
-		<dispatcher>REQUEST</dispatcher>
-	</filter-mapping>
-	<filter-mapping>
-		<filter-name>I18n Filter</filter-name>
-		<url-pattern>/user/*</url-pattern>
-		<dispatcher>FORWARD</dispatcher>
-		<dispatcher>REQUEST</dispatcher>
-	</filter-mapping>
-	<filter-mapping>
-		<filter-name>I18n Filter</filter-name>
-		<url-pattern>/web/*</url-pattern>
-		<dispatcher>FORWARD</dispatcher>
-		<dispatcher>REQUEST</dispatcher>
-	</filter-mapping>
-	<filter-mapping>
 		<filter-name>Secure Friendly URL Servlet Filter</filter-name>
 		<url-pattern>/group/*</url-pattern>
 		<dispatcher>FORWARD</dispatcher>
@@ -770,6 +762,30 @@
 		<dispatcher>REQUEST</dispatcher>
 	</filter-mapping>
 	<filter-mapping>
+		<filter-name>Password Modified Filter</filter-name>
+		<url-pattern>/*</url-pattern>
+		<dispatcher>FORWARD</dispatcher>
+		<dispatcher>REQUEST</dispatcher>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>I18n Filter</filter-name>
+		<url-pattern>/group/*</url-pattern>
+		<dispatcher>FORWARD</dispatcher>
+		<dispatcher>REQUEST</dispatcher>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>I18n Filter</filter-name>
+		<url-pattern>/user/*</url-pattern>
+		<dispatcher>FORWARD</dispatcher>
+		<dispatcher>REQUEST</dispatcher>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>I18n Filter</filter-name>
+		<url-pattern>/web/*</url-pattern>
+		<dispatcher>FORWARD</dispatcher>
+		<dispatcher>REQUEST</dispatcher>
+	</filter-mapping>
+	<filter-mapping>
 		<filter-name>GZip Filter</filter-name>
 		<url-pattern>/c/*</url-pattern>
 		<dispatcher>FORWARD</dispatcher>
@@ -791,6 +807,16 @@
 		<filter-name>GZip Filter</filter-name>
 		<url-pattern>/language/*</url-pattern>
 		<dispatcher>FORWARD</dispatcher>
+		<dispatcher>REQUEST</dispatcher>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>GZip Filter</filter-name>
+		<url-pattern>/o/js_bundle_config</url-pattern>
+		<dispatcher>REQUEST</dispatcher>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>GZip Filter</filter-name>
+		<url-pattern>/o/js_loader_modules</url-pattern>
 		<dispatcher>REQUEST</dispatcher>
 	</filter-mapping>
 	<filter-mapping>

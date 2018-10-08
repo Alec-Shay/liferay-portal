@@ -15,14 +15,14 @@
 package com.liferay.my.subscriptions.web.internal.portlet;
 
 import com.liferay.my.subscriptions.web.internal.constants.MySubscriptionsPortletKeys;
-import com.liferay.portal.kernel.model.Subscription;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
-import com.liferay.portal.kernel.service.SubscriptionLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.subscription.model.Subscription;
+import com.liferay.subscription.service.SubscriptionLocalService;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -45,12 +45,11 @@ import org.osgi.service.component.annotations.Reference;
 		"com.liferay.portlet.preferences-owned-by-group=true",
 		"com.liferay.portlet.private-request-attributes=false",
 		"com.liferay.portlet.private-session-attributes=false",
-		"com.liferay.portlet.remoteable=true",
 		"com.liferay.portlet.render-weight=0",
 		"javax.portlet.display-name=My Subscriptions",
 		"javax.portlet.expiration-cache=0",
 		"javax.portlet.init-param.copy-request-parameters=true",
-		"javax.portlet.init-param.template-path=/",
+		"javax.portlet.init-param.template-path=/META-INF/resources/",
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + MySubscriptionsPortletKeys.MY_SUBSCRIPTIONS,
 		"javax.portlet.portlet-info.keywords=My Subscriptions",

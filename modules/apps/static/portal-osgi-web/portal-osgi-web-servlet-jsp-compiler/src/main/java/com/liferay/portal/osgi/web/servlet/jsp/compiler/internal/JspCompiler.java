@@ -15,18 +15,20 @@
 package com.liferay.portal.osgi.web.servlet.jsp.compiler.internal;
 
 import com.liferay.osgi.util.ServiceTrackerFactory;
-import com.liferay.portal.kernel.concurrent.ConcurrentReferenceKeyHashMap;
-import com.liferay.portal.kernel.concurrent.ConcurrentReferenceValueHashMap;
+import com.liferay.petra.concurrent.ConcurrentReferenceKeyHashMap;
+import com.liferay.petra.concurrent.ConcurrentReferenceValueHashMap;
+import com.liferay.petra.memory.FinalizeManager;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.memory.FinalizeManager;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.osgi.web.servlet.jsp.compiler.internal.util.ClassPathUtil;
 
 import java.io.File;
 import java.io.IOException;
 
+import java.net.URI;
 import java.net.URL;
 
 import java.security.AccessController;
@@ -41,13 +43,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.ServletContext;
 
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
-import javax.tools.JavaCompiler.CompilationTask;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
@@ -57,10 +59,11 @@ import javax.tools.ToolProvider;
 import org.apache.jasper.Constants;
 import org.apache.jasper.JasperException;
 import org.apache.jasper.JspCompilationContext;
+import org.apache.jasper.Options;
 import org.apache.jasper.compiler.ErrorDispatcher;
 import org.apache.jasper.compiler.JavacErrorDetail;
 import org.apache.jasper.compiler.Jsr199JavaCompiler;
-import org.apache.jasper.compiler.Node.Nodes;
+import org.apache.jasper.compiler.Node;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -78,7 +81,7 @@ import org.osgi.util.tracker.ServiceTracker;
 public class JspCompiler extends Jsr199JavaCompiler {
 
 	@Override
-	public JavacErrorDetail[] compile(String className, Nodes pageNodes)
+	public JavacErrorDetail[] compile(String className, Node.Nodes pageNodes)
 		throws JasperException {
 
 		classFiles = new ArrayList<>();
@@ -109,7 +112,7 @@ public class JspCompiler extends Jsr199JavaCompiler {
 		try (JavaFileManager javaFileManager = getJavaFileManager(
 				standardJavaFileManager)) {
 
-			CompilationTask compilationTask = javaCompiler.getTask(
+			JavaCompiler.CompilationTask compilationTask = javaCompiler.getTask(
 				null, javaFileManager, diagnosticCollector, options, null,
 				Arrays.asList(
 					new StringJavaFileObject(
@@ -158,6 +161,10 @@ public class JspCompiler extends Jsr199JavaCompiler {
 		JspCompilationContext jspCompilationContext,
 		ErrorDispatcher errorDispatcher, boolean suppressLogging) {
 
+		Options options = jspCompilationContext.getOptions();
+
+		_classPath.add(options.getScratchDir());
+
 		ServletContext servletContext =
 			jspCompilationContext.getServletContext();
 
@@ -179,12 +186,22 @@ public class JspCompiler extends Jsr199JavaCompiler {
 
 		_classLoader = bundleWiring.getClassLoader();
 
-		for (BundleWire bundleWire : bundleWiring.getRequiredWires(null)) {
-			BundleWiring providedBundleWiring = bundleWire.getProviderWiring();
+		for (Bundle participatingBundle : _allParticipatingBundles) {
+			bundleWiring = participatingBundle.adapt(BundleWiring.class);
 
-			_bundleWiringPackageNames.put(
-				providedBundleWiring,
-				_collectPackageNames(providedBundleWiring));
+			for (BundleWire bundleWire : bundleWiring.getRequiredWires(null)) {
+				BundleWiring providedBundleWiring =
+					bundleWire.getProviderWiring();
+
+				_bundleWiringPackageNames.put(
+					providedBundleWiring,
+					_collectPackageNames(providedBundleWiring));
+			}
+
+			_javaFileObjectResolvers.add(
+				new JspJavaFileObjectResolver(
+					bundleWiring, _jspBundleWiring, _bundleWiringPackageNames,
+					_serviceTracker));
 		}
 
 		if (_log.isInfoEnabled()) {
@@ -213,10 +230,6 @@ public class JspCompiler extends Jsr199JavaCompiler {
 
 			_log.info(sb.toString());
 		}
-
-		_javaFileObjectResolver = new JspJavaFileObjectResolver(
-			bundleWiring, _jspBundleWiring, _bundleWiringPackageNames,
-			_serviceTracker);
 
 		jspCompilationContext.setClassLoader(jspBundleClassloader);
 
@@ -261,8 +274,9 @@ public class JspCompiler extends Jsr199JavaCompiler {
 
 			if ((file == null) && _log.isDebugEnabled()) {
 				_log.debug(
-					"Ignoring URL " + url + " because of unknown protocol " +
-						url.getProtocol());
+					StringBundler.concat(
+						"Ignoring URL ", url, " because of unknown protocol ",
+						url.getProtocol()));
 			}
 
 			if (file.exists() && file.canRead()) {
@@ -331,11 +345,36 @@ public class JspCompiler extends Jsr199JavaCompiler {
 			}
 
 			javaFileManager = new BundleJavaFileManager(
-				_classLoader, _systemPackageNames, standardJavaFileManager,
-				_javaFileObjectResolver);
+				_classLoader, standardJavaFileManager,
+				_javaFileObjectResolvers);
 		}
 
 		return super.getJavaFileManager(javaFileManager);
+	}
+
+	@Override
+	protected JavaFileObject getOutputFile(String className, URI uri) {
+		Map<String, Map<String, JavaFileObject>> packageMap =
+			rtctxt.getPackageMap();
+
+		String packageName = className.substring(
+			0, className.lastIndexOf(CharPool.PERIOD));
+
+		// Swap the parent class's packageJavaFileObjects reference from a plain
+		// HashMap to a thread safe ConcurrentHashMap
+
+		Map<String, JavaFileObject> packageJavaFileObjects = packageMap.get(
+			packageName);
+
+		JavaFileObject javaFileObject = super.getOutputFile(className, uri);
+
+		if (packageJavaFileObjects == null) {
+			packageMap.put(
+				packageName,
+				new ConcurrentHashMap<>(packageMap.get(packageName)));
+		}
+
+		return javaFileObject;
 	}
 
 	protected void initClassPath(ServletContext servletContext) {
@@ -442,14 +481,11 @@ public class JspCompiler extends Jsr199JavaCompiler {
 		_jspBundleWiringPackageNames = new HashMap<>();
 	private static final ServiceTracker
 		<Map<String, List<URL>>, Map<String, List<URL>>> _serviceTracker;
-	private static final Set<String> _systemPackageNames;
 
 	static {
 		Bundle jspBundle = FrameworkUtil.getBundle(JspCompiler.class);
 
 		_jspBundleWiring = jspBundle.adapt(BundleWiring.class);
-
-		Set<String> systemPackageNames = null;
 
 		for (BundleWire bundleWire : _jspBundleWiring.getRequiredWires(null)) {
 			BundleWiring providedBundleWiring = bundleWire.getProviderWiring();
@@ -457,31 +493,11 @@ public class JspCompiler extends Jsr199JavaCompiler {
 			Set<String> packageNames = _collectPackageNames(
 				providedBundleWiring);
 
-			Bundle bundle = providedBundleWiring.getBundle();
-
-			if (bundle.getBundleId() == 0) {
-				systemPackageNames = packageNames;
-			}
-
 			_jspBundleWiringPackageNames.put(
 				providedBundleWiring, packageNames);
 		}
 
 		BundleContext bundleContext = jspBundle.getBundleContext();
-
-		if (systemPackageNames == null) {
-			Bundle systemBundle = bundleContext.getBundle(0);
-
-			if (systemBundle == null) {
-				throw new ExceptionInInitializerError(
-					"Unable to access to system bundle");
-			}
-
-			systemPackageNames = _collectPackageNames(
-				systemBundle.adapt(BundleWiring.class));
-		}
-
-		_systemPackageNames = systemPackageNames;
 
 		_serviceTracker = ServiceTrackerFactory.open(
 			bundleContext,
@@ -494,6 +510,7 @@ public class JspCompiler extends Jsr199JavaCompiler {
 		new HashMap<>(_jspBundleWiringPackageNames);
 	private ClassLoader _classLoader;
 	private final List<File> _classPath = new ArrayList<>();
-	private JavaFileObjectResolver _javaFileObjectResolver;
+	private final List<JavaFileObjectResolver> _javaFileObjectResolvers =
+		new ArrayList<>();
 
 }

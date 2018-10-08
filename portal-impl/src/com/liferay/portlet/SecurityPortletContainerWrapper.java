@@ -14,11 +14,13 @@
 
 package com.liferay.portlet;
 
+import aQute.bnd.annotation.ProviderType;
+
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
-import com.liferay.portal.kernel.model.LayoutType;
 import com.liferay.portal.kernel.model.LayoutTypeAccessPolicy;
 import com.liferay.portal.kernel.model.LayoutTypePortlet;
 import com.liferay.portal.kernel.model.Portlet;
@@ -30,15 +32,14 @@ import com.liferay.portal.kernel.resiliency.spi.SPIUtil;
 import com.liferay.portal.kernel.security.auth.AuthTokenUtil;
 import com.liferay.portal.kernel.security.auth.AuthTokenWhitelistUtil;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
-import com.liferay.portal.kernel.security.pacl.DoPrivileged;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.servlet.TempAttributesServletRequest;
 import com.liferay.portal.kernel.struts.LastPath;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.util.LayoutTypeAccessPolicyTracker;
 import com.liferay.portal.util.PropsValues;
 
 import java.util.List;
@@ -54,7 +55,7 @@ import javax.servlet.http.HttpServletResponse;
  * @author Tomas Polesovsky
  * @author Raymond Augé
  */
-@DoPrivileged
+@ProviderType
 public class SecurityPortletContainerWrapper implements PortletContainer {
 
 	public static PortletContainer createSecurityPortletContainerWrapper(
@@ -115,6 +116,21 @@ public class SecurityPortletContainerWrapper implements PortletContainer {
 	}
 
 	@Override
+	public void processPublicRenderParameters(
+		HttpServletRequest request, Layout layout) {
+
+		_portletContainer.processPublicRenderParameters(request, layout);
+	}
+
+	@Override
+	public void processPublicRenderParameters(
+		HttpServletRequest request, Layout layout, Portlet portlet) {
+
+		_portletContainer.processPublicRenderParameters(
+			request, layout, portlet);
+	}
+
+	@Override
 	public void render(
 			HttpServletRequest request, HttpServletResponse response,
 			Portlet portlet)
@@ -124,6 +140,35 @@ public class SecurityPortletContainerWrapper implements PortletContainer {
 			checkRender(request, portlet);
 
 			_portletContainer.render(request, response, portlet);
+		}
+		catch (PrincipalException pe) {
+
+			// LPS-52675
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(pe, pe);
+			}
+
+			processRenderException(request, response, portlet);
+		}
+		catch (PortletContainerException pce) {
+			throw pce;
+		}
+		catch (Exception e) {
+			throw new PortletContainerException(e);
+		}
+	}
+
+	@Override
+	public void renderHeaders(
+			HttpServletRequest request, HttpServletResponse response,
+			Portlet portlet)
+		throws PortletContainerException {
+
+		try {
+			checkRender(request, portlet);
+
+			_portletContainer.renderHeaders(request, response, portlet);
 		}
 		catch (PrincipalException pe) {
 
@@ -190,10 +235,8 @@ public class SecurityPortletContainerWrapper implements PortletContainer {
 
 		Layout layout = (Layout)request.getAttribute(WebKeys.LAYOUT);
 
-		LayoutType layoutType = layout.getLayoutType();
-
 		LayoutTypeAccessPolicy layoutTypeAccessPolicy =
-			layoutType.getLayoutTypeAccessPolicy();
+			LayoutTypeAccessPolicyTracker.getLayoutTypeAccessPolicy(layout);
 
 		layoutTypeAccessPolicy.checkAccessAllowedToPortlet(
 			request, layout, portlet);
@@ -324,7 +367,9 @@ public class SecurityPortletContainerWrapper implements PortletContainer {
 				continue;
 			}
 
-			if ((c == CharPool.POUND) || (c == CharPool.UNDERLINE)) {
+			if ((c == CharPool.DOLLAR) || (c == CharPool.POUND) ||
+				(c == CharPool.UNDERLINE)) {
+
 				continue;
 			}
 
@@ -339,12 +384,12 @@ public class SecurityPortletContainerWrapper implements PortletContainer {
 		Portlet portlet, PrincipalException pe) {
 
 		if (_log.isDebugEnabled()) {
-			_log.debug(pe);
+			_log.debug(pe, pe);
 		}
 
-		String url = getOriginalURL(request);
-
 		if (_log.isWarnEnabled()) {
+			String url = getOriginalURL(request);
+
 			_log.warn(
 				String.format(
 					"User %s is not allowed to access URL %s and portlet %s",
@@ -368,8 +413,11 @@ public class SecurityPortletContainerWrapper implements PortletContainer {
 
 		try {
 			if (portletContent != null) {
+				HttpServletRequest originalRequest =
+					PortalUtil.getOriginalServletRequest(request);
+
 				RequestDispatcher requestDispatcher =
-					request.getRequestDispatcher(portletContent);
+					originalRequest.getRequestDispatcher(portletContent);
 
 				requestDispatcher.include(request, response);
 			}
@@ -384,10 +432,8 @@ public class SecurityPortletContainerWrapper implements PortletContainer {
 		Portlet portlet, PrincipalException pe) {
 
 		if (_log.isDebugEnabled()) {
-			_log.debug(pe);
+			_log.debug(pe, pe);
 		}
-
-		String url = getOriginalURL(request);
 
 		response.setHeader(
 			HttpHeaders.CACHE_CONTROL,
@@ -396,9 +442,13 @@ public class SecurityPortletContainerWrapper implements PortletContainer {
 		response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 
 		if (_log.isWarnEnabled()) {
+			String url = getOriginalURL(request);
+
 			_log.warn(
-				"Reject serveResource for " + url + " on " +
-					portlet.getPortletId());
+				String.format(
+					"User %s is not allowed to serve resource for %s on %s",
+					PortalUtil.getUserId(request), url,
+					portlet.getPortletId()));
 		}
 	}
 

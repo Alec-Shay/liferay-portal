@@ -14,25 +14,18 @@
 
 package com.liferay.jenkins.results.parser;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.dom4j.Attribute;
 import org.dom4j.Document;
+import org.dom4j.DocumentException;
 import org.dom4j.Element;
-import org.dom4j.io.SAXReader;
 
 import org.json.JSONObject;
 
@@ -43,12 +36,12 @@ public class RebaseErrorTopLevelBuild extends TopLevelBuild {
 
 	public RebaseErrorTopLevelBuild(String url, TopLevelBuild topLevelBuild) {
 		super(url, topLevelBuild);
-
-		_validResult = false;
 	}
 
 	@Override
 	public String getResult() {
+		String result = super.getResult();
+
 		if (_validResult) {
 			return result;
 		}
@@ -70,12 +63,19 @@ public class RebaseErrorTopLevelBuild extends TopLevelBuild {
 				return result;
 			}
 
+			int retries = 0;
 			long time = System.currentTimeMillis();
+			Map<String, String> stopPropertiesTempMap =
+				getStopPropertiesTempMap();
 
-			Map<String, String> stopPropertiesMap = getStopPropertiesMap();
-
-			while (!stopPropertiesMap.containsKey(
+			while (!stopPropertiesTempMap.containsKey(
 						"TOP_LEVEL_GITHUB_COMMENT_ID")) {
+
+				if (retries > 2) {
+					throw new RuntimeException(
+						"Unable to get TOP_LEVE_GITHUB_COMMENT_ID from stop " +
+							"properties temp map");
+				}
 
 				if ((System.currentTimeMillis() - time) > (5 * 60 * 1000)) {
 					System.out.println(
@@ -85,74 +85,20 @@ public class RebaseErrorTopLevelBuild extends TopLevelBuild {
 					return result;
 				}
 
+				retries++;
+
 				JenkinsResultsParserUtil.sleep(10 * 1000);
 
-				stopPropertiesMap = getStopPropertiesMap();
+				stopPropertiesTempMap = getStopPropertiesTempMap();
 			}
 
-			StringBuilder sb = new StringBuilder();
+			if (matchCommentTokens(
+					getActualCommentTokens(stopPropertiesTempMap),
+					getExpectedCommentTokens())) {
 
-			sb.append("http://mirrors-no-cache.lax.liferay.com/");
-			sb.append("github.com/liferay/liferay-jenkins-ee/tests/");
-			sb.append(getJobName());
+				setResult("SUCCESS");
 
-			String jenkinsJobVariant = getParameterValue("JENKINS_JOB_VARIANT");
-
-			if (jenkinsJobVariant != null) {
-				sb.append("/");
-				sb.append(jenkinsJobVariant);
-			}
-
-			sb.append("/report.html");
-
-			Element rootElement = getElement(
-				JenkinsResultsParserUtil.toString(sb.toString()));
-
-			List<String> expectedCommentTokens = getCommentTokens(rootElement);
-
-			sb = new StringBuilder();
-
-			sb.append("https://api.github.com/repos/");
-			sb.append(getParameterValue("GITHUB_RECEIVER_USERNAME"));
-			sb.append("/");
-			sb.append("liferay-portal-ee");
-			sb.append("/issues/comments/");
-
-			sb.append(stopPropertiesMap.get("TOP_LEVEL_GITHUB_COMMENT_ID"));
-
-			JSONObject jsonObject = getJSONObjectFromURL(sb.toString());
-
-			String commentBody = jsonObject.getString("body");
-
-			rootElement = getElement(commentBody);
-
-			List<String> actualCommentTokens = getCommentTokens(rootElement);
-
-			boolean matchesTemplate = true;
-
-			for (int i = 0; i < expectedCommentTokens.size(); i++) {
-				System.out.println();
-				System.out.println("Test " + i);
-
-				Pattern pattern = Pattern.compile(expectedCommentTokens.get(i));
-
-				Matcher matcher = pattern.matcher(actualCommentTokens.get(i));
-
-				System.out.println(expectedCommentTokens.get(i));
-				System.out.println(actualCommentTokens.get(i));
-
-				if (matcher.find()) {
-					System.out.println("Tokens matched.");
-				}
-				else {
-					System.out.println("Tokens mismatched.");
-
-					return result;
-				}
-			}
-
-			if (matchesTemplate) {
-				result = "SUCCESS";
+				result = super.getResult();
 			}
 
 			return result;
@@ -168,85 +114,94 @@ public class RebaseErrorTopLevelBuild extends TopLevelBuild {
 		}
 	}
 
+	protected List<String> getActualCommentTokens(
+			Map<String, String> stopPropertiesTempMap)
+		throws IOException {
+
+		String url = JenkinsResultsParserUtil.getGitHubApiUrl(
+			"liferay-portal-ee", getParameterValue("GITHUB_RECEIVER_USERNAME"),
+			"issues/comments/" +
+				stopPropertiesTempMap.get("TOP_LEVEL_GITHUB_COMMENT_ID"));
+
+		JSONObject jsonObject = JenkinsResultsParserUtil.toJSONObject(url);
+
+		String commentBody = jsonObject.getString("body");
+
+		Element rootElement = getRootElement(commentBody);
+
+		return getCommentTokens(rootElement);
+	}
+
 	protected List<String> getCommentTokens(Element element) {
 		List<String> tokens = new ArrayList<>();
 
-		tokens.add("text: " + removeWhitespace(element.getText()));
+		tokens.add("tag: " + element.getName() + " text: " + element.getText());
 
-		List<Element> elements = element.elements();
+		List<?> elementObjects = element.elements();
 
-		for (Element childElement : elements) {
-			tokens.addAll(getCommentTokens(childElement));
+		for (Object childElementObject : elementObjects) {
+			tokens.addAll(getCommentTokens((Element)childElementObject));
 		}
 
-		List<Attribute> attributes = element.attributes();
+		List<?> attributeObjects = element.attributes();
 
-		for (Attribute attribute : attributes) {
-			tokens.add("attribute: " + removeWhitespace(attribute.getValue()));
+		for (Object attributeObject : attributeObjects) {
+			Attribute attribute = (Attribute)attributeObject;
+
+			tokens.add(
+				"tag: " + element.getName() + " attribute: " +
+					attribute.getName() + " text: " + attribute.getValue());
 		}
 
 		return tokens;
 	}
 
-	protected Element getElement(String content) throws Exception {
-		SAXReader saxReader = new SAXReader();
+	protected List<String> getExpectedCommentTokens() throws IOException {
+		String resource = JenkinsResultsParserUtil.getResourceFileContent(
+			"dependencies/RebaseErrorTopLevelBuildTemplate.html");
 
-		StringBuilder sb = new StringBuilder();
-
-		sb.append("<div>");
-		sb.append(content);
-		sb.append("</div>");
-
-		content = sb.toString();
-
-		InputStream inputStream = new ByteArrayInputStream(
-			content.getBytes("UTF-8"));
-
-		Document document = saxReader.read(inputStream);
-
-		return document.getRootElement();
+		return getCommentTokens(getRootElement(resource));
 	}
 
-	protected JSONObject getJSONObjectFromURL(String url) throws Exception {
-		Properties properties = JenkinsResultsParserUtil.getBuildProperties();
+	protected Element getRootElement(String content) {
+		try {
+			Document document = Dom4JUtil.parse(
+				JenkinsResultsParserUtil.combine("<div>", content, "</div>"));
 
-		StringBuilder sb = new StringBuilder();
+			return document.getRootElement();
+		}
+		catch (DocumentException de) {
+			throw new RuntimeException("Unable to parse XML", de);
+		}
+	}
 
-		URL urlObject = new URL(url);
+	protected boolean matchCommentTokens(
+		List<String> actualCommentTokens, List<String> expectedCommentTokens) {
 
-		HttpURLConnection httpURLConnection =
-			(HttpURLConnection)urlObject.openConnection();
+		for (int i = 0; i < expectedCommentTokens.size(); i++) {
+			System.out.println();
+			System.out.println("Test " + i);
 
-		httpURLConnection.setRequestMethod("GET");
-		httpURLConnection.setRequestProperty(
-			"Authorization",
-			"token " + properties.getProperty("github.access.token"));
-		httpURLConnection.setRequestProperty(
-			"Content-Type", "application/json");
+			Pattern pattern = Pattern.compile(
+				expectedCommentTokens.get(i).replaceAll("\\s+", "\\\\s*"));
 
-		InputStream inputStream = httpURLConnection.getInputStream();
+			Matcher matcher = pattern.matcher(actualCommentTokens.get(i));
 
-		InputStreamReader inputStreamReader = new InputStreamReader(
-			inputStream);
+			System.out.println("'" + expectedCommentTokens.get(i) + "'");
+			System.out.println("pattern: " + pattern.pattern());
+			System.out.println("'" + actualCommentTokens.get(i) + "'");
 
-		BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+			if (matcher.find()) {
+				System.out.println("Tokens matched");
+			}
+			else {
+				System.out.println("Tokens mismatched");
 
-		String line = null;
-
-		while ((line = bufferedReader.readLine()) != null) {
-			sb.append(line);
+				return false;
+			}
 		}
 
-		bufferedReader.close();
-
-		return new JSONObject(sb.toString());
-	}
-
-	protected String removeWhitespace(String s) {
-		s = s.replaceAll("\n", "");
-		s = s.replaceAll("\t", "");
-
-		return s;
+		return true;
 	}
 
 	private boolean _validResult;

@@ -14,6 +14,7 @@
 
 package com.liferay.portal.service.persistence.impl;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBType;
 import com.liferay.portal.kernel.dao.orm.CustomSQLParam;
@@ -36,8 +37,8 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.TableNameOrderByComparator;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.model.impl.UserImpl;
@@ -64,6 +65,9 @@ import java.util.Map;
  * @author Shuyang Zhou
  */
 public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
+
+	public static final String COUNT_BY_ORGANIZATIONS_AND_USER_GROUPS =
+		UserFinder.class.getName() + ".countByOrganizationsAndUserGroups";
 
 	public static final String COUNT_BY_SOCIAL_USERS =
 		UserFinder.class.getName() + ".countBySocialUsers";
@@ -92,8 +96,14 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 	public static final String FIND_BY_USERS_ORGS_GROUP =
 		UserFinder.class.getName() + ".findByUsersOrgsGroup";
 
+	public static final String FIND_BY_USERS_ORGS_GT_USER_ID =
+		UserFinder.class.getName() + ".findByUsersOrgsGtUserId";
+
 	public static final String FIND_BY_USERS_USER_GROUPS =
 		UserFinder.class.getName() + ".findByUsersUserGroups";
+
+	public static final String FIND_BY_USERS_USER_GROUPS_GT_USER_ID =
+		UserFinder.class.getName() + ".findByUsersUserGroupsGtUserId";
 
 	public static final String FIND_BY_C_FN_MN_LN_SN_EA_S =
 		UserFinder.class.getName() + ".findByC_FN_MN_LN_SN_EA_S";
@@ -312,6 +322,59 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 	}
 
 	@Override
+	public int countByOrganizationsAndUserGroups(
+		long[] organizationIds, long[] userGroupIds) {
+
+		if (ArrayUtil.isEmpty(organizationIds) &&
+			ArrayUtil.isEmpty(userGroupIds)) {
+
+			return 0;
+		}
+
+		if (ArrayUtil.isEmpty(organizationIds)) {
+			organizationIds = new long[] {0L};
+		}
+
+		if (ArrayUtil.isEmpty(userGroupIds)) {
+			userGroupIds = new long[] {0L};
+		}
+
+		Long count = null;
+
+		Session session = openSession();
+
+		try {
+			String sql = CustomSQLUtil.get(
+				COUNT_BY_ORGANIZATIONS_AND_USER_GROUPS);
+
+			sql = StringUtil.replace(
+				sql, new String[] {"[$ORGANIZATION_ID$]", "[$USER_GROUP_ID$]"},
+				new String[] {
+					StringUtil.merge(organizationIds),
+					StringUtil.merge(userGroupIds)
+				});
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			sqlQuery.addScalar(COUNT_COLUMN_NAME, Type.LONG);
+
+			count = (Long)sqlQuery.uniqueResult();
+		}
+		catch (Exception e) {
+			throw new SystemException(e);
+		}
+		finally {
+			if (count == null) {
+				count = Long.valueOf(0);
+			}
+
+			closeSession(session);
+		}
+
+		return count.intValue();
+	}
+
+	@Override
 	public int countBySocialUsers(
 		long companyId, long userId, int socialRelationType,
 		String socialRelationTypeComparator, int status) {
@@ -323,10 +386,16 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 
 			String sql = CustomSQLUtil.get(COUNT_BY_SOCIAL_USERS);
 
-			sql = StringUtil.replace(
-				sql, "[$SOCIAL_RELATION_TYPE_COMPARATOR$]",
-				socialRelationTypeComparator.equals(StringPool.EQUAL) ?
-					StringPool.EQUAL : StringPool.NOT_EQUAL);
+			if (socialRelationTypeComparator.equals(StringPool.EQUAL)) {
+				sql = StringUtil.replace(
+					sql, "[$SOCIAL_RELATION_TYPE_COMPARATOR$]",
+					StringPool.EQUAL);
+			}
+			else {
+				sql = StringUtil.replace(
+					sql, "[$SOCIAL_RELATION_TYPE_COMPARATOR$]",
+					StringPool.NOT_EQUAL);
+			}
 
 			SQLQuery q = session.createSynchronizedSQLQuery(sql);
 
@@ -452,6 +521,9 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 			session = openSession();
 
 			String sql = CustomSQLUtil.get(FIND_BY_C_FN_MN_LN_SN_EA_S);
+
+			sql = StringUtil.replace(
+				sql, "[$COLUMN_NAMES$]", getColumnNames(null));
 
 			sql = replaceKeywords(
 				sql, firstNames, middleNames, lastNames, screenNames,
@@ -608,6 +680,10 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 		}
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	@Override
 	public List<User> findByNoContacts() {
 		Session session = null;
@@ -667,12 +743,21 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 
 			String sql = CustomSQLUtil.get(FIND_BY_SOCIAL_USERS);
 
-			sql = StringUtil.replace(
-				sql, "[$SOCIAL_RELATION_TYPE_COMPARATOR$]",
-				socialRelationTypeComparator.equals(StringPool.EQUAL) ?
-					StringPool.EQUAL : StringPool.NOT_EQUAL);
+			if (socialRelationTypeComparator.equals(StringPool.EQUAL)) {
+				sql = StringUtil.replace(
+					sql, "[$SOCIAL_RELATION_TYPE_COMPARATOR$]",
+					StringPool.EQUAL);
+			}
+			else {
+				sql = StringUtil.replace(
+					sql, "[$SOCIAL_RELATION_TYPE_COMPARATOR$]",
+					StringPool.NOT_EQUAL);
+			}
 
-			sql = CustomSQLUtil.replaceOrderBy(sql, obc);
+			if (obc != null) {
+				sql = CustomSQLUtil.replaceOrderBy(
+					sql, new TableNameOrderByComparator<>(obc, "User_"));
+			}
 
 			SQLQuery q = session.createSynchronizedSQLQuery(sql);
 
@@ -693,6 +778,63 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 		}
 		finally {
 			closeSession(session);
+		}
+	}
+
+	public List<User> findByUsersOrgsGtUserId(
+		long companyId, long organizationId, long gtUserId, int size) {
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			String sql = CustomSQLUtil.get(FIND_BY_USERS_ORGS_GT_USER_ID);
+
+			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+
+			q.addEntity("User_", UserImpl.class);
+
+			QueryPos qPos = QueryPos.getInstance(q);
+
+			qPos.add(organizationId);
+			qPos.add(companyId);
+			qPos.add(Boolean.FALSE);
+			qPos.add(gtUserId);
+
+			return (List<User>)QueryUtil.list(q, getDialect(), 0, size);
+		}
+		finally {
+			session.close();
+		}
+	}
+
+	public List<User> findByUsersUserGroupsGtUserId(
+		long companyId, long userGroupId, long gtUserId, int size) {
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			String sql = CustomSQLUtil.get(
+				FIND_BY_USERS_USER_GROUPS_GT_USER_ID);
+
+			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+
+			q.addEntity("User_", UserImpl.class);
+
+			QueryPos qPos = QueryPos.getInstance(q);
+
+			qPos.add(userGroupId);
+			qPos.add(companyId);
+			qPos.add(Boolean.FALSE);
+			qPos.add(gtUserId);
+
+			return (List<User>)QueryUtil.list(q, getDialect(), 0, size);
+		}
+		finally {
+			session.close();
 		}
 	}
 
@@ -776,6 +918,9 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 
 			String sql = CustomSQLUtil.get(FIND_BY_C_FN_MN_LN_SN_EA_S);
 
+			sql = StringUtil.replace(
+				sql, "[$COLUMN_NAMES$]", getColumnNames(obc));
+
 			sql = replaceKeywords(
 				sql, firstNames, middleNames, lastNames, screenNames,
 				emailAddresses);
@@ -839,6 +984,27 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 		}
 	}
 
+	protected String getColumnNames(OrderByComparator obc) {
+		if (obc == null) {
+			return "DISTINCT User_.userId AS userId";
+		}
+
+		String[] orderByFields = obc.getOrderByFields();
+
+		StringBundler sb = new StringBundler(orderByFields.length * 4 + 1);
+
+		sb.append("DISTINCT User_.userId AS userId");
+
+		for (String field : orderByFields) {
+			sb.append(", User_.");
+			sb.append(field);
+			sb.append(" AS ");
+			sb.append(field);
+		}
+
+		return sb.toString();
+	}
+
 	protected String getJoin(LinkedHashMap<String, Object> params) {
 		if ((params == null) || params.isEmpty()) {
 			return StringPool.BLANK;
@@ -855,7 +1021,7 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 
 			Object value = entry.getValue();
 
-			if (Validator.isNotNull(value)) {
+			if (value != null) {
 				sb.append(getJoin(key, value));
 			}
 		}
@@ -1191,7 +1357,7 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 
 			Object value = entry.getValue();
 
-			if (Validator.isNotNull(value)) {
+			if (value != null) {
 				sb.append(getWhere(key, value));
 			}
 		}
@@ -1453,7 +1619,7 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 			int pos = join.indexOf("WHERE");
 
 			if (pos != -1) {
-				join = join.substring(pos + 5, join.length()).concat(" AND ");
+				join = join.substring(pos + 5).concat(" AND ");
 			}
 			else {
 				join = StringPool.BLANK;
@@ -1477,17 +1643,17 @@ public class UserFinderImpl extends UserFinderBaseImpl implements UserFinder {
 		String[] lastNames, String[] screenNames, String[] emailAddresses) {
 
 		sql = CustomSQLUtil.replaceKeywords(
-			sql, "lower(User_.firstName)", StringPool.LIKE, false, firstNames);
+			sql, "LOWER(User_.firstName)", StringPool.LIKE, false, firstNames);
 		sql = CustomSQLUtil.replaceKeywords(
-			sql, "lower(User_.middleName)", StringPool.LIKE, false,
+			sql, "LOWER(User_.middleName)", StringPool.LIKE, false,
 			middleNames);
 		sql = CustomSQLUtil.replaceKeywords(
-			sql, "lower(User_.lastName)", StringPool.LIKE, false, lastNames);
+			sql, "LOWER(User_.lastName)", StringPool.LIKE, false, lastNames);
 		sql = CustomSQLUtil.replaceKeywords(
-			sql, "lower(User_.screenName)", StringPool.LIKE, false,
+			sql, "LOWER(User_.screenName)", StringPool.LIKE, false,
 			screenNames);
 		sql = CustomSQLUtil.replaceKeywords(
-			sql, "lower(User_.emailAddress)", StringPool.LIKE, true,
+			sql, "LOWER(User_.emailAddress)", StringPool.LIKE, true,
 			emailAddresses);
 
 		return sql;

@@ -86,7 +86,7 @@ public class ZipReaderImplTest {
 
 		List<String> entries = zipReader.getEntries();
 
-		Assert.assertEquals(5, entries.size());
+		Assert.assertEquals(entries.toString(), 5, entries.size());
 		Assert.assertEquals(_FILE_PATH_0, entries.get(0));
 		Assert.assertEquals(_FILE_PATH_1, entries.get(1));
 		Assert.assertEquals(_FILE_PATH_2, entries.get(2));
@@ -289,22 +289,22 @@ public class ZipReaderImplTest {
 		List<String> entries = zipReader.getFolderEntries("");
 
 		Assert.assertNotNull(entries);
-		Assert.assertTrue(entries.isEmpty());
+		Assert.assertTrue(entries.toString(), entries.isEmpty());
 
 		entries = zipReader.getFolderEntries("/");
 
-		Assert.assertEquals(1, entries.size());
+		Assert.assertEquals(entries.toString(), 1, entries.size());
 		Assert.assertEquals(_FILE_PATH_0, entries.get(0));
 
 		entries = zipReader.getFolderEntries("1");
 
-		Assert.assertEquals(2, entries.size());
+		Assert.assertEquals(entries.toString(), 2, entries.size());
 		Assert.assertEquals(_FILE_PATH_1, entries.get(0));
 		Assert.assertEquals(_FILE_PATH_4, entries.get(1));
 
 		entries = zipReader.getFolderEntries("1/2");
 
-		Assert.assertEquals(2, entries.size());
+		Assert.assertEquals(entries.toString(), 2, entries.size());
 		Assert.assertEquals(_FILE_PATH_2, entries.get(0));
 		Assert.assertEquals(_FILE_PATH_3, entries.get(1));
 
@@ -320,7 +320,7 @@ public class ZipReaderImplTest {
 		List<String> entries = zipReader.getFolderEntries("foo");
 
 		Assert.assertNotNull(entries);
-		Assert.assertTrue(entries.isEmpty());
+		Assert.assertTrue(entries.toString(), entries.isEmpty());
 
 		zipReader.close();
 	}

@@ -16,6 +16,7 @@ package com.liferay.opensocial.shindig.service;
 
 import com.liferay.opensocial.shindig.util.HttpServletRequestThreadLocal;
 import com.liferay.opensocial.shindig.util.SerializerUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -29,7 +30,6 @@ import com.liferay.portal.kernel.service.ServiceContextFactory;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.social.kernel.model.SocialActivity;
 import com.liferay.social.kernel.model.SocialActivityFeedEntry;
@@ -40,7 +40,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Future;
 
@@ -55,7 +54,6 @@ import org.apache.shindig.social.core.model.ActivityImpl;
 import org.apache.shindig.social.core.model.MediaItemImpl;
 import org.apache.shindig.social.opensocial.model.Activity;
 import org.apache.shindig.social.opensocial.model.MediaItem;
-import org.apache.shindig.social.opensocial.model.MediaItem.Type;
 import org.apache.shindig.social.opensocial.spi.ActivityService;
 import org.apache.shindig.social.opensocial.spi.CollectionOptions;
 import org.apache.shindig.social.opensocial.spi.GroupId;
@@ -161,7 +159,7 @@ public class LiferayActivityService implements ActivityService {
 			activities.addAll(personActivities);
 		}
 
-		return new RestfulCollection<Activity>(
+		return new RestfulCollection<>(
 			activities, collectionOptions.getFirst(), activities.size(),
 			collectionOptions.getMax());
 	}
@@ -178,7 +176,7 @@ public class LiferayActivityService implements ActivityService {
 
 		List<Activity> activities = getActivities(themeDisplay, userIdLong);
 
-		return new RestfulCollection<Activity>(
+		return new RestfulCollection<>(
 			activities, collectionOptions.getFirst(), activities.size(),
 			collectionOptions.getMax());
 	}
@@ -349,13 +347,13 @@ public class LiferayActivityService implements ActivityService {
 		List<MediaItem> mediaItems = new ArrayList<>();
 
 		for (int i = 0; i < mediaItemsJSONArray.length(); i++) {
-			JSONObject mediaItemsJsonObject = mediaItemsJSONArray.getJSONObject(
+			JSONObject mediaItemsJSONObject = mediaItemsJSONArray.getJSONObject(
 				i);
 
 			MediaItem mediaItem = new MediaItemImpl(
-				mediaItemsJsonObject.getString("mimeType"),
-				Type.valueOf(mediaItemsJsonObject.getString("type")),
-				mediaItemsJsonObject.getString("url"));
+				mediaItemsJSONObject.getString("mimeType"),
+				MediaItem.Type.valueOf(mediaItemsJSONObject.getString("type")),
+				mediaItemsJSONObject.getString("url"));
 
 			mediaItems.add(mediaItem);
 		}
@@ -371,15 +369,15 @@ public class LiferayActivityService implements ActivityService {
 		JSONArray mediaItemsJSONArray = JSONFactoryUtil.createJSONArray();
 
 		for (MediaItem mediaItem : mediaItems) {
-			JSONObject mediaItemsJsonObject =
+			JSONObject mediaItemsJSONObject =
 				JSONFactoryUtil.createJSONObject();
 
-			mediaItemsJsonObject.put("mimeType", mediaItem.getMimeType());
-			mediaItemsJsonObject.put(
+			mediaItemsJSONObject.put("mimeType", mediaItem.getMimeType());
+			mediaItemsJSONObject.put(
 				"type", String.valueOf(mediaItem.getType()));
-			mediaItemsJsonObject.put("url", mediaItem.getUrl());
+			mediaItemsJSONObject.put("url", mediaItem.getUrl());
 
-			mediaItemsJSONArray.put(mediaItemsJsonObject);
+			mediaItemsJSONArray.put(mediaItemsJSONObject);
 		}
 
 		return mediaItemsJSONArray;
@@ -419,7 +417,7 @@ public class LiferayActivityService implements ActivityService {
 
 		JSONArray templateParamsJSONArray = JSONFactoryUtil.createJSONArray();
 
-		for (Entry<String, String> entry : map.entrySet()) {
+		for (Map.Entry<String, String> entry : map.entrySet()) {
 			JSONObject templateParamJSONObject =
 				JSONFactoryUtil.createJSONObject();
 

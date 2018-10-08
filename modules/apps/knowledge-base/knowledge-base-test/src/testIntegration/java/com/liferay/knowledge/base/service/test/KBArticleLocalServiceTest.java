@@ -30,29 +30,27 @@ import com.liferay.knowledge.base.service.KBArticleLocalServiceUtil;
 import com.liferay.knowledge.base.service.KBCommentLocalServiceUtil;
 import com.liferay.knowledge.base.service.KBFolderLocalServiceUtil;
 import com.liferay.knowledge.base.util.comparator.KBArticlePriorityComparator;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.ModelHintsUtil;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ClassNameLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.service.SubscriptionLocalServiceUtil;
 import com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalServiceUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
-import com.liferay.portal.kernel.test.rule.Sync;
-import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.ratings.kernel.service.RatingsEntryLocalServiceUtil;
 import com.liferay.ratings.kernel.service.RatingsStatsLocalServiceUtil;
+import com.liferay.subscription.service.SubscriptionLocalServiceUtil;
 
 import java.io.InputStream;
 
@@ -70,15 +68,12 @@ import org.junit.runner.RunWith;
  * @author Roberto Díaz
  */
 @RunWith(Arquillian.class)
-@Sync
 public class KBArticleLocalServiceTest {
 
 	@ClassRule
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
-		new AggregateTestRule(
-			new LiferayIntegrationTestRule(),
-			SynchronousDestinationTestRule.INSTANCE);
+		new LiferayIntegrationTestRule();
 
 	@Before
 	public void setUp() throws Exception {
@@ -137,7 +132,7 @@ public class KBArticleLocalServiceTest {
 	}
 
 	@Test
-	public void testAddApprovedKBArticleInsideNonLatestApprovedKBArticle()
+	public void testAddApprovedKBArticleInsideNonlatestApprovedKBArticle()
 		throws Exception {
 
 		_serviceContext.setWorkflowAction(WorkflowConstants.ACTION_PUBLISH);
@@ -259,7 +254,7 @@ public class KBArticleLocalServiceTest {
 			_serviceContext);
 	}
 
-	@Test(expected = KBArticleUrlTitleException.class)
+	@Test
 	public void testAddKBArticleWithBlankURLTitle() throws Exception {
 		String urlTitle = StringPool.BLANK;
 
@@ -270,6 +265,20 @@ public class KBArticleLocalServiceTest {
 			StringUtil.randomString(), null, null, null, _serviceContext);
 
 		Assert.assertTrue(Validator.isNotNull(kbArticle.getUrlTitle()));
+	}
+
+	@Test
+	public void testAddKBArticleWithCustomHTML() throws Exception {
+		String content =
+			"<a href=\"http://www.liferay.com\" target=\"_blank\" />";
+
+		KBArticle kbArticle = KBArticleLocalServiceUtil.addKBArticle(
+			_user.getUserId(), _kbFolderClassNameId,
+			KBFolderConstants.DEFAULT_PARENT_FOLDER_ID,
+			StringUtil.randomString(), StringUtil.randomString(), content,
+			StringUtil.randomString(), null, null, null, _serviceContext);
+
+		Assert.assertEquals(content, kbArticle.getContent());
 	}
 
 	@Test(expected = KBArticleUrlTitleException.class)
@@ -619,7 +628,9 @@ public class KBArticleLocalServiceTest {
 				WorkflowConstants.STATUS_APPROVED,
 				new KBArticlePriorityComparator(true));
 
-		Assert.assertEquals(5, kbArticleAndAllDescendantKBArticles.size());
+		Assert.assertEquals(
+			kbArticleAndAllDescendantKBArticles.toString(), 5,
+			kbArticleAndAllDescendantKBArticles.size());
 
 		KBArticle currentChildKBArticle =
 			kbArticleAndAllDescendantKBArticles.get(0);
@@ -697,7 +708,9 @@ public class KBArticleLocalServiceTest {
 				WorkflowConstants.STATUS_APPROVED,
 				new KBArticlePriorityComparator(true));
 
-		Assert.assertEquals(6, kbArticleAndAllDescendantKBArticles.size());
+		Assert.assertEquals(
+			kbArticleAndAllDescendantKBArticles.toString(), 6,
+			kbArticleAndAllDescendantKBArticles.size());
 
 		KBArticle currentParentKBArticle =
 			kbArticleAndAllDescendantKBArticles.get(0);

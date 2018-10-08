@@ -14,6 +14,7 @@
 
 package com.liferay.gradle.plugins.defaults;
 
+import com.liferay.gradle.plugins.defaults.internal.util.GradlePluginsDefaultsUtil;
 import com.liferay.gradle.plugins.defaults.internal.util.GradleUtil;
 import com.liferay.gradle.util.Validator;
 
@@ -124,6 +125,13 @@ public class LiferaySettingsPlugin implements Plugin<Settings> {
 			return ProjectDirType.MODULE;
 		}
 
+		Path applicationPropertiesPath = dirPath.resolve(
+			"src/main/resources/application.properties");
+
+		if (Files.exists(applicationPropertiesPath)) {
+			return ProjectDirType.SPRING_BOOT;
+		}
+
 		if (Files.exists(dirPath.resolve("gulpfile.js"))) {
 			return ProjectDirType.THEME;
 		}
@@ -155,9 +163,15 @@ public class LiferaySettingsPlugin implements Plugin<Settings> {
 			final Path projectPathRootDirPath, final String projectPathPrefix)
 		throws IOException {
 
-		final String buildProfile = System.getProperty("build.profile");
+		final Set<String> buildProfileFileNames =
+			GradlePluginsDefaultsUtil.getBuildProfileFileNames(
+				System.getProperty("build.profile"),
+				GradleUtil.getProperty(
+					settings, "liferay.releng.public", true));
 		final Set<Path> excludedDirPaths = _getDirPaths(
 			"build.exclude.dirs", rootDirPath);
+		final Set<Path> includedDirPaths = _getDirPaths(
+			"build.include.dirs", rootDirPath);
 		final Set<ProjectDirType> excludedProjectDirTypes = _getFlags(
 			"build.exclude.", ProjectDirType.class);
 
@@ -177,6 +191,14 @@ public class LiferaySettingsPlugin implements Plugin<Settings> {
 						return FileVisitResult.SKIP_SUBTREE;
 					}
 
+					String dirName = String.valueOf(dirPath.getFileName());
+
+					if (dirName.equals("build") ||
+						dirName.equals("node_modules")) {
+
+						return FileVisitResult.SKIP_SUBTREE;
+					}
+
 					ProjectDirType projectDirType = _getProjectDirType(dirPath);
 
 					if (projectDirType == ProjectDirType.UNKNOWN) {
@@ -187,11 +209,26 @@ public class LiferaySettingsPlugin implements Plugin<Settings> {
 						return FileVisitResult.SKIP_SUBTREE;
 					}
 
-					if (Validator.isNotNull(buildProfile) &&
-						Files.notExists(
-							dirPath.resolve(".lfrbuild-" + buildProfile))) {
+					if (!includedDirPaths.isEmpty() &&
+						!_startsWith(dirPath, includedDirPaths)) {
 
 						return FileVisitResult.SKIP_SUBTREE;
+					}
+
+					if (buildProfileFileNames != null) {
+						boolean found = false;
+
+						for (String fileName : buildProfileFileNames) {
+							if (Files.exists(dirPath.resolve(fileName))) {
+								found = true;
+
+								break;
+							}
+						}
+
+						if (!found) {
+							return FileVisitResult.SKIP_SUBTREE;
+						}
 					}
 
 					_includeProject(
@@ -204,9 +241,19 @@ public class LiferaySettingsPlugin implements Plugin<Settings> {
 			});
 	}
 
+	private boolean _startsWith(Path path, Iterable<Path> parentPaths) {
+		for (Path parentPath : parentPaths) {
+			if (path.startsWith(parentPath)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	private static enum ProjectDirType {
 
-		ANT_PLUGIN, MODULE, THEME, UNKNOWN
+		ANT_PLUGIN, MODULE, SPRING_BOOT, THEME, UNKNOWN
 
 	}
 

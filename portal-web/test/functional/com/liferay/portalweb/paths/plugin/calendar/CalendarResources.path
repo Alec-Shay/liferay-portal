@@ -8,16 +8,6 @@
 <tr><td rowspan="1" colspan="3">CalendarResources</td></tr>
 </thead>
 <tbody>
-<tr>
-	<td>ADD_RESOURCE_BUTTON</td>
-	<td>//a[contains(@class,'btn') and contains (.,'Add Resource')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td></td>
-	<td></td>
-	<td></td>
-</tr>
 <!--RESOURCE_TABLE-->
 <tr>
 	<td>RESOURCE_TABLE_NAME</td>
@@ -36,7 +26,7 @@
 </tr>
 <tr>
 	<td>RESOURCE_TABLE_ACTIONS</td>
-	<td>//tr[contains(.,'${key_calendarResourceName}')]/td[4]//span/*[name()='svg'][contains(@class,'icon-ellipsis-v')]</td>
+	<td>//tr[contains(.,'${key_calendarResourceName}')]/td[4]//a[span/*[name()='svg'][contains(@class,'icon-ellipsis-v')]]</td>
 	<td></td>
 </tr>
 <tr>

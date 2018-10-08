@@ -15,6 +15,7 @@
 package com.liferay.gradle.plugins.node.internal;
 
 import com.liferay.gradle.plugins.node.internal.util.GradleUtil;
+import com.liferay.gradle.plugins.node.internal.util.NodePluginUtil;
 import com.liferay.gradle.util.OSDetector;
 import com.liferay.gradle.util.Validator;
 
@@ -23,7 +24,9 @@ import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +61,18 @@ public class NodeExecutor {
 		return args(Arrays.asList(args));
 	}
 
+	public NodeExecutor environment(Map<?, ?> environment) {
+		_environment.putAll(environment);
+
+		return this;
+	}
+
+	public NodeExecutor environment(Object key, Object value) {
+		_environment.put(key, value);
+
+		return this;
+	}
+
 	public void execute() throws Exception {
 		File workingDir = getWorkingDir();
 
@@ -71,12 +86,16 @@ public class NodeExecutor {
 		}
 	}
 
-	public List<String> getArgs() {
-		return GradleUtil.toStringList(_args);
+	public List<Object> getArgs() {
+		return _args;
 	}
 
 	public String getCommand() {
 		return GradleUtil.toString(_command);
+	}
+
+	public Map<?, ?> getEnvironment() {
+		return _environment;
 	}
 
 	public File getNodeDir() {
@@ -107,6 +126,12 @@ public class NodeExecutor {
 
 	public void setCommand(Object command) {
 		_command = command;
+	}
+
+	public void setEnvironment(Map<?, ?> environment) {
+		_environment.clear();
+
+		environment(environment);
 	}
 
 	public void setInheritProxy(boolean inheritProxy) {
@@ -150,8 +175,9 @@ public class NodeExecutor {
 
 		if (_logger.isInfoEnabled()) {
 			_logger.info(
-				"Running {} from {}", processBuilder.command(),
-				processBuilder.directory());
+				"Running {} from {} with environment variables {}",
+				processBuilder.command(), processBuilder.directory(),
+				processBuilder.environment());
 		}
 
 		Process process = processBuilder.start();
@@ -174,7 +200,7 @@ public class NodeExecutor {
 		}
 		else {
 			commandLine.add(_getExecutable());
-			commandLine.addAll(getArgs());
+			commandLine.addAll(GradleUtil.toStringList(getArgs()));
 		}
 
 		return commandLine;
@@ -211,7 +237,7 @@ public class NodeExecutor {
 			return null;
 		}
 
-		return new File(nodeDir, "bin");
+		return NodePluginUtil.getBinDir(nodeDir);
 	}
 
 	private List<String> _getWindowsArgs() {
@@ -234,7 +260,9 @@ public class NodeExecutor {
 			sb.append('"');
 		}
 
-		for (String arg : getArgs()) {
+		List<String> args = GradleUtil.toStringList(getArgs());
+
+		for (String arg : args) {
 			sb.append(" \"");
 
 			if (Validator.isNotNull(arg)) {
@@ -251,7 +279,7 @@ public class NodeExecutor {
 		return windowsArgs;
 	}
 
-	private void _setNonProxyHosts(Map<String, String> environment) {
+	private void _setNonproxyHosts(Map<String, String> environment) {
 		if (environment.containsKey(_NO_PROXY_KEY) ||
 			environment.containsKey(_NO_PROXY_KEY.toUpperCase())) {
 
@@ -267,13 +295,13 @@ public class NodeExecutor {
 		String hosts = System.getProperty("http.nonProxyHosts");
 
 		if (Validator.isNotNull(hosts)) {
-			nonProxyHosts.addAll(Arrays.asList(hosts.split("\\|")));
+			Collections.addAll(nonProxyHosts, hosts.split("\\|"));
 		}
 
 		hosts = System.getProperty("https.nonProxyHosts");
 
 		if (Validator.isNotNull(hosts)) {
-			nonProxyHosts.addAll(Arrays.asList(hosts.split("\\|")));
+			Collections.addAll(nonProxyHosts, hosts.split("\\|"));
 		}
 
 		if (nonProxyHosts.isEmpty()) {
@@ -342,8 +370,10 @@ public class NodeExecutor {
 	}
 
 	private void _updateEnvironment(Map<String, String> environment) {
+		GUtil.addToMap(environment, getEnvironment());
+
 		if (isInheritProxy()) {
-			_setNonProxyHosts(environment);
+			_setNonproxyHosts(environment);
 			_setProxy(environment, "http");
 			_setProxy(environment, "https");
 		}
@@ -374,6 +404,7 @@ public class NodeExecutor {
 
 	private final List<Object> _args = new ArrayList<>();
 	private Object _command = "node";
+	private final Map<Object, Object> _environment = new LinkedHashMap<>();
 	private boolean _inheritProxy = true;
 	private Object _nodeDir;
 	private final Project _project;

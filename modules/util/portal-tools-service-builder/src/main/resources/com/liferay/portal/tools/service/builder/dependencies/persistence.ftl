@@ -12,6 +12,8 @@ import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.Transactional;
 
+import java.math.BigDecimal;
+
 import java.util.Date;
 
 /**
@@ -44,14 +46,14 @@ public interface ${entity.name}Persistence extends BasePersistence<${entity.name
 	 */
 
 	<#list methods as method>
-		<#if !method.isConstructor() && method.isPublic() && serviceBuilder.isCustomMethod(method) && !serviceBuilder.isBasePersistenceMethod(method)>
+		<#if method.isPublic() && serviceBuilder.isCustomMethod(method) && !serviceBuilder.isBasePersistenceMethod(method)>
 			${serviceBuilder.getJavadocComment(method)}
 
 			<#if serviceBuilder.hasAnnotation(method, "Deprecated")>
 				@Deprecated
 			</#if>
 
-			<#if (method.name == "fetchByPrimaryKeys") || (method.name == "getBadColumnNames")>
+			<#if stringUtil.equals(method.name, "fetchByPrimaryKeys") || stringUtil.equals(method.name, "getBadColumnNames")>
 				@Override
 			</#if>
 
@@ -74,7 +76,7 @@ public interface ${entity.name}Persistence extends BasePersistence<${entity.name
 					throws
 				</#if>
 
-				${exception.value}
+				${exception.fullyQualifiedName}
 
 				<#if exception_has_next>
 					,

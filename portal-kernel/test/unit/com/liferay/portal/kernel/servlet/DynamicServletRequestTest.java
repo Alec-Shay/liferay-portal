@@ -14,8 +14,8 @@
 
 package com.liferay.portal.kernel.servlet;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.portlet.PortletParameterUtil;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.util.Collections;
 import java.util.Map;
@@ -43,7 +43,7 @@ public class DynamicServletRequestTest {
 
 		Map<String, String[]> parameterMap = request.getParameterMap();
 
-		Assert.assertEquals(1, parameterMap.size());
+		Assert.assertEquals(parameterMap.toString(), 1, parameterMap.size());
 		Assert.assertArrayEquals(
 			new String[] {"15"}, parameterMap.get("p_p_id"));
 	}
@@ -59,7 +59,7 @@ public class DynamicServletRequestTest {
 
 		Map<String, String[]> parameterMap = request.getParameterMap();
 
-		Assert.assertEquals(4, parameterMap.size());
+		Assert.assertEquals(parameterMap.toString(), 4, parameterMap.size());
 		Assert.assertArrayEquals(
 			new String[] {"15"}, parameterMap.get("p_p_id"));
 		Assert.assertArrayEquals(

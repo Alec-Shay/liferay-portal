@@ -42,7 +42,7 @@ import java.util.List;
  * @author Jorge Ferrer
  */
 @OSGiBeanProperties(
-	property = {"model.class.name=com.liferay.portal.kernel.model.User"}
+	property = "model.class.name=com.liferay.portal.kernel.model.User"
 )
 public class UserPermissionImpl
 	implements BaseModelPermissionChecker, UserPermission {
@@ -119,14 +119,14 @@ public class UserPermissionImpl
 				}
 
 				if (permissionChecker.hasPermission(
-						0, User.class.getName(), userId, actionId)) {
+						null, User.class.getName(), userId, actionId)) {
 
 					return true;
 				}
 			}
 			else {
 				if (permissionChecker.hasPermission(
-						0, User.class.getName(), User.class.getName(),
+						null, User.class.getName(), User.class.getName(),
 						actionId)) {
 
 					return true;

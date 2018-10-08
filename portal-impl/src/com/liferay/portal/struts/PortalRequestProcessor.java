@@ -14,6 +14,8 @@
 
 package com.liferay.portal.struts;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.LayoutPermissionException;
 import com.liferay.portal.kernel.exception.PortletActiveException;
 import com.liferay.portal.kernel.exception.UserActiveException;
@@ -30,6 +32,8 @@ import com.liferay.portal.kernel.model.UserTrackerPath;
 import com.liferay.portal.kernel.portlet.FriendlyURLMapper;
 import com.liferay.portal.kernel.portlet.InvokerPortlet;
 import com.liferay.portal.kernel.portlet.LiferayPortletURL;
+import com.liferay.portal.kernel.portlet.LiferayRenderRequest;
+import com.liferay.portal.kernel.portlet.LiferayRenderResponse;
 import com.liferay.portal.kernel.portlet.PortletConfigFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletInstanceFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
@@ -43,12 +47,10 @@ import com.liferay.portal.kernel.service.PortletLocalServiceUtil;
 import com.liferay.portal.kernel.service.PortletPreferencesLocalServiceUtil;
 import com.liferay.portal.kernel.service.permission.PortletPermissionUtil;
 import com.liferay.portal.kernel.service.persistence.UserTrackerPathUtil;
-import com.liferay.portal.kernel.servlet.DynamicServletRequest;
 import com.liferay.portal.kernel.servlet.HttpMethods;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.struts.LastPath;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.JavaConstants;
@@ -56,27 +58,22 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.liveusers.LiveUsers;
 import com.liferay.portal.util.PropsUtil;
 import com.liferay.portal.util.PropsValues;
+import com.liferay.portlet.LiferayPortletUtil;
 import com.liferay.portlet.RenderRequestFactory;
-import com.liferay.portlet.RenderRequestImpl;
 import com.liferay.portlet.RenderResponseFactory;
-import com.liferay.portlet.RenderResponseImpl;
 
 import java.io.IOException;
 
 import java.util.Date;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.portlet.PortletConfig;
 import javax.portlet.PortletContext;
@@ -96,9 +93,11 @@ import org.apache.struts.Globals;
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.ActionServlet;
+import org.apache.struts.action.RequestProcessor;
 import org.apache.struts.config.ActionConfig;
 import org.apache.struts.config.ForwardConfig;
-import org.apache.struts.tiles.TilesRequestProcessor;
+import org.apache.struts.config.ModuleConfig;
 import org.apache.struts.util.MessageResources;
 
 /**
@@ -106,8 +105,9 @@ import org.apache.struts.util.MessageResources;
  * @author Jorge Ferrer
  * @author Wesley Gong
  * @author Mika Koivisto
+ * @author Neil Griffin
  */
-public class PortalRequestProcessor extends TilesRequestProcessor {
+public class PortalRequestProcessor extends RequestProcessor {
 
 	public PortalRequestProcessor() {
 
@@ -144,6 +144,18 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 	}
 
 	@Override
+	public void init(ActionServlet servlet, ModuleConfig moduleConfig)
+		throws ServletException {
+
+		super.init(servlet, moduleConfig);
+
+		ServletContext servletContext = getServletContext();
+
+		_definitions = (Map<String, Definition>)
+			servletContext.getAttribute(TilesUtil.DEFINITIONS);
+	}
+
+	@Override
 	public void process(
 			HttpServletRequest request, HttpServletResponse response)
 		throws IOException, ServletException {
@@ -153,9 +165,9 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 		ActionMapping actionMapping =
 			(ActionMapping)moduleConfig.findActionConfig(path);
 
-		Action action = StrutsActionRegistryUtil.getAction(path);
+		if ((actionMapping == null) &&
+			(StrutsActionRegistryUtil.getAction(path) == null)) {
 
-		if ((actionMapping == null) && (action == null)) {
 			String lastPath = getLastPath(request);
 
 			if (_log.isDebugEnabled()) {
@@ -221,12 +233,13 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 		// Clean up portlet objects that may have been created by defineObjects
 		// for portlets that are called directly from a Struts path
 
-		RenderRequestImpl renderRequestImpl =
-			(RenderRequestImpl)request.getAttribute(
-				JavaConstants.JAVAX_PORTLET_REQUEST);
+		LiferayRenderRequest liferayRenderRequest =
+			(LiferayRenderRequest)LiferayPortletUtil.getLiferayPortletRequest(
+				(PortletRequest)request.getAttribute(
+					JavaConstants.JAVAX_PORTLET_REQUEST));
 
-		if (renderRequestImpl != null) {
-			renderRequestImpl.cleanUp();
+		if (liferayRenderRequest != null) {
+			liferayRenderRequest.cleanUp();
 		}
 	}
 
@@ -256,14 +269,15 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 
 		PortletContext portletContext = portletConfig.getPortletContext();
 
-		RenderRequestImpl renderRequestImpl = RenderRequestFactory.create(
+		LiferayRenderRequest liferayRenderRequest = RenderRequestFactory.create(
 			request, portlet, invokerPortlet, portletContext,
 			WindowState.MAXIMIZED, PortletMode.VIEW, portletPreferences);
 
-		RenderResponseImpl renderResponseImpl = RenderResponseFactory.create(
-			renderRequestImpl, response, portletId, portlet.getCompanyId());
+		LiferayRenderResponse liferayRenderResponse =
+			RenderResponseFactory.create(liferayRenderRequest, response);
 
-		renderRequestImpl.defineObjects(portletConfig, renderResponseImpl);
+		liferayRenderRequest.defineObjects(
+			portletConfig, liferayRenderResponse);
 
 		request.setAttribute(WebKeys.PORTLET_STRUTS_EXECUTE, Boolean.TRUE);
 	}
@@ -340,7 +354,7 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 		}
 
 		LiferayPortletURL portletURL = PortletURLFactoryUtil.create(
-			request, portletId, layout, PortletRequest.RENDER_PHASE);
+			request, portlet, layout, PortletRequest.RENDER_PHASE);
 
 		Map<String, String[]> parameterMap = request.getParameterMap();
 
@@ -359,10 +373,9 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 		if (portletFriendlyURL != null) {
 			return layoutFriendlyURL.concat(portletFriendlyURL);
 		}
-		else {
-			return layoutFriendlyURL.concat(StringPool.QUESTION).concat(
-				request.getQueryString());
-		}
+
+		return layoutFriendlyURL.concat(StringPool.QUESTION).concat(
+			request.getQueryString());
 	}
 
 	protected String getLastPath(HttpServletRequest request) {
@@ -419,7 +432,9 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 		// Only test for existing mappings for last paths that were set when the
 		// user accessed a layout directly instead of through its friendly URL
 
-		if (lastPath.getContextPath().equals(themeDisplay.getPathMain())) {
+		String contextPath = lastPath.getContextPath();
+
+		if (contextPath.equals(themeDisplay.getPathMain())) {
 			ActionMapping actionMapping =
 				(ActionMapping)moduleConfig.findActionConfig(
 					lastPath.getPath());
@@ -439,6 +454,23 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 		return lastPathSB.toString();
 	}
 
+	@Override
+	protected void internalModuleRelativeForward(
+			String uri, HttpServletRequest request,
+			HttpServletResponse response)
+		throws IOException, ServletException {
+
+		Definition definition = _definitions.get(uri);
+
+		if (definition != null) {
+			request.setAttribute(TilesUtil.DEFINITION, definition);
+
+			uri = definition.getPath();
+		}
+
+		doForward(uri, request, response);
+	}
+
 	protected boolean isPortletPath(String path) {
 		if ((path != null) && !path.equals(_PATH_C) &&
 			!path.startsWith(_PATH_COMMON) &&
@@ -447,9 +479,8 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	protected boolean isPublicPath(String path) {
@@ -459,9 +490,8 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	@Override
@@ -489,6 +519,19 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 		}
 
 		return super.processActionCreate(request, response, actionMapping);
+	}
+
+	@Override
+	protected void processForwardConfig(
+			HttpServletRequest request, HttpServletResponse response,
+			ForwardConfig forward)
+		throws IOException, ServletException {
+
+		if (forward == null) {
+			return;
+		}
+
+		internalModuleRelativeForward(forward.getPath(), request, response);
 	}
 
 	@Override
@@ -675,29 +718,33 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 			return _PATH_PORTAL_LAYOUT;
 		}
 
-		// Authenticated users can always log out
+		if ((remoteUser != null) || (user != null)) {
 
-		if (((remoteUser != null) || (user != null)) &&
-			path.equals(_PATH_PORTAL_LOGOUT)) {
+			// Authenticated users can always log out
 
-			return path;
-		}
+			if (path.equals(_PATH_PORTAL_LOGOUT)) {
+				return path;
+			}
 
-		// Authenticated users can always extend or confirm their session
+			// Authenticated users can always extend or confirm their session
 
-		if (((remoteUser != null) || (user != null)) &&
-			(path.equals(_PATH_PORTAL_EXPIRE_SESSION) ||
-			 path.equals(_PATH_PORTAL_EXTEND_SESSION))) {
+			if (path.equals(_PATH_PORTAL_EXPIRE_SESSION) ||
+				path.equals(_PATH_PORTAL_EXTEND_SESSION)) {
 
-			return path;
-		}
+				return path;
+			}
 
-		// Authenticated users can always agree to terms of use
+			// Authenticated users can always update their language
 
-		if (((remoteUser != null) || (user != null)) &&
-			path.equals(_PATH_PORTAL_UPDATE_TERMS_OF_USE)) {
+			if (path.equals(_PATH_PORTAL_UPDATE_LANGUAGE)) {
+				return path;
+			}
 
-			return path;
+			// Authenticated users can always agree to terms of use
+
+			if (path.equals(_PATH_PORTAL_UPDATE_TERMS_OF_USE)) {
+				return path;
+			}
 		}
 
 		// Authenticated users must still exist in the system
@@ -706,89 +753,85 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 			return _PATH_PORTAL_LOGOUT;
 		}
 
-		// Authenticated users must be active
-
-		if ((user != null) && !user.isActive()) {
-			SessionErrors.add(request, UserActiveException.class.getName());
-
-			return _PATH_PORTAL_ERROR;
-		}
-
 		long companyId = PortalUtil.getCompanyId(request);
 		String portletId = ParamUtil.getString(request, "p_p_id");
 
-		if (!path.equals(_PATH_PORTAL_JSON_SERVICE) &&
-			!path.equals(_PATH_PORTAL_RENDER_PORTLET) &&
-			!ParamUtil.getBoolean(request, "wsrp") &&
-			!themeDisplay.isImpersonated() &&
-			!InterruptedPortletRequestWhitelistUtil.
-				isPortletInvocationWhitelisted(
-					companyId, portletId,
-					PortalUtil.getStrutsAction(request))) {
+		// Authenticated users must be active
 
-			// Authenticated users should agree to Terms of Use
+		if (user != null) {
+			if (!user.isActive()) {
+				SessionErrors.add(session, UserActiveException.class.getName());
 
-			if ((user != null) && !user.isTermsOfUseComplete()) {
-				return _PATH_PORTAL_TERMS_OF_USE;
+				return _PATH_PORTAL_ERROR;
 			}
 
-			// Authenticated users should have a verified email address
+			if (!path.equals(_PATH_PORTAL_JSON_SERVICE) &&
+				!path.equals(_PATH_PORTAL_RENDER_PORTLET) &&
+				!themeDisplay.isImpersonated() &&
+				!InterruptedPortletRequestWhitelistUtil.
+					isPortletInvocationWhitelisted(
+						companyId, portletId,
+						PortalUtil.getStrutsAction(request))) {
 
-			if ((user != null) && !user.isEmailAddressVerificationComplete()) {
-				if (path.equals(_PATH_PORTAL_UPDATE_EMAIL_ADDRESS)) {
-					return _PATH_PORTAL_UPDATE_EMAIL_ADDRESS;
+				// Authenticated users should agree to Terms of Use
+
+				if (!user.isTermsOfUseComplete()) {
+					return _PATH_PORTAL_TERMS_OF_USE;
 				}
 
-				return _PATH_PORTAL_VERIFY_EMAIL_ADDRESS;
-			}
+				// Authenticated users should have a verified email address
 
-			// Authenticated users must have a current password
+				if (!user.isEmailAddressVerificationComplete()) {
+					if (path.equals(_PATH_PORTAL_UPDATE_EMAIL_ADDRESS)) {
+						return _PATH_PORTAL_UPDATE_EMAIL_ADDRESS;
+					}
 
-			if ((user != null) && user.isPasswordReset()) {
-				try {
-					PasswordPolicy passwordPolicy = user.getPasswordPolicy();
+					return _PATH_PORTAL_VERIFY_EMAIL_ADDRESS;
+				}
 
-					if ((passwordPolicy == null) ||
-						passwordPolicy.isChangeable()) {
+				// Authenticated users must have a current password
+
+				if (user.isPasswordReset()) {
+					try {
+						PasswordPolicy passwordPolicy =
+							user.getPasswordPolicy();
+
+						if ((passwordPolicy == null) ||
+							passwordPolicy.isChangeable()) {
+
+							return _PATH_PORTAL_UPDATE_PASSWORD;
+						}
+					}
+					catch (Exception e) {
+						_log.error(e, e);
 
 						return _PATH_PORTAL_UPDATE_PASSWORD;
 					}
 				}
-				catch (Exception e) {
-					_log.error(e, e);
+				else if (path.equals(_PATH_PORTAL_UPDATE_PASSWORD)) {
+					return _PATH_PORTAL_LAYOUT;
+				}
 
-					return _PATH_PORTAL_UPDATE_PASSWORD;
+				// Authenticated users must have an email address
+
+				if (!user.isEmailAddressComplete()) {
+					return _PATH_PORTAL_UPDATE_EMAIL_ADDRESS;
+				}
+
+				// Authenticated users should have a reminder query
+
+				if (!user.isDefaultUser() && !user.isReminderQueryComplete()) {
+					return _PATH_PORTAL_UPDATE_REMINDER_QUERY;
 				}
 			}
-			else if ((user != null) && !user.isPasswordReset() &&
-					 path.equals(_PATH_PORTAL_UPDATE_PASSWORD)) {
-
-				return _PATH_PORTAL_LAYOUT;
-			}
-
-			// Authenticated users must have an email address
-
-			if ((user != null) && !user.isEmailAddressComplete()) {
-				return _PATH_PORTAL_UPDATE_EMAIL_ADDRESS;
-			}
-
-			// Authenticated users should have a reminder query
-
-			if ((user != null) && !user.isDefaultUser() &&
-				!user.isReminderQueryComplete()) {
-
-				return _PATH_PORTAL_UPDATE_REMINDER_QUERY;
-			}
 		}
+		else if (!isPublicPath(path)) {
 
-		// Users must sign in
+			// Users must sign in
 
-		if (!isPublicPath(path)) {
-			if (user == null) {
-				SessionErrors.add(request, PrincipalException.class.getName());
+			SessionErrors.add(session, PrincipalException.class.getName());
 
-				return _PATH_PORTAL_LOGIN;
-			}
+			return _PATH_PORTAL_LOGIN;
 		}
 
 		ActionMapping actionMapping =
@@ -838,7 +881,7 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 		// Authenticated users must have access to at least one layout
 
 		if (SessionErrors.contains(
-				request, LayoutPermissionException.class.getName())) {
+				session, LayoutPermissionException.class.getName())) {
 
 			return _PATH_PORTAL_ERROR;
 		}
@@ -854,32 +897,6 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 
 		if (actionForm == null) {
 			return;
-		}
-
-		boolean hasIgnoredParameter = false;
-
-		Map<String, String[]> oldParameterMap = request.getParameterMap();
-
-		Map<String, String[]> newParameterMap = new LinkedHashMap<>(
-			oldParameterMap.size());
-
-		for (Map.Entry<String, String[]> entry : oldParameterMap.entrySet()) {
-			String name = entry.getKey();
-
-			Matcher matcher = _strutsPortletIgnoredParamtersPattern.matcher(
-				name);
-
-			if (matcher.matches()) {
-				hasIgnoredParameter = true;
-			}
-			else {
-				newParameterMap.put(name, entry.getValue());
-			}
-		}
-
-		if (hasIgnoredParameter) {
-			request = new DynamicServletRequest(
-				request, newParameterMap, false);
 		}
 
 		super.processPopulate(request, response, actionForm, actionMapping);
@@ -981,9 +998,8 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 
 			return false;
 		}
-		else {
-			return true;
-		}
+
+		return true;
 	}
 
 	private static final String _PATH_C = "/c";
@@ -1059,9 +1075,7 @@ public class PortalRequestProcessor extends TilesRequestProcessor {
 	private static final Log _log = LogFactoryUtil.getLog(
 		PortalRequestProcessor.class);
 
-	private static final Pattern _strutsPortletIgnoredParamtersPattern =
-		Pattern.compile(PropsValues.STRUTS_PORTLET_IGNORED_PARAMETERS_REGEXP);
-
+	private Map<String, Definition> _definitions;
 	private final Set<String> _lastPaths;
 	private final Set<String> _publicPaths;
 	private final Set<String> _trackerIgnorePaths;

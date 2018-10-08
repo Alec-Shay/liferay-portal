@@ -14,9 +14,10 @@
 
 package com.liferay.portal.template;
 
-import com.liferay.portal.kernel.cache.MultiVMPoolUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.cache.PortalCache;
-import com.liferay.portal.kernel.cache.SingleVMPoolUtil;
+import com.liferay.portal.kernel.cache.PortalCacheHelperUtil;
+import com.liferay.portal.kernel.cache.PortalCacheManagerNames;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringWriter;
 import com.liferay.portal.kernel.template.StringTemplateResource;
 import com.liferay.portal.kernel.template.TemplateConstants;
@@ -25,7 +26,6 @@ import com.liferay.portal.kernel.template.TemplateResource;
 import com.liferay.portal.kernel.template.TemplateResourceLoader;
 import com.liferay.portal.kernel.template.URLTemplateResource;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Serializable;
 import java.io.Writer;
@@ -144,7 +144,8 @@ public abstract class AbstractSingleResourceTemplate extends AbstractTemplate {
 		TemplateResource templateResource, String portalCacheName) {
 
 		if (!(templateResource instanceof CacheTemplateResource)) {
-			return MultiVMPoolUtil.getPortalCache(portalCacheName);
+			return PortalCacheHelperUtil.getPortalCache(
+				PortalCacheManagerNames.MULTI_VM, portalCacheName);
 		}
 
 		CacheTemplateResource cacheTemplateResource =
@@ -154,10 +155,12 @@ public abstract class AbstractSingleResourceTemplate extends AbstractTemplate {
 			cacheTemplateResource.getInnerTemplateResource();
 
 		if (innerTemplateResource instanceof URLTemplateResource) {
-			return SingleVMPoolUtil.getPortalCache(portalCacheName);
+			return PortalCacheHelperUtil.getPortalCache(
+				PortalCacheManagerNames.SINGLE_VM, portalCacheName);
 		}
 
-		return MultiVMPoolUtil.getPortalCache(portalCacheName);
+		return PortalCacheHelperUtil.getPortalCache(
+			PortalCacheManagerNames.MULTI_VM, portalCacheName);
 	}
 
 	protected abstract void processTemplate(

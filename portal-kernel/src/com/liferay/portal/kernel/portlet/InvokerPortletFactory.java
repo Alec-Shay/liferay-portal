@@ -23,6 +23,7 @@ import javax.portlet.PortletException;
 
 /**
  * @author Shuyang Zhou
+ * @author Neil Griffin
  */
 @ProviderType
 public interface InvokerPortletFactory {
@@ -32,8 +33,39 @@ public interface InvokerPortletFactory {
 			Portlet portlet, PortletConfig portletConfig,
 			PortletContext portletContext,
 			InvokerFilterContainer invokerFilterContainer,
+			boolean checkAuthToken, boolean facesPortlet, boolean headerPortlet)
+		throws PortletException;
+
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #create(com.liferay.portal.kernel.model.Portlet, Portlet,
+	 *             PortletConfig, PortletContext, InvokerFilterContainer,
+	 *             boolean, boolean, boolean)}
+	 */
+	@Deprecated
+	public InvokerPortlet create(
+			com.liferay.portal.kernel.model.Portlet portletModel,
+			Portlet portlet, PortletConfig portletConfig,
+			PortletContext portletContext,
+			InvokerFilterContainer invokerFilterContainer,
 			boolean checkAuthToken, boolean facesPortlet, boolean strutsPortlet,
 			boolean strutsBridgePortlet)
+		throws PortletException;
+
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #create(com.liferay.portal.kernel.model.Portlet, Portlet,
+	 *             PortletConfig, PortletContext, InvokerFilterContainer,
+	 *             boolean, boolean, boolean)}
+	 */
+	@Deprecated
+	public InvokerPortlet create(
+			com.liferay.portal.kernel.model.Portlet portletModel,
+			Portlet portlet, PortletConfig portletConfig,
+			PortletContext portletContext,
+			InvokerFilterContainer invokerFilterContainer,
+			boolean checkAuthToken, boolean facesPortlet, boolean headerPortlet,
+			boolean strutsPortlet, boolean strutsBridgePortlet)
 		throws PortletException;
 
 	public InvokerPortlet create(

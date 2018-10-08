@@ -22,6 +22,8 @@ import com.liferay.mail.kernel.template.MailTemplate;
 import com.liferay.mail.kernel.template.MailTemplateContext;
 import com.liferay.mail.kernel.template.MailTemplateContextBuilder;
 import com.liferay.mail.kernel.template.MailTemplateFactoryUtil;
+import com.liferay.petra.lang.ClassLoaderPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -91,6 +93,12 @@ public class SubscriptionSender implements Serializable {
 		FileAttachment attachment = new FileAttachment(file, fileName);
 
 		fileAttachments.add(attachment);
+	}
+
+	public <T> void addHook(Hook.Event<T> event, Hook<T> hook) {
+		List<Hook<T>> hooks = _getHooks(event);
+
+		hooks.add(hook);
 	}
 
 	public void addPersistedSubscribers(String className, long classPK) {
@@ -165,8 +173,10 @@ public class SubscriptionSender implements Serializable {
 
 				if (_log.isDebugEnabled()) {
 					_log.debug(
-						"Add " + toAddress + " to the list of users who have " +
-							"received an email");
+						StringBundler.concat(
+							"Add ", toAddress,
+							" to the list of users who have received an ",
+							"email"));
 				}
 
 				_sentEmailAddresses.add(toAddress);
@@ -224,6 +234,10 @@ public class SubscriptionSender implements Serializable {
 			});
 	}
 
+	public long getCompanyId() {
+		return companyId;
+	}
+
 	public Object getContextAttribute(String key) {
 		return _context.get(key);
 	}
@@ -236,8 +250,13 @@ public class SubscriptionSender implements Serializable {
 		return mailId;
 	}
 
+	public ServiceContext getServiceContext() {
+		return serviceContext;
+	}
+
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #getCurrentUserId()}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #getCurrentUserId()}
 	 */
 	@Deprecated
 	public long getUserId() {
@@ -286,6 +305,10 @@ public class SubscriptionSender implements Serializable {
 
 		mailId = PortalUtil.getMailId(
 			company.getMx(), _mailIdPopPortletPrefix, _mailIdIds);
+	}
+
+	public boolean isBulk() {
+		return bulk;
 	}
 
 	public void setBody(String body) {
@@ -474,11 +497,28 @@ public class SubscriptionSender implements Serializable {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #setCurrentUserId(long)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #setCurrentUserId(long)}
 	 */
 	@Deprecated
 	public void setUserId(long userId) {
 		setCurrentUserId(userId);
+	}
+
+	public interface Hook<T> {
+
+		public void process(T payload);
+
+		public interface Event<S> {
+
+			public static final Event<MailMessage> MAIL_MESSAGE_CREATED =
+				new Event<MailMessage>() {};
+
+			public static final Event<Subscription> PERSISTED_SUBSCRIBER_FOUND =
+				new Event<Subscription>() {};
+
+		}
+
 	}
 
 	protected void deleteSubscription(Subscription subscription)
@@ -615,6 +655,8 @@ public class SubscriptionSender implements Serializable {
 			return;
 		}
 
+		_notifyHooks(Hook.Event.PERSISTED_SUBSCRIBER_FOUND, subscription);
+
 		sendNotification(user);
 	}
 
@@ -629,8 +671,10 @@ public class SubscriptionSender implements Serializable {
 		if (user == null) {
 			if (_log.isInfoEnabled()) {
 				_log.info(
-					"User with email address " + emailAddress +
-						" does not exist for company " + companyId);
+					StringBundler.concat(
+						"User with email address ", emailAddress,
+						" does not exist for company ",
+						String.valueOf(companyId)));
 			}
 
 			if (bulk) {
@@ -647,7 +691,7 @@ public class SubscriptionSender implements Serializable {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
 	 *             #notifyPersistedSubscriber(Subscription)}
 	 */
 	@Deprecated
@@ -697,10 +741,12 @@ public class SubscriptionSender implements Serializable {
 			locale, mailTemplateContext);
 
 		mailMessage.setBody(processedBody);
+
+		_notifyHooks(Hook.Event.MAIL_MESSAGE_CREATED, mailMessage);
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	protected String replaceContent(String content, Locale locale)
@@ -710,7 +756,7 @@ public class SubscriptionSender implements Serializable {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	protected String replaceContent(
@@ -913,7 +959,8 @@ public class SubscriptionSender implements Serializable {
 		mailTemplateContextBuilder.put("[$FROM_ADDRESS$]", from.getAddress());
 		mailTemplateContextBuilder.put(
 			"[$FROM_NAME$]",
-			GetterUtil.getString(from.getPersonal(), from.getAddress()));
+			HtmlUtil.escape(
+				GetterUtil.getString(from.getPersonal(), from.getAddress())));
 		mailTemplateContextBuilder.put(
 			"[$TO_ADDRESS$]", HtmlUtil.escape(to.getAddress()));
 		mailTemplateContextBuilder.put(
@@ -926,6 +973,10 @@ public class SubscriptionSender implements Serializable {
 
 		return mailTemplateContext.aggregateWith(
 			_getBasicMailTemplateContext(locale));
+	}
+
+	private <T> List<Hook<T>> _getHooks(Hook.Event<T> event) {
+		return (List)_hooks.computeIfAbsent(event, key -> new ArrayList<>());
 	}
 
 	private String _getLocalizedValue(
@@ -949,6 +1000,12 @@ public class SubscriptionSender implements Serializable {
 	private String _getPortletTitle(String portletName, Locale locale) {
 		return _getLocalizedValue(
 			localizedPortletTitleMap, locale, portletName);
+	}
+
+	private <T> void _notifyHooks(Hook.Event<T> event, T payload) {
+		List<Hook<T>> hooks = _getHooks(event);
+
+		hooks.forEach(hook -> hook.process(payload));
 	}
 
 	private void readObject(ObjectInputStream objectInputStream)
@@ -989,6 +1046,7 @@ public class SubscriptionSender implements Serializable {
 	private String _contextCreatorUserPrefix;
 	private String _entryTitle;
 	private String _entryURL;
+	private final Map<Hook.Event<?>, List<Hook<?>>> _hooks = new HashMap<>();
 	private boolean _initialized;
 	private final Map<String, EscapableLocalizableFunction> _localizedContext =
 		new HashMap<>();

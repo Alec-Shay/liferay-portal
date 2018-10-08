@@ -14,6 +14,7 @@
 
 package com.liferay.portal.service.impl;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.image.SpriteProcessor;
 import com.liferay.portal.kernel.image.SpriteProcessorUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -37,13 +38,13 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ReleaseInfo;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.ThemeFactoryUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xml.UnsecureSAXReaderUtil;
+import com.liferay.portal.model.impl.ThemeImpl;
 import com.liferay.portal.plugin.PluginUtil;
 import com.liferay.portal.service.base.ThemeLocalServiceBaseImpl;
 import com.liferay.portal.util.PropsValues;
@@ -208,19 +209,9 @@ public class ThemeLocalServiceImpl extends ThemeLocalServiceBaseImpl {
 			return portletDecorator;
 		}
 
-		List<PortletDecorator> portletDecorators = theme.getPortletDecorators();
+		ThemeImpl themeImpl = (ThemeImpl)theme;
 
-		if (!portletDecorators.isEmpty()) {
-			for (int i = portletDecorators.size() - 1; i >= 0; i--) {
-				portletDecorator = portletDecorators.get(i);
-
-				if (portletDecorator.isDefaultPortletDecorator()) {
-					return portletDecorator;
-				}
-			}
-		}
-
-		return PortletDecoratorFactoryUtil.getDefaultPortletDecorator();
+		return themeImpl.getDefaultPortletDecorator();
 	}
 
 	@Override
@@ -284,7 +275,7 @@ public class ThemeLocalServiceImpl extends ThemeLocalServiceBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #getPageThemes}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link #getPageThemes}
 	 */
 	@Deprecated
 	@Override
@@ -369,9 +360,7 @@ public class ThemeLocalServiceImpl extends ThemeLocalServiceBaseImpl {
 
 		List<Element> companyIdsElements = element.elements("company-id");
 
-		for (int i = 0; i < companyIdsElements.size(); i++) {
-			Element companyIdElement = companyIdsElements.get(i);
-
+		for (Element companyIdElement : companyIdsElements) {
 			String name = companyIdElement.attributeValue("name");
 			String pattern = companyIdElement.attributeValue("pattern");
 
@@ -405,9 +394,7 @@ public class ThemeLocalServiceImpl extends ThemeLocalServiceBaseImpl {
 
 		List<Element> groupIdsElements = element.elements("group-id");
 
-		for (int i = 0; i < groupIdsElements.size(); i++) {
-			Element groupIdElement = groupIdsElements.get(i);
-
+		for (Element groupIdElement : groupIdsElements) {
 			String name = groupIdElement.attributeValue("name");
 			String pattern = groupIdElement.attributeValue("pattern");
 
@@ -740,7 +727,8 @@ public class ThemeLocalServiceImpl extends ThemeLocalServiceBaseImpl {
 				theme.getTemplatesPath());
 
 			templatesPath = themeContextReplace.replace(templatesPath);
-			templatesPath = StringUtil.safePath(templatesPath);
+			templatesPath = StringUtil.replace(
+				templatesPath, StringPool.DOUBLE_SLASH, StringPool.SLASH);
 
 			themeContextReplace.addValue("templates-path", templatesPath);
 
@@ -748,7 +736,8 @@ public class ThemeLocalServiceImpl extends ThemeLocalServiceBaseImpl {
 				themeElement.elementText("css-path"), theme.getCssPath());
 
 			cssPath = themeContextReplace.replace(cssPath);
-			cssPath = StringUtil.safePath(cssPath);
+			cssPath = StringUtil.replace(
+				cssPath, StringPool.DOUBLE_SLASH, StringPool.SLASH);
 
 			themeContextReplace.addValue("css-path", cssPath);
 
@@ -756,7 +745,8 @@ public class ThemeLocalServiceImpl extends ThemeLocalServiceBaseImpl {
 				themeElement.elementText("images-path"), theme.getImagesPath());
 
 			imagesPath = themeContextReplace.replace(imagesPath);
-			imagesPath = StringUtil.safePath(imagesPath);
+			imagesPath = StringUtil.replace(
+				imagesPath, StringPool.DOUBLE_SLASH, StringPool.SLASH);
 
 			themeContextReplace.addValue("images-path", imagesPath);
 
@@ -765,7 +755,8 @@ public class ThemeLocalServiceImpl extends ThemeLocalServiceBaseImpl {
 				theme.getJavaScriptPath());
 
 			javaScriptPath = themeContextReplace.replace(javaScriptPath);
-			javaScriptPath = StringUtil.safePath(javaScriptPath);
+			javaScriptPath = StringUtil.replace(
+				javaScriptPath, StringPool.DOUBLE_SLASH, StringPool.SLASH);
 
 			themeContextReplace.addValue("javascript-path", javaScriptPath);
 

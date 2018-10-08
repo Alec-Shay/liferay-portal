@@ -14,6 +14,7 @@
 
 package com.liferay.exportimport.kernel.lar;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Portlet;
@@ -22,7 +23,6 @@ import com.liferay.portal.kernel.service.PortletPreferencesLocalServiceUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Document;
@@ -96,11 +96,9 @@ public abstract class BasePortletDataHandler implements PortletDataHandler {
 			return doDeleteData(
 				portletDataContext, portletId, portletPreferences);
 		}
-		catch (PortletDataException pde) {
-			throw pde;
-		}
 		catch (Exception e) {
-			throw new PortletDataException(e);
+			throw _handleException(
+				e, PortletDataException.DELETE_PORTLET_DATA, portletId);
 		}
 		finally {
 			if (_log.isInfoEnabled()) {
@@ -143,11 +141,9 @@ public abstract class BasePortletDataHandler implements PortletDataHandler {
 			return doExportData(
 				portletDataContext, portletId, portletPreferences);
 		}
-		catch (PortletDataException pde) {
-			throw pde;
-		}
 		catch (Exception e) {
-			throw new PortletDataException(e);
+			throw _handleException(
+				e, PortletDataException.EXPORT_PORTLET_DATA, portletId);
 		}
 		finally {
 			portletDataContext.setExportDataRootElement(rootElement);
@@ -355,6 +351,11 @@ public abstract class BasePortletDataHandler implements PortletDataHandler {
 	}
 
 	@Override
+	public PortletDataHandlerControl[] getStagingControls() {
+		return _stagingControls;
+	}
+
+	@Override
 	public PortletPreferences importData(
 			PortletDataContext portletDataContext, String portletId,
 			PortletPreferences portletPreferences, String data)
@@ -382,11 +383,9 @@ public abstract class BasePortletDataHandler implements PortletDataHandler {
 			return doImportData(
 				portletDataContext, portletId, portletPreferences, data);
 		}
-		catch (PortletDataException pde) {
-			throw pde;
-		}
 		catch (Exception e) {
-			throw new PortletDataException(e);
+			throw _handleException(
+				e, PortletDataException.IMPORT_PORTLET_DATA, portletId);
 		}
 		finally {
 			portletDataContext.setImportDataRootElement(rootElement);
@@ -454,11 +453,6 @@ public abstract class BasePortletDataHandler implements PortletDataHandler {
 	}
 
 	@Override
-	public boolean isSupportsDataStrategyCopyAsNew() {
-		return _supportsDataStrategyCopyAsNew;
-	}
-
-	@Override
 	public void prepareManifestSummary(PortletDataContext portletDataContext)
 		throws PortletDataException {
 
@@ -474,14 +468,17 @@ public abstract class BasePortletDataHandler implements PortletDataHandler {
 		try {
 			doPrepareManifestSummary(portletDataContext, portletPreferences);
 		}
-		catch (PortletDataException pde) {
-			throw pde;
-		}
 		catch (Exception e) {
-			throw new PortletDataException(e);
+			throw _handleException(
+				e, PortletDataException.PREPARE_MANIFEST_SUMMARY,
+				portletDataContext.getPortletId());
 		}
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x)
+	 */
+	@Deprecated
 	@Override
 	public PortletPreferences processExportPortletPreferences(
 			PortletDataContext portletDataContext, String portletId,
@@ -500,6 +497,10 @@ public abstract class BasePortletDataHandler implements PortletDataHandler {
 		}
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x)
+	 */
+	@Deprecated
 	@Override
 	public PortletPreferences processImportPortletPreferences(
 			PortletDataContext portletDataContext, String portletId,
@@ -546,6 +547,10 @@ public abstract class BasePortletDataHandler implements PortletDataHandler {
 		Class<?> clazz = getClass();
 
 		Element rootElement = document.addElement(clazz.getSimpleName());
+
+		rootElement.addAttribute(
+			"self-path",
+			ExportImportPathUtil.getPortletDataPath(portletDataContext));
 
 		portletDataContext.setExportDataRootElement(rootElement);
 
@@ -832,10 +837,41 @@ public abstract class BasePortletDataHandler implements PortletDataHandler {
 		_publishToLiveByDefault = publishToLiveByDefault;
 	}
 
+	protected void setStagingControls(
+		PortletDataHandlerControl... stagingControls) {
+
+		_stagingControls = stagingControls;
+	}
+
+	/**
+	 * @deprecated As of Judson (7.1.x)
+	 */
+	@Deprecated
 	protected void setSupportsDataStrategyCopyAsNew(
 		boolean supportsDataStrategyCopyAsNew) {
+	}
 
-		_supportsDataStrategyCopyAsNew = supportsDataStrategyCopyAsNew;
+	private PortletDataException _handleException(
+		Exception e, int type, String portletId) {
+
+		PortletDataException pde = null;
+
+		if (e instanceof PortletDataException) {
+			pde = (PortletDataException)e;
+		}
+		else {
+			pde = new PortletDataException(e.getMessage(), e);
+		}
+
+		if (Validator.isNull(pde.getPortletId())) {
+			pde.setPortletId(portletId);
+		}
+
+		if (pde.getType() == PortletDataException.DEFAULT) {
+			pde.setType(type);
+		}
+
+		return pde;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -858,6 +894,7 @@ public abstract class BasePortletDataHandler implements PortletDataHandler {
 	private String _portletId;
 	private boolean _publishToLiveByDefault;
 	private int _rank = 100;
-	private boolean _supportsDataStrategyCopyAsNew = true;
+	private PortletDataHandlerControl[] _stagingControls =
+		new PortletDataHandlerControl[0];
 
 }

@@ -15,14 +15,15 @@
 package com.liferay.knowledge.base.web.internal.portlet.configuration.icon;
 
 import com.liferay.knowledge.base.constants.KBActionKeys;
+import com.liferay.knowledge.base.constants.KBConstants;
 import com.liferay.knowledge.base.constants.KBPortletKeys;
 import com.liferay.knowledge.base.model.KBArticle;
-import com.liferay.knowledge.base.service.permission.AdminPermission;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.configuration.icon.PortletConfigurationIcon;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 
@@ -33,6 +34,7 @@ import javax.portlet.PortletResponse;
 import javax.portlet.PortletURL;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Ambrin Chaudhary
@@ -60,14 +62,14 @@ public class AddChildKBArticlePortletConfigurationIcon
 	public String getURL(
 		PortletRequest portletRequest, PortletResponse portletResponse) {
 
-		PortletURL portletURL = PortalUtil.getControlPanelPortletURL(
+		PortletURL portletURL = _portal.getControlPanelPortletURL(
 			portletRequest, KBPortletKeys.KNOWLEDGE_BASE_ADMIN,
 			PortletRequest.RENDER_PHASE);
 
 		portletURL.setParameter("mvcPath", "/admin/edit_article.jsp");
 
 		portletURL.setParameter(
-			"redirect", PortalUtil.getCurrentURL(portletRequest));
+			"redirect", _portal.getCurrentURL(portletRequest));
 
 		KBArticle kbArticle = getKBArticle(portletRequest);
 
@@ -94,15 +96,22 @@ public class AddChildKBArticlePortletConfigurationIcon
 		PermissionChecker permissionChecker =
 			themeDisplay.getPermissionChecker();
 
-		long scopeGroupId = themeDisplay.getScopeGroupId();
-
-		if (AdminPermission.contains(
-				permissionChecker, scopeGroupId, KBActionKeys.ADD_KB_ARTICLE)) {
+		if (_portletResourcePermission.contains(
+				permissionChecker, themeDisplay.getScopeGroup(),
+				KBActionKeys.ADD_KB_ARTICLE)) {
 
 			return true;
 		}
 
 		return false;
 	}
+
+	@Reference
+	private Portal _portal;
+
+	@Reference(
+		target = "(resource.name=" + KBConstants.RESOURCE_NAME_ADMIN + ")"
+	)
+	private PortletResourcePermission _portletResourcePermission;
 
 }

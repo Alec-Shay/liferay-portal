@@ -14,6 +14,9 @@
 
 package com.liferay.portal.model.impl;
 
+import com.liferay.petra.reflect.ReflectionUtil;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.LayoutFriendlyURLException;
 import com.liferay.portal.kernel.exception.NoSuchGroupException;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -34,6 +37,7 @@ import com.liferay.portal.kernel.model.LayoutTypePortlet;
 import com.liferay.portal.kernel.model.LayoutTypePortletConstants;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.PortletPreferences;
+import com.liferay.portal.kernel.model.PortletWrapper;
 import com.liferay.portal.kernel.model.Theme;
 import com.liferay.portal.kernel.portlet.LiferayPortletURL;
 import com.liferay.portal.kernel.portlet.PortalPreferences;
@@ -50,7 +54,6 @@ import com.liferay.portal.kernel.service.ThemeLocalServiceUtil;
 import com.liferay.portal.kernel.service.permission.LayoutPermissionUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.CookieKeys;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Http;
@@ -62,7 +65,6 @@ import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
@@ -272,7 +274,7 @@ public class LayoutImpl extends LayoutBaseImpl {
 	 */
 	@Override
 	public List<Layout> getAncestors() throws PortalException {
-		List<Layout> layouts = new ArrayList<>();
+		List<Layout> layouts = Collections.emptyList();
 
 		Layout layout = this;
 
@@ -280,6 +282,10 @@ public class LayoutImpl extends LayoutBaseImpl {
 			layout = LayoutLocalServiceUtil.getLayout(
 				layout.getGroupId(), layout.isPrivateLayout(),
 				layout.getParentLayoutId());
+
+			if (layouts.isEmpty()) {
+				layouts = new ArrayList<>();
+			}
 
 			layouts.add(layout);
 		}
@@ -372,9 +378,8 @@ public class LayoutImpl extends LayoutBaseImpl {
 
 			return layoutSet.getCss();
 		}
-		else {
-			return getCss();
-		}
+
+		return getCss();
 	}
 
 	@Override
@@ -444,7 +449,26 @@ public class LayoutImpl extends LayoutBaseImpl {
 
 			}
 			else {
-				embeddedPortlet = (Portlet)embeddedPortlet.clone();
+				embeddedPortlet = new PortletWrapper(portlet) {
+
+					@Override
+					public boolean getStatic() {
+						return _staticPortlet;
+					}
+
+					@Override
+					public boolean isStatic() {
+						return _staticPortlet;
+					}
+
+					@Override
+					public void setStatic(boolean staticPortlet) {
+						_staticPortlet = staticPortlet;
+					}
+
+					private boolean _staticPortlet;
+
+				};
 			}
 
 			// We set embedded portlets as static on order to avoid adding the
@@ -466,12 +490,10 @@ public class LayoutImpl extends LayoutBaseImpl {
 	 */
 	@Override
 	public String getFriendlyURL(Locale locale) {
-		Layout layout = this;
-
-		String friendlyURL = layout.getFriendlyURL();
+		String friendlyURL = getFriendlyURL();
 
 		try {
-			Group group = layout.getGroup();
+			Group group = getGroup();
 
 			UnicodeProperties typeSettingsProperties =
 				group.getTypeSettingsProperties();
@@ -493,7 +515,7 @@ public class LayoutImpl extends LayoutBaseImpl {
 
 			LayoutFriendlyURL layoutFriendlyURL =
 				LayoutFriendlyURLLocalServiceUtil.getLayoutFriendlyURL(
-					layout.getPlid(), LocaleUtil.toLanguageId(locale));
+					getPlid(), LocaleUtil.toLanguageId(locale));
 
 			friendlyURL = layoutFriendlyURL.getFriendlyURL();
 		}
@@ -559,7 +581,12 @@ public class LayoutImpl extends LayoutBaseImpl {
 	 */
 	@Override
 	public Group getGroup() {
-		return GroupLocalServiceUtil.fetchGroup(getGroupId());
+		try {
+			return GroupLocalServiceUtil.getGroup(getGroupId());
+		}
+		catch (PortalException pe) {
+			return ReflectionUtil.throwException(pe);
+		}
 	}
 
 	/**
@@ -622,8 +649,13 @@ public class LayoutImpl extends LayoutBaseImpl {
 	@Override
 	public LayoutSet getLayoutSet() {
 		if (_layoutSet == null) {
-			_layoutSet = LayoutSetLocalServiceUtil.fetchLayoutSet(
-				getGroupId(), isPrivateLayout());
+			try {
+				_layoutSet = LayoutSetLocalServiceUtil.getLayoutSet(
+					getGroupId(), isPrivateLayout());
+			}
+			catch (PortalException pe) {
+				ReflectionUtil.throwException(pe);
+			}
 		}
 
 		return _layoutSet;
@@ -746,9 +778,8 @@ public class LayoutImpl extends LayoutBaseImpl {
 
 			return layoutSet.getTheme();
 		}
-		else {
-			return ThemeLocalServiceUtil.getTheme(getCompanyId(), getThemeId());
-		}
+
+		return ThemeLocalServiceUtil.getTheme(getCompanyId(), getThemeId());
 	}
 
 	@Override
@@ -777,9 +808,8 @@ public class LayoutImpl extends LayoutBaseImpl {
 		if (_typeSettingsProperties == null) {
 			return super.getTypeSettings();
 		}
-		else {
-			return _typeSettingsProperties.toString();
-		}
+
+		return _typeSettingsProperties.toString();
 	}
 
 	@Override
@@ -854,9 +884,8 @@ public class LayoutImpl extends LayoutBaseImpl {
 		if (group != null) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	@Override
@@ -1021,31 +1050,52 @@ public class LayoutImpl extends LayoutBaseImpl {
 
 	@Override
 	public boolean isPortletEmbedded(String portletId, long groupId) {
-		List<PortletPreferences> portletPreferences = _getPortletPreferences(
-			groupId);
+		PortletPreferences portletPreferences =
+			PortletPreferencesLocalServiceUtil.fetchPortletPreferences(
+				PortletKeys.PREFS_OWNER_ID_DEFAULT,
+				PortletKeys.PREFS_OWNER_TYPE_LAYOUT, getPlid(), portletId);
 
-		if (portletPreferences.isEmpty()) {
+		if (portletPreferences == null) {
 			return false;
 		}
 
-		for (PortletPreferences portletPreference : portletPreferences) {
-			String currentPortletId = portletPreference.getPortletId();
+		portletPreferences =
+			PortletPreferencesLocalServiceUtil.fetchPortletPreferences(
+				groupId, PortletKeys.PREFS_OWNER_TYPE_LAYOUT,
+				PortletKeys.PREFS_PLID_SHARED, portletId);
 
-			if (!portletId.equals(currentPortletId)) {
-				continue;
-			}
+		if ((portletPreferences == null) && isTypePortlet()) {
+			LayoutTypePortlet layoutTypePortlet =
+				(LayoutTypePortlet)getLayoutType();
 
-			Portlet portlet = PortletLocalServiceUtil.getPortletById(
-				getCompanyId(), currentPortletId);
+			PortalPreferences portalPreferences =
+				layoutTypePortlet.getPortalPreferences();
 
-			if ((portlet != null) && portlet.isReady() &&
-				!portlet.isUndeployedPortlet() && portlet.isActive()) {
+			if ((portalPreferences != null) &&
+				layoutTypePortlet.isCustomizable()) {
 
-				return true;
+				portletPreferences =
+					PortletPreferencesLocalServiceUtil.fetchPortletPreferences(
+						portalPreferences.getUserId(),
+						PortletKeys.PREFS_OWNER_TYPE_USER, getPlid(),
+						portletId);
 			}
 		}
 
-		return false;
+		if (portletPreferences == null) {
+			return false;
+		}
+
+		Portlet portlet = PortletLocalServiceUtil.getPortletById(
+			getCompanyId(), portletId);
+
+		if ((portlet == null) || !portlet.isReady() ||
+			portlet.isUndeployedPortlet() || !portlet.isActive()) {
+
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
@@ -1112,7 +1162,7 @@ public class LayoutImpl extends LayoutBaseImpl {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
 	 */
 	@Deprecated
 	@Override
@@ -1183,6 +1233,10 @@ public class LayoutImpl extends LayoutBaseImpl {
 		return false;
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	@Override
 	public boolean isTypeSharedPortlet() {
 		if (Objects.equals(getType(), LayoutConstants.TYPE_SHARED_PORTLET)) {
@@ -1267,7 +1321,7 @@ public class LayoutImpl extends LayoutBaseImpl {
 			new String[PropsValues.LAYOUT_FRIENDLY_URL_KEYWORDS.length];
 
 		for (int i = 0; i < PropsValues.LAYOUT_FRIENDLY_URL_KEYWORDS.length;
-			i++) {
+			 i++) {
 
 			String keyword = PropsValues.LAYOUT_FRIENDLY_URL_KEYWORDS[i];
 
@@ -1302,10 +1356,8 @@ public class LayoutImpl extends LayoutBaseImpl {
 	}
 
 	private String _getLayoutTypeControllerType() {
-		LayoutType layoutType = getLayoutType();
-
 		LayoutTypeController layoutTypeController =
-			layoutType.getLayoutTypeController();
+			LayoutTypeControllerTracker.getLayoutTypeController(getType());
 
 		return layoutTypeController.getType();
 	}
@@ -1435,16 +1487,16 @@ public class LayoutImpl extends LayoutBaseImpl {
 			}
 		}
 
-		String portalURL = PortalUtil.getPortalURL(request);
-
 		String url = PortalUtil.getLayoutURL(this, themeDisplay);
 
-		if (!CookieKeys.hasSessionId(request) &&
-			(url.startsWith(portalURL) || url.startsWith(StringPool.SLASH))) {
+		if (!CookieKeys.hasSessionId(request)) {
+			String portalURL = PortalUtil.getPortalURL(request);
 
-			HttpSession session = request.getSession();
+			if (url.startsWith(portalURL) || url.startsWith(StringPool.SLASH)) {
+				HttpSession session = request.getSession();
 
-			url = PortalUtil.getURLWithSessionId(url, session.getId());
+				url = PortalUtil.getURLWithSessionId(url, session.getId());
+			}
 		}
 
 		if (!resetMaxState) {

@@ -21,24 +21,18 @@
 <%
 String tilesPortletContent = GetterUtil.getString(request.getAttribute(WebKeys.PORTLET_CONTENT_JSP));
 
-if (Validator.isBlank(tilesPortletContent)) {
-	tilesPortletContent = GetterUtil.getString(TilesAttributeUtil.getTilesAttribute(pageContext, "portlet_content"));
-}
-
-TilesAttributeUtil.removeComponentContext(pageContext);
-
 Portlet portlet = (Portlet)request.getAttribute(WebKeys.RENDER_PORTLET);
 
 PortletPreferences portletSetup = portletDisplay.getPortletSetup();
 
-RenderResponseImpl renderResponseImpl = (RenderResponseImpl)PortletResponseImpl.getPortletResponseImpl(renderResponse);
+LiferayRenderResponse liferayRenderResponse = (LiferayRenderResponse)LiferayPortletUtil.getLiferayPortletResponse(renderResponse);
 
 // Portlet title
 
 String portletTitle = PortletConfigurationUtil.getPortletTitle(portletSetup, themeDisplay.getLanguageId());
 
 if (portletDisplay.isAccess() && portletDisplay.isActive() && Validator.isNull(portletTitle)) {
-	portletTitle = renderResponseImpl.getTitle();
+	portletTitle = liferayRenderResponse.getTitle();
 }
 
 if (Validator.isNull(portletTitle)) {
@@ -56,23 +50,19 @@ if (Validator.isNull(portletDisplay.getDescription())) {
 }
 
 Group group = layout.getGroup();
-
-boolean wsrp = ParamUtil.getBoolean(PortalUtil.getOriginalServletRequest(request), "wsrp");
 %>
 
 <c:choose>
-	<c:when test="<%= wsrp %>">
-		<liferay-wsrp-portlet>
-			<%@ include file="/html/common/themes/portlet_content_wrapper.jspf" %>
-		</liferay-wsrp-portlet>
-	</c:when>
 	<c:when test="<%= themeDisplay.isStateExclusive() %>">
 		<%@ include file="/html/common/themes/portlet_content_wrapper.jspf" %>
 	</c:when>
 	<c:when test="<%= themeDisplay.isStatePopUp() %>">
 		<div class="portlet-body">
 			<c:if test='<%= !tilesPortletContent.endsWith("/error.jsp") %>'>
-				<liferay-theme:portlet-messages group="<%= group %>" portlet="<%= portlet %>" />
+				<liferay-theme:portlet-messages
+					group="<%= group %>"
+					portlet="<%= portlet %>"
+				/>
 			</c:if>
 
 			<c:choose>
@@ -107,7 +97,9 @@ boolean wsrp = ParamUtil.getBoolean(PortalUtil.getOriginalServletRequest(request
 		}
 		%>
 
-		<liferay-theme:wrap-portlet page="portlet.jsp">
+		<liferay-theme:wrap-portlet
+			page="portlet.jsp"
+		>
 			<div class="<%= portletDisplay.isStateMin() ? "hide" : "" %> portlet-content-container" <%= containerStyles %>>
 				<%@ include file="/html/common/themes/portlet_content_wrapper.jspf" %>
 			</div>

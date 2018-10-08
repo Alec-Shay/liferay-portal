@@ -28,9 +28,11 @@ import javax.servlet.http.HttpSession;
  * See https://issues.liferay.com/browse/LEP-1466.
  * </p>
  *
- * @author Rudy Hilado
- * @author Shuyang Zhou
+ * @author     Rudy Hilado
+ * @author     Shuyang Zhou
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public class PortletSessionTracker {
 
 	public static void add(HttpSession session) {

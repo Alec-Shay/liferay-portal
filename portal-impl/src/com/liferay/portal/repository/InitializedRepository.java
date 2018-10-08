@@ -40,7 +40,7 @@ public class InitializedRepository
 	extends InitializedDocumentRepository<Repository> implements Repository {
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	@Override
@@ -58,7 +58,7 @@ public class InitializedRepository
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	@Override
@@ -76,7 +76,7 @@ public class InitializedRepository
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	@Override
@@ -99,7 +99,7 @@ public class InitializedRepository
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	@Override
@@ -115,7 +115,7 @@ public class InitializedRepository
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	@Override
@@ -153,7 +153,7 @@ public class InitializedRepository
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	@Override
@@ -205,6 +205,16 @@ public class InitializedRepository
 
 		return documentRepository.getFileEntries(
 			folderId, fileEntryTypeId, start, end, obc);
+	}
+
+	@Override
+	public List<FileEntry> getFileEntries(
+			long folderId, String[] mimeTypes, int status, int start, int end,
+			OrderByComparator<FileEntry> obc)
+		throws PortalException {
+
+		return documentRepository.getFileEntries(
+			folderId, mimeTypes, status, start, end, obc);
 	}
 
 	@Override
@@ -271,6 +281,15 @@ public class InitializedRepository
 	}
 
 	@Override
+	public int getFileEntriesCount(
+			long folderId, String[] mimeTypes, int status)
+		throws PortalException {
+
+		return documentRepository.getFileEntriesCount(
+			folderId, mimeTypes, status);
+	}
+
+	@Override
 	public List<Folder> getFolders(
 			long parentFolderId, boolean includeMountFolders, int start,
 			int end, OrderByComparator<Folder> obc)
@@ -308,7 +327,19 @@ public class InitializedRepository
 
 	@Override
 	public List<RepositoryEntry> getFoldersAndFileEntriesAndFileShortcuts(
-			long folderId, int status, String[] mimetypes,
+			long folderId, int status, String[] mimeTypes,
+			boolean includeMountFolders, boolean includeOwner, int start,
+			int end, OrderByComparator<?> obc)
+		throws PortalException {
+
+		return documentRepository.getFoldersAndFileEntriesAndFileShortcuts(
+			folderId, status, mimeTypes, includeMountFolders, includeOwner,
+			start, end, obc);
+	}
+
+	@Override
+	public List<RepositoryEntry> getFoldersAndFileEntriesAndFileShortcuts(
+			long folderId, int status, String[] mimeTypes,
 			boolean includeMountFolders, int start, int end,
 			OrderByComparator<?> obc)
 		throws PortalException {
@@ -316,7 +347,7 @@ public class InitializedRepository
 		checkDocumentRepository();
 
 		return documentRepository.getFoldersAndFileEntriesAndFileShortcuts(
-			folderId, status, mimetypes, includeMountFolders, start, end, obc);
+			folderId, status, mimeTypes, includeMountFolders, start, end, obc);
 	}
 
 	@Override
@@ -332,14 +363,24 @@ public class InitializedRepository
 
 	@Override
 	public int getFoldersAndFileEntriesAndFileShortcutsCount(
-			long folderId, int status, String[] mimetypes,
+			long folderId, int status, String[] mimeTypes,
 			boolean includeMountFolders)
 		throws PortalException {
 
 		checkDocumentRepository();
 
 		return documentRepository.getFoldersAndFileEntriesAndFileShortcutsCount(
-			folderId, status, mimetypes, includeMountFolders);
+			folderId, status, mimeTypes, includeMountFolders);
+	}
+
+	@Override
+	public int getFoldersAndFileEntriesAndFileShortcutsCount(
+			long folderId, int status, String[] mimeTypes,
+			boolean includeMountFolders, boolean includeOwner)
+		throws PortalException {
+
+		return documentRepository.getFoldersAndFileEntriesAndFileShortcutsCount(
+			folderId, status, mimeTypes, includeMountFolders, includeOwner);
 	}
 
 	@Override
@@ -464,7 +505,7 @@ public class InitializedRepository
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	@Override
@@ -479,7 +520,7 @@ public class InitializedRepository
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	@Override
@@ -517,7 +558,7 @@ public class InitializedRepository
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	@Override
@@ -587,7 +628,7 @@ public class InitializedRepository
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	@Override
@@ -605,7 +646,7 @@ public class InitializedRepository
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	@Override

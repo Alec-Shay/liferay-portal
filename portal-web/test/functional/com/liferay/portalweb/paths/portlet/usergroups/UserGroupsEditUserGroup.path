@@ -14,11 +14,6 @@
 	<td></td>
 </tr>
 <tr>
-	<td>NAME_FIELD_ALERT</td>
-	<td>//div[@class='required']</td>
-	<td></td>
-</tr>
-<tr>
 	<td>DESCRIPTION_FIELD</td>
 	<td>//textarea[contains(@id,'description')]</td>
 	<td></td>
@@ -45,7 +40,7 @@
 </tr>
 <tr>
 	<td>PUBLIC_PAGES_OPEN_PAGES</td>
-	<td>//a[contains(@title,'Opens New Window')]/span[contains(.,'Open Pages')]</td>
+	<td>//span[contains(@class,'taglib-text') and contains(.,'Open Pages')]</td>
 	<td></td>
 </tr>
 </tbody>

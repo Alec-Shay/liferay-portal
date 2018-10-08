@@ -112,7 +112,7 @@ public class RubySassCompiler implements AutoCloseable, SassCompiler {
 	}
 
 	@Override
-	public void close() throws Exception {
+	public void close() {
 		_scriptingContainer.terminate();
 	}
 
@@ -173,7 +173,7 @@ public class RubySassCompiler implements AutoCloseable, SassCompiler {
 		}
 		catch (Exception e) {
 			throw new RubySassCompilerException(
-				"Unable to parse " + inputFileName);
+				"Unable to parse " + inputFileName, e);
 		}
 	}
 
@@ -220,6 +220,7 @@ public class RubySassCompiler implements AutoCloseable, SassCompiler {
 			index += 1;
 
 			String path = inputFileName.substring(0, index);
+
 			String fileName = inputFileName.substring(index);
 
 			String outputFileName = _getOutputFileName(fileName);

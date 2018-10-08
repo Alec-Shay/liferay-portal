@@ -14,13 +14,14 @@
 
 package com.liferay.portal.spring.transaction;
 
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
 import com.liferay.portal.kernel.util.ProxyUtil;
-import com.liferay.portal.kernel.util.ReflectionUtil;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
+import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.function.Predicate;
 
@@ -49,12 +50,14 @@ public class CounterTransactionExecutorTest {
 		RecordPlatformTransactionManager recordPlatformTransactionManager =
 			new RecordPlatformTransactionManager(_transactionStatus);
 
-		TransactionAttributeAdapter transactionAttributeAdapter =
-			_newTransactionAttributeAdapter((t) -> false);
+		TransactionExecutor transactionExecutor = createTransactionExecutor(
+			recordPlatformTransactionManager);
 
-		_transactionExecutor.execute(
-			recordPlatformTransactionManager, transactionAttributeAdapter,
-			_newMethodInvocation(() -> null));
+		TransactionAttributeAdapter transactionAttributeAdapter =
+			_newTransactionAttributeAdapter(t -> false);
+
+		transactionExecutor.execute(
+			transactionAttributeAdapter, _newMethodInvocation(() -> null));
 
 		recordPlatformTransactionManager.verify(
 			transactionAttributeAdapter, _transactionStatus, null);
@@ -65,15 +68,19 @@ public class CounterTransactionExecutorTest {
 		RecordPlatformTransactionManager recordPlatformTransactionManager =
 			new RecordPlatformTransactionManager(_transactionStatus);
 
+		TransactionExecutor transactionExecutor = createTransactionExecutor(
+			recordPlatformTransactionManager);
+
 		TransactionAttributeAdapter transactionAttributeAdapter =
-			_newTransactionAttributeAdapter((t) -> false);
+			_newTransactionAttributeAdapter(t -> false);
 
 		try {
-			_transactionExecutor.execute(
-				recordPlatformTransactionManager, transactionAttributeAdapter,
-				_newMethodInvocation(() -> {
-					throw appException;
-				}));
+			transactionExecutor.execute(
+				transactionAttributeAdapter,
+				_newMethodInvocation(
+					() -> {
+						throw appException;
+					}));
 
 			Assert.fail();
 		}
@@ -99,15 +106,19 @@ public class CounterTransactionExecutorTest {
 
 			};
 
+		TransactionExecutor transactionExecutor = createTransactionExecutor(
+			recordPlatformTransactionManager);
+
 		TransactionAttributeAdapter transactionAttributeAdapter =
-			_newTransactionAttributeAdapter((t) -> false);
+			_newTransactionAttributeAdapter(t -> false);
 
 		try {
-			_transactionExecutor.execute(
-				recordPlatformTransactionManager, transactionAttributeAdapter,
-				_newMethodInvocation(() -> {
-					throw appException;
-				}));
+			transactionExecutor.execute(
+				transactionAttributeAdapter,
+				_newMethodInvocation(
+					() -> {
+						throw appException;
+					}));
 
 			Assert.fail();
 		}
@@ -116,7 +127,8 @@ public class CounterTransactionExecutorTest {
 
 			Throwable[] throwables = commitException.getSuppressed();
 
-			Assert.assertEquals(1, throwables.length);
+			Assert.assertEquals(
+				Arrays.toString(throwables), 1, throwables.length);
 			Assert.assertEquals(appException, throwables[0]);
 		}
 
@@ -136,13 +148,15 @@ public class CounterTransactionExecutorTest {
 
 			};
 
+		TransactionExecutor transactionExecutor = createTransactionExecutor(
+			recordPlatformTransactionManager);
+
 		TransactionAttributeAdapter transactionAttributeAdapter =
-			_newTransactionAttributeAdapter((t) -> false);
+			_newTransactionAttributeAdapter(t -> false);
 
 		try {
-			_transactionExecutor.execute(
-				recordPlatformTransactionManager, transactionAttributeAdapter,
-				_newMethodInvocation(() -> null));
+			transactionExecutor.execute(
+				transactionAttributeAdapter, _newMethodInvocation(() -> null));
 
 			Assert.fail();
 		}
@@ -154,20 +168,95 @@ public class CounterTransactionExecutorTest {
 			transactionAttributeAdapter, null, null);
 	}
 
+	@SuppressWarnings("deprecation")
+	@Test
+	public void testDeprecatedMethods() throws Throwable {
+		TransactionExecutor transactionExecutor = createTransactionExecutor(
+			null);
+
+		RecordPlatformTransactionManager recordPlatformTransactionManager =
+			new RecordPlatformTransactionManager(_transactionStatus);
+
+		TransactionAttributeAdapter transactionAttributeAdapter =
+			_newTransactionAttributeAdapter(t -> t == appException);
+
+		transactionExecutor.execute(
+			recordPlatformTransactionManager, transactionAttributeAdapter,
+			_newMethodInvocation(() -> null));
+
+		recordPlatformTransactionManager.verify(
+			transactionAttributeAdapter, _transactionStatus, null);
+
+		recordPlatformTransactionManager._commitTransactionStatus = null;
+
+		TransactionHandler transactionHandler =
+			(TransactionHandler)transactionExecutor;
+
+		TransactionStatusAdapter transactionStatusAdapter =
+			transactionHandler.start(
+				recordPlatformTransactionManager, transactionAttributeAdapter);
+
+		recordPlatformTransactionManager.verify(
+			transactionAttributeAdapter, null, null);
+
+		try {
+			transactionHandler.rollback(
+				recordPlatformTransactionManager, appException,
+				transactionAttributeAdapter, transactionStatusAdapter);
+
+			Assert.fail();
+		}
+		catch (Exception e) {
+			Assert.assertSame(appException, e);
+		}
+
+		recordPlatformTransactionManager.verify(
+			transactionAttributeAdapter, null, _transactionStatus);
+
+		recordPlatformTransactionManager._rollbackTransactionStatus = null;
+
+		transactionStatusAdapter = transactionHandler.start(
+			recordPlatformTransactionManager, transactionAttributeAdapter);
+
+		transactionHandler.commit(
+			recordPlatformTransactionManager, transactionAttributeAdapter,
+			transactionStatusAdapter);
+
+		recordPlatformTransactionManager.verify(
+			transactionAttributeAdapter, _transactionStatus, null);
+	}
+
+	@Test
+	public void testGetPlatformTransactionManager() {
+		RecordPlatformTransactionManager recordPlatformTransactionManager =
+			new RecordPlatformTransactionManager(_transactionStatus);
+
+		TransactionExecutor transactionExecutor = createTransactionExecutor(
+			recordPlatformTransactionManager);
+
+		Assert.assertSame(
+			recordPlatformTransactionManager,
+			transactionExecutor.getPlatformTransactionManager());
+	}
+
 	@Test
 	public void testRollbackOnAppException() throws Throwable {
 		RecordPlatformTransactionManager recordPlatformTransactionManager =
 			new RecordPlatformTransactionManager(_transactionStatus);
 
+		TransactionExecutor transactionExecutor = createTransactionExecutor(
+			recordPlatformTransactionManager);
+
 		TransactionAttributeAdapter transactionAttributeAdapter =
-			_newTransactionAttributeAdapter((t) -> t == appException);
+			_newTransactionAttributeAdapter(t -> t == appException);
 
 		try {
-			_transactionExecutor.execute(
-				recordPlatformTransactionManager, transactionAttributeAdapter,
-				_newMethodInvocation(() -> {
-					throw appException;
-				}));
+			transactionExecutor.execute(
+				transactionAttributeAdapter,
+				_newMethodInvocation(
+					() -> {
+						throw appException;
+					}));
 
 			Assert.fail();
 		}
@@ -193,15 +282,19 @@ public class CounterTransactionExecutorTest {
 
 			};
 
+		TransactionExecutor transactionExecutor = createTransactionExecutor(
+			recordPlatformTransactionManager);
+
 		TransactionAttributeAdapter transactionAttributeAdapter =
-			_newTransactionAttributeAdapter((t) -> t == appException);
+			_newTransactionAttributeAdapter(t -> t == appException);
 
 		try {
-			_transactionExecutor.execute(
-				recordPlatformTransactionManager, transactionAttributeAdapter,
-				_newMethodInvocation(() -> {
-					throw appException;
-				}));
+			transactionExecutor.execute(
+				transactionAttributeAdapter,
+				_newMethodInvocation(
+					() -> {
+						throw appException;
+					}));
 
 			Assert.fail();
 		}
@@ -210,7 +303,8 @@ public class CounterTransactionExecutorTest {
 
 			Throwable[] throwables = rollbackException.getSuppressed();
 
-			Assert.assertEquals(1, throwables.length);
+			Assert.assertEquals(
+				Arrays.toString(throwables), 1, throwables.length);
 			Assert.assertEquals(appException, throwables[0]);
 		}
 
@@ -218,8 +312,81 @@ public class CounterTransactionExecutorTest {
 			transactionAttributeAdapter, null, null);
 	}
 
-	protected TransactionExecutor createTransactionExecutor() {
-		return new CounterTransactionExecutor();
+	@Test
+	public void testTransactionHandlerMethods() throws Throwable {
+		RecordPlatformTransactionManager recordPlatformTransactionManager =
+			new RecordPlatformTransactionManager(_transactionStatus);
+
+		TransactionExecutor transactionExecutor = createTransactionExecutor(
+			recordPlatformTransactionManager);
+
+		TransactionAttributeAdapter transactionAttributeAdapter =
+			_newTransactionAttributeAdapter(t -> t == appException);
+
+		TransactionHandler transactionHandler =
+			(TransactionHandler)transactionExecutor;
+
+		assertTransactionExecutorThreadLocal(transactionHandler, false);
+
+		TransactionStatusAdapter transactionStatusAdapter =
+			transactionHandler.start(transactionAttributeAdapter);
+
+		assertTransactionExecutorThreadLocal(transactionHandler, true);
+
+		recordPlatformTransactionManager.verify(
+			transactionAttributeAdapter, null, null);
+
+		try {
+			transactionHandler.rollback(
+				appException, transactionAttributeAdapter,
+				transactionStatusAdapter);
+
+			Assert.fail();
+		}
+		catch (Exception e) {
+			Assert.assertSame(appException, e);
+		}
+
+		assertTransactionExecutorThreadLocal(transactionHandler, false);
+
+		recordPlatformTransactionManager.verify(
+			transactionAttributeAdapter, null, _transactionStatus);
+
+		recordPlatformTransactionManager._rollbackTransactionStatus = null;
+
+		transactionStatusAdapter = transactionHandler.start(
+			transactionAttributeAdapter);
+
+		assertTransactionExecutorThreadLocal(transactionHandler, true);
+
+		transactionHandler.commit(
+			transactionAttributeAdapter, transactionStatusAdapter);
+
+		assertTransactionExecutorThreadLocal(transactionHandler, false);
+
+		recordPlatformTransactionManager.verify(
+			transactionAttributeAdapter, _transactionStatus, null);
+	}
+
+	protected void assertTransactionExecutorThreadLocal(
+		TransactionHandler transactionHandler, boolean inTransaction) {
+
+		Assert.assertNull(
+			TransactionExecutorThreadLocal.getCurrentTransactionExecutor());
+	}
+
+	protected TransactionExecutor createTransactionExecutor(
+		PlatformTransactionManager platformTransactionManager) {
+
+		if (platformTransactionManager == null) {
+			@SuppressWarnings("deprecation")
+			TransactionExecutor transactionExecutor =
+				new CounterTransactionExecutor();
+
+			return transactionExecutor;
+		}
+
+		return new CounterTransactionExecutor(platformTransactionManager);
 	}
 
 	protected final Exception appException = new Exception();
@@ -269,9 +436,6 @@ public class CounterTransactionExecutorTest {
 
 				}));
 	}
-
-	private final TransactionExecutor _transactionExecutor =
-		createTransactionExecutor();
 
 	private final TransactionStatus _transactionStatus =
 		(TransactionStatus)ProxyUtil.newProxyInstance(

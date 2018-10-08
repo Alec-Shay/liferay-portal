@@ -22,6 +22,8 @@ import com.liferay.mail.reader.model.impl.MessageImpl;
 import com.liferay.mail.reader.model.impl.MessageModelImpl;
 import com.liferay.mail.reader.service.persistence.MessagePersistence;
 
+import com.liferay.petra.string.StringBundler;
+
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
@@ -37,13 +39,15 @@ import com.liferay.portal.kernel.service.persistence.CompanyProvider;
 import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.spring.extender.service.ServiceReference;
 
 import java.io.Serializable;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
 import java.util.Date;
@@ -299,7 +303,7 @@ public class MessagePersistenceImpl extends BasePersistenceImpl<Message>
 		msg.append("companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchMessageException(msg.toString());
 	}
@@ -348,7 +352,7 @@ public class MessagePersistenceImpl extends BasePersistenceImpl<Message>
 		msg.append("companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchMessageException(msg.toString());
 	}
@@ -800,7 +804,7 @@ public class MessagePersistenceImpl extends BasePersistenceImpl<Message>
 		msg.append("folderId=");
 		msg.append(folderId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchMessageException(msg.toString());
 	}
@@ -849,7 +853,7 @@ public class MessagePersistenceImpl extends BasePersistenceImpl<Message>
 		msg.append("folderId=");
 		msg.append(folderId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchMessageException(msg.toString());
 	}
@@ -1126,7 +1130,7 @@ public class MessagePersistenceImpl extends BasePersistenceImpl<Message>
 			msg.append(", remoteMessageId=");
 			msg.append(remoteMessageId);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -1226,12 +1230,6 @@ public class MessagePersistenceImpl extends BasePersistenceImpl<Message>
 					result = message;
 
 					cacheResult(message);
-
-					if ((message.getFolderId() != folderId) ||
-							(message.getRemoteMessageId() != remoteMessageId)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_F_R,
-							finderArgs, message);
-					}
 				}
 			}
 			catch (Exception e) {
@@ -1328,6 +1326,25 @@ public class MessagePersistenceImpl extends BasePersistenceImpl<Message>
 
 	public MessagePersistenceImpl() {
 		setModelClass(Message.class);
+
+		try {
+			Field field = BasePersistenceImpl.class.getDeclaredField(
+					"_dbColumnNames");
+
+			field.setAccessible(true);
+
+			Map<String, String> dbColumnNames = new HashMap<String, String>();
+
+			dbColumnNames.put("to", "to_");
+			dbColumnNames.put("size", "size_");
+
+			field.set(this, dbColumnNames);
+		}
+		catch (Exception e) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(e, e);
+			}
+		}
 	}
 
 	/**
@@ -1519,8 +1536,6 @@ public class MessagePersistenceImpl extends BasePersistenceImpl<Message>
 
 	@Override
 	protected Message removeImpl(Message message) {
-		message = toUnwrappedModel(message);
-
 		Session session = null;
 
 		try {
@@ -1551,9 +1566,23 @@ public class MessagePersistenceImpl extends BasePersistenceImpl<Message>
 
 	@Override
 	public Message updateImpl(Message message) {
-		message = toUnwrappedModel(message);
-
 		boolean isNew = message.isNew();
+
+		if (!(message instanceof MessageModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(message.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(message);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in message proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom Message implementation " +
+				message.getClass());
+		}
 
 		MessageModelImpl messageModelImpl = (MessageModelImpl)message;
 
@@ -1602,8 +1631,26 @@ public class MessagePersistenceImpl extends BasePersistenceImpl<Message>
 
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 
-		if (isNew || !MessageModelImpl.COLUMN_BITMASK_ENABLED) {
+		if (!MessageModelImpl.COLUMN_BITMASK_ENABLED) {
 			finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		}
+		else
+		 if (isNew) {
+			Object[] args = new Object[] { messageModelImpl.getCompanyId() };
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_COMPANYID, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_COMPANYID,
+				args);
+
+			args = new Object[] { messageModelImpl.getFolderId() };
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_FOLDERID, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_FOLDERID,
+				args);
+
+			finderCache.removeResult(FINDER_PATH_COUNT_ALL, FINDER_ARGS_EMPTY);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_ALL,
+				FINDER_ARGS_EMPTY);
 		}
 
 		else {
@@ -1651,40 +1698,6 @@ public class MessagePersistenceImpl extends BasePersistenceImpl<Message>
 		message.resetOriginalValues();
 
 		return message;
-	}
-
-	protected Message toUnwrappedModel(Message message) {
-		if (message instanceof MessageImpl) {
-			return message;
-		}
-
-		MessageImpl messageImpl = new MessageImpl();
-
-		messageImpl.setNew(message.isNew());
-		messageImpl.setPrimaryKey(message.getPrimaryKey());
-
-		messageImpl.setMessageId(message.getMessageId());
-		messageImpl.setCompanyId(message.getCompanyId());
-		messageImpl.setUserId(message.getUserId());
-		messageImpl.setUserName(message.getUserName());
-		messageImpl.setCreateDate(message.getCreateDate());
-		messageImpl.setModifiedDate(message.getModifiedDate());
-		messageImpl.setAccountId(message.getAccountId());
-		messageImpl.setFolderId(message.getFolderId());
-		messageImpl.setSender(message.getSender());
-		messageImpl.setTo(message.getTo());
-		messageImpl.setCc(message.getCc());
-		messageImpl.setBcc(message.getBcc());
-		messageImpl.setSentDate(message.getSentDate());
-		messageImpl.setSubject(message.getSubject());
-		messageImpl.setPreview(message.getPreview());
-		messageImpl.setBody(message.getBody());
-		messageImpl.setFlags(message.getFlags());
-		messageImpl.setSize(message.getSize());
-		messageImpl.setRemoteMessageId(message.getRemoteMessageId());
-		messageImpl.setContentType(message.getContentType());
-
-		return messageImpl;
 	}
 
 	/**
@@ -1835,14 +1848,14 @@ public class MessagePersistenceImpl extends BasePersistenceImpl<Message>
 		query.append(_SQL_SELECT_MESSAGE_WHERE_PKS_IN);
 
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
-			query.append(String.valueOf(primaryKey));
+			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 

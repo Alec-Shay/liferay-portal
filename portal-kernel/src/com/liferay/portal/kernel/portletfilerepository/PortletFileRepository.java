@@ -78,7 +78,8 @@ public interface PortletFileRepository {
 		throws PortalException;
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #deletePortletFolder}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #deletePortletFolder}
 	 */
 	@Deprecated
 	public void deleteFolder(long folderId) throws PortalException;
@@ -100,6 +101,9 @@ public interface PortletFileRepository {
 
 	public void deletePortletRepository(long groupId, String portletId)
 		throws PortalException;
+
+	public FileEntry fetchPortletFileEntry(
+		long groupId, long folderId, String fileName);
 
 	public Repository fetchPortletRepository(long groupId, String portletId);
 
@@ -126,11 +130,20 @@ public interface PortletFileRepository {
 			long groupId, long folderId, OrderByComparator<FileEntry> obc)
 		throws PortalException;
 
+	public List<FileEntry> getPortletFileEntries(
+			long groupId, long folderId, String[] mimeTypes, int status,
+			int start, int end, OrderByComparator<FileEntry> obc)
+		throws PortalException;
+
 	public int getPortletFileEntriesCount(long groupId, long folderId)
 		throws PortalException;
 
 	public int getPortletFileEntriesCount(
 			long groupId, long folderId, int status)
+		throws PortalException;
+
+	public int getPortletFileEntriesCount(
+			long groupId, long folderId, String[] mimeTypes, int status)
 		throws PortalException;
 
 	public FileEntry getPortletFileEntry(long fileEntryId)

@@ -14,6 +14,7 @@
 
 package com.liferay.portal.repository.capabilities;
 
+import com.liferay.document.library.kernel.model.DLVersionNumberIncrease;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.repository.LocalRepository;
 import com.liferay.portal.kernel.repository.capabilities.CapabilityProvider;
@@ -122,14 +123,16 @@ public class CapabilityLocalRepository
 
 	@Override
 	public void checkInFileEntry(
-			long userId, long fileEntryId, boolean majorVersion,
-			String changeLog, ServiceContext serviceContext)
+			long userId, long fileEntryId,
+			DLVersionNumberIncrease dlVersionNumberIncrease, String changeLog,
+			ServiceContext serviceContext)
 		throws PortalException {
 
 		LocalRepository localRepository = getRepository();
 
 		localRepository.checkInFileEntry(
-			userId, fileEntryId, majorVersion, changeLog, serviceContext);
+			userId, fileEntryId, dlVersionNumberIncrease, changeLog,
+			serviceContext);
 
 		FileEntry fileEntry = localRepository.getFileEntry(fileEntryId);
 
@@ -255,6 +258,16 @@ public class CapabilityLocalRepository
 	}
 
 	@Override
+	public List<FileEntry> getFileEntries(
+			long folderId, String[] mimeTypes, int status, int start, int end,
+			OrderByComparator<FileEntry> obc)
+		throws PortalException {
+
+		return getRepository().getFileEntries(
+			folderId, mimeTypes, status, start, end, obc);
+	}
+
+	@Override
 	public List<RepositoryEntry> getFileEntriesAndFileShortcuts(
 			long folderId, int status, int start, int end)
 		throws PortalException {
@@ -281,6 +294,14 @@ public class CapabilityLocalRepository
 		throws PortalException {
 
 		return getRepository().getFileEntriesCount(folderId, status);
+	}
+
+	@Override
+	public int getFileEntriesCount(
+			long folderId, String[] mimeTypes, int status)
+		throws PortalException {
+
+		return getRepository().getFileEntriesCount(folderId, mimeTypes, status);
 	}
 
 	@Override
@@ -449,7 +470,7 @@ public class CapabilityLocalRepository
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
 	 */
 	@Deprecated
 	@Override
@@ -468,14 +489,15 @@ public class CapabilityLocalRepository
 	public FileEntry updateFileEntry(
 			long userId, long fileEntryId, String sourceFileName,
 			String mimeType, String title, String description, String changeLog,
-			boolean majorVersion, File file, ServiceContext serviceContext)
+			DLVersionNumberIncrease dlVersionNumberIncrease, File file,
+			ServiceContext serviceContext)
 		throws PortalException {
 
 		LocalRepository localRepository = getRepository();
 
 		FileEntry fileEntry = localRepository.updateFileEntry(
 			userId, fileEntryId, sourceFileName, mimeType, title, description,
-			changeLog, majorVersion, file, serviceContext);
+			changeLog, dlVersionNumberIncrease, file, serviceContext);
 
 		_repositoryEventTrigger.trigger(
 			RepositoryEventType.Update.class, FileEntry.class, fileEntry);
@@ -487,15 +509,15 @@ public class CapabilityLocalRepository
 	public FileEntry updateFileEntry(
 			long userId, long fileEntryId, String sourceFileName,
 			String mimeType, String title, String description, String changeLog,
-			boolean majorVersion, InputStream is, long size,
-			ServiceContext serviceContext)
+			DLVersionNumberIncrease dlVersionNumberIncrease, InputStream is,
+			long size, ServiceContext serviceContext)
 		throws PortalException {
 
 		LocalRepository localRepository = getRepository();
 
 		FileEntry fileEntry = localRepository.updateFileEntry(
 			userId, fileEntryId, sourceFileName, mimeType, title, description,
-			changeLog, majorVersion, is, size, serviceContext);
+			changeLog, dlVersionNumberIncrease, is, size, serviceContext);
 
 		_repositoryEventTrigger.trigger(
 			RepositoryEventType.Update.class, FileEntry.class, fileEntry);

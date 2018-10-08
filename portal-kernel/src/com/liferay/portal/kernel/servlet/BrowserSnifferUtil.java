@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.servlet;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -34,9 +32,13 @@ public class BrowserSnifferUtil {
 		return getBrowserSniffer().getBrowserId(request);
 	}
 
-	public static BrowserSniffer getBrowserSniffer() {
-		PortalRuntimePermission.checkGetBeanProperty(BrowserSnifferUtil.class);
+	public static BrowserMetadata getBrowserMetadata(
+		HttpServletRequest request) {
 
+		return getBrowserSniffer().getBrowserMetadata(request);
+	}
+
+	public static BrowserSniffer getBrowserSniffer() {
 		return _browserSniffer;
 	}
 
@@ -62,6 +64,10 @@ public class BrowserSnifferUtil {
 
 	public static boolean isChrome(HttpServletRequest request) {
 		return getBrowserSniffer().isChrome(request);
+	}
+
+	public static boolean isEdge(HttpServletRequest request) {
+		return getBrowserSniffer().isEdge(request);
 	}
 
 	public static boolean isFirefox(HttpServletRequest request) {
@@ -129,8 +135,6 @@ public class BrowserSnifferUtil {
 	}
 
 	public void setBrowserSniffer(BrowserSniffer browserSniffer) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_browserSniffer = browserSniffer;
 	}
 

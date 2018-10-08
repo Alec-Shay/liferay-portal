@@ -28,13 +28,12 @@ import com.liferay.knowledge.base.util.comparator.KBObjectsPriorityComparator;
 import com.liferay.knowledge.base.util.comparator.KBObjectsTitleComparator;
 import com.liferay.knowledge.base.util.comparator.KBObjectsViewCountComparator;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
-import com.liferay.portal.kernel.test.rule.Sync;
-import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
@@ -58,15 +57,12 @@ import org.junit.runner.RunWith;
  * @author Roberto Díaz
  */
 @RunWith(Arquillian.class)
-@Sync
 public class KBFolderLocalServiceTest {
 
 	@ClassRule
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
-		new AggregateTestRule(
-			new LiferayIntegrationTestRule(),
-			SynchronousDestinationTestRule.INSTANCE);
+		new LiferayIntegrationTestRule();
 
 	@Before
 	public void setUp() throws Exception {
@@ -160,8 +156,7 @@ public class KBFolderLocalServiceTest {
 	}
 
 	@Test
-	public void
-			testGetKBFoldersAndKBArticlesCountWithMultipleKBArticleVersions()
+	public void testGetKBFoldersAndKBArticlesCountWithMultipleKBArticleVersions()
 		throws Exception {
 
 		KBArticle kbArticle = addKBArticle(
@@ -240,7 +235,8 @@ public class KBFolderLocalServiceTest {
 
 		KBFolder currentKBFolder = (KBFolder)kbFolderAndKBArticles.get(0);
 
-		Assert.assertEquals(1, kbFolderAndKBArticles.size());
+		Assert.assertEquals(
+			kbFolderAndKBArticles.toString(), 1, kbFolderAndKBArticles.size());
 
 		Assert.assertEquals(
 			_kbFolder.getKbFolderId(), currentKBFolder.getKbFolderId());
@@ -612,7 +608,8 @@ public class KBFolderLocalServiceTest {
 		Assert.assertEquals(
 			parentKBArticle.getKbArticleId(),
 			currentKBArticle1.getKbArticleId());
-		Assert.assertEquals(2, kbFolderAndKBArticles.size());
+		Assert.assertEquals(
+			kbFolderAndKBArticles.toString(), 2, kbFolderAndKBArticles.size());
 	}
 
 	@Test
@@ -635,7 +632,8 @@ public class KBFolderLocalServiceTest {
 		KBFolder currentKBFolder = (KBFolder)kbFolderAndKBArticles.get(0);
 		KBArticle currentKBArticle1 = (KBArticle)kbFolderAndKBArticles.get(1);
 
-		Assert.assertEquals(2, kbFolderAndKBArticles.size());
+		Assert.assertEquals(
+			kbFolderAndKBArticles.toString(), 2, kbFolderAndKBArticles.size());
 
 		Assert.assertEquals(
 			_kbFolder.getKbFolderId(), currentKBFolder.getKbFolderId());
@@ -745,7 +743,7 @@ public class KBFolderLocalServiceTest {
 	}
 
 	protected KBFolder addKBFolder(long parentResourcePrimKey)
-		throws com.liferay.portal.kernel.exception.PortalException {
+		throws PortalException {
 
 		ServiceContext serviceContext =
 			ServiceContextTestUtil.getServiceContext(_group, _user.getUserId());

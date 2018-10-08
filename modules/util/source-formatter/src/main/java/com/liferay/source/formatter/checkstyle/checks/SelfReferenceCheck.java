@@ -14,10 +14,9 @@
 
 package com.liferay.source.formatter.checkstyle.checks;
 
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.source.formatter.checkstyle.util.DetailASTUtil;
 
-import com.puppycrawl.tools.checkstyle.api.AbstractCheck;
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 
@@ -26,18 +25,17 @@ import java.util.List;
 /**
  * @author Hugo Huijser
  */
-public class SelfReferenceCheck extends AbstractCheck {
-
-	public static final String MSG_UNNEEDED_SELF_REFERENCE =
-		"self.reference.unneeded";
+public class SelfReferenceCheck extends BaseCheck {
 
 	@Override
 	public int[] getDefaultTokens() {
-		return new int[] {TokenTypes.CLASS_DEF};
+		return new int[] {
+			TokenTypes.CLASS_DEF, TokenTypes.ENUM_DEF, TokenTypes.INTERFACE_DEF
+		};
 	}
 
 	@Override
-	public void visitToken(DetailAST detailAST) {
+	protected void doVisitToken(DetailAST detailAST) {
 		DetailAST nameAST = detailAST.findFirstToken(TokenTypes.IDENT);
 
 		String className = nameAST.getText();
@@ -52,28 +50,30 @@ public class SelfReferenceCheck extends AbstractCheck {
 				continue;
 			}
 
-			DetailAST firstChild = dotAST.getFirstChild();
+			DetailAST firstChildAST = dotAST.getFirstChild();
 
-			if ((firstChild.getType() != TokenTypes.IDENT) &&
-				(firstChild.getType() != TokenTypes.LITERAL_THIS)) {
+			if ((firstChildAST.getType() != TokenTypes.IDENT) &&
+				(firstChildAST.getType() != TokenTypes.LITERAL_THIS)) {
 
 				continue;
 			}
 
-			String methodClassName = firstChild.getText();
+			String methodClassName = firstChildAST.getText();
 
-			if ((firstChild.getType() == TokenTypes.LITERAL_THIS) ||
+			if ((firstChildAST.getType() == TokenTypes.LITERAL_THIS) ||
 				(methodClassName.equals(className) &&
 				 !_isInsideAnonymousClass(methodCallAST) &&
-				 !_isInsideInnerClass(methodCallAST, className))) {
+				 !_isInsideInnerClass(methodCallAST, className) &&
+				 !DetailASTUtil.hasParentWithTokenType(
+					 methodCallAST, TokenTypes.INSTANCE_INIT))) {
 
-				DetailAST secondChild = firstChild.getNextSibling();
+				DetailAST secondChildAST = firstChildAST.getNextSibling();
 
-				if (secondChild.getType() == TokenTypes.IDENT) {
+				if (secondChildAST.getType() == TokenTypes.IDENT) {
 					log(
-						methodCallAST.getLineNo(), MSG_UNNEEDED_SELF_REFERENCE,
-						secondChild.getText(),
-						firstChild.getText() + StringPool.PERIOD);
+						methodCallAST, _MSG_UNNEEDED_SELF_REFERENCE,
+						secondChildAST.getText(),
+						firstChildAST.getText() + StringPool.PERIOD);
 				}
 			}
 		}
@@ -115,7 +115,10 @@ public class SelfReferenceCheck extends AbstractCheck {
 		DetailAST parentAST = methodCallAST.getParent();
 
 		while (true) {
-			if (parentAST.getType() == TokenTypes.CLASS_DEF) {
+			if ((parentAST.getType() == TokenTypes.CLASS_DEF) ||
+				(parentAST.getType() == TokenTypes.ENUM_DEF) ||
+				(parentAST.getType() == TokenTypes.INTERFACE_DEF)) {
+
 				DetailAST nameAST = parentAST.findFirstToken(TokenTypes.IDENT);
 
 				if (className.equals(nameAST.getText())) {
@@ -128,5 +131,8 @@ public class SelfReferenceCheck extends AbstractCheck {
 			parentAST = parentAST.getParent();
 		}
 	}
+
+	private static final String _MSG_UNNEEDED_SELF_REFERENCE =
+		"self.reference.unneeded";
 
 }

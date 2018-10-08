@@ -23,29 +23,25 @@ import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.model.ExportImportConfigurationModel;
 import com.liferay.exportimport.kernel.model.ExportImportConfigurationSoap;
 
+import com.liferay.petra.string.StringBundler;
+
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.exception.NoSuchModelException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSON;
 import com.liferay.portal.kernel.model.CacheModel;
 import com.liferay.portal.kernel.model.ContainerModel;
+import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.TrashedModel;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.impl.BaseModelImpl;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
-import com.liferay.portal.kernel.trash.TrashHandler;
-import com.liferay.portal.kernel.trash.TrashHandlerRegistryUtil;
 import com.liferay.portal.kernel.util.DateUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
-
-import com.liferay.trash.kernel.model.TrashEntry;
-import com.liferay.trash.kernel.service.TrashEntryLocalServiceUtil;
 
 import java.io.Serializable;
 
@@ -447,7 +443,7 @@ public class ExportImportConfigurationModelImpl extends BaseModelImpl<ExportImpo
 			return user.getUuid();
 		}
 		catch (PortalException pe) {
-			return StringPool.BLANK;
+			return "";
 		}
 	}
 
@@ -459,7 +455,7 @@ public class ExportImportConfigurationModelImpl extends BaseModelImpl<ExportImpo
 	@Override
 	public String getUserName() {
 		if (_userName == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _userName;
@@ -505,7 +501,7 @@ public class ExportImportConfigurationModelImpl extends BaseModelImpl<ExportImpo
 	@Override
 	public String getName() {
 		if (_name == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _name;
@@ -521,7 +517,7 @@ public class ExportImportConfigurationModelImpl extends BaseModelImpl<ExportImpo
 	@Override
 	public String getDescription() {
 		if (_description == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _description;
@@ -560,7 +556,7 @@ public class ExportImportConfigurationModelImpl extends BaseModelImpl<ExportImpo
 	@Override
 	public String getSettings() {
 		if (_settings == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _settings;
@@ -614,7 +610,7 @@ public class ExportImportConfigurationModelImpl extends BaseModelImpl<ExportImpo
 			return user.getUuid();
 		}
 		catch (PortalException pe) {
-			return StringPool.BLANK;
+			return "";
 		}
 	}
 
@@ -626,7 +622,7 @@ public class ExportImportConfigurationModelImpl extends BaseModelImpl<ExportImpo
 	@Override
 	public String getStatusByUserName() {
 		if (_statusByUserName == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _statusByUserName;
@@ -650,21 +646,22 @@ public class ExportImportConfigurationModelImpl extends BaseModelImpl<ExportImpo
 	}
 
 	@Override
-	public TrashEntry getTrashEntry() throws PortalException {
+	public com.liferay.trash.kernel.model.TrashEntry getTrashEntry()
+		throws PortalException {
 		if (!isInTrash()) {
 			return null;
 		}
 
-		TrashEntry trashEntry = TrashEntryLocalServiceUtil.fetchEntry(getModelClassName(),
+		com.liferay.trash.kernel.model.TrashEntry trashEntry = com.liferay.trash.kernel.service.TrashEntryLocalServiceUtil.fetchEntry(getModelClassName(),
 				getTrashEntryClassPK());
 
 		if (trashEntry != null) {
 			return trashEntry;
 		}
 
-		TrashHandler trashHandler = getTrashHandler();
+		com.liferay.portal.kernel.trash.TrashHandler trashHandler = getTrashHandler();
 
-		if (!Validator.isNull(trashHandler.getContainerModelClassName(
+		if (Validator.isNotNull(trashHandler.getContainerModelClassName(
 						getPrimaryKey()))) {
 			ContainerModel containerModel = null;
 
@@ -682,7 +679,7 @@ public class ExportImportConfigurationModelImpl extends BaseModelImpl<ExportImpo
 					return trashedModel.getTrashEntry();
 				}
 
-				trashHandler = TrashHandlerRegistryUtil.getTrashHandler(trashHandler.getContainerModelClassName(
+				trashHandler = com.liferay.portal.kernel.trash.TrashHandlerRegistryUtil.getTrashHandler(trashHandler.getContainerModelClassName(
 							containerModel.getContainerModelId()));
 
 				if (trashHandler == null) {
@@ -701,9 +698,13 @@ public class ExportImportConfigurationModelImpl extends BaseModelImpl<ExportImpo
 		return getPrimaryKey();
 	}
 
+	/**
+	* @deprecated As of Judson (7.1.x), with no direct replacement
+	*/
+	@Deprecated
 	@Override
-	public TrashHandler getTrashHandler() {
-		return TrashHandlerRegistryUtil.getTrashHandler(getModelClassName());
+	public com.liferay.portal.kernel.trash.TrashHandler getTrashHandler() {
+		return com.liferay.portal.kernel.trash.TrashHandlerRegistryUtil.getTrashHandler(getModelClassName());
 	}
 
 	@Override
@@ -718,7 +719,7 @@ public class ExportImportConfigurationModelImpl extends BaseModelImpl<ExportImpo
 
 	@Override
 	public boolean isInTrashContainer() {
-		TrashHandler trashHandler = getTrashHandler();
+		com.liferay.portal.kernel.trash.TrashHandler trashHandler = getTrashHandler();
 
 		if ((trashHandler == null) ||
 				Validator.isNull(trashHandler.getContainerModelClassName(
@@ -749,7 +750,7 @@ public class ExportImportConfigurationModelImpl extends BaseModelImpl<ExportImpo
 			return false;
 		}
 
-		TrashEntry trashEntry = TrashEntryLocalServiceUtil.fetchEntry(getModelClassName(),
+		com.liferay.trash.kernel.model.TrashEntry trashEntry = com.liferay.trash.kernel.service.TrashEntryLocalServiceUtil.fetchEntry(getModelClassName(),
 				getTrashEntryClassPK());
 
 		if (trashEntry != null) {
@@ -765,7 +766,7 @@ public class ExportImportConfigurationModelImpl extends BaseModelImpl<ExportImpo
 			return false;
 		}
 
-		TrashEntry trashEntry = TrashEntryLocalServiceUtil.fetchEntry(getModelClassName(),
+		com.liferay.trash.kernel.model.TrashEntry trashEntry = com.liferay.trash.kernel.service.TrashEntryLocalServiceUtil.fetchEntry(getModelClassName(),
 				getTrashEntryClassPK());
 
 		if (trashEntry != null) {
@@ -1196,7 +1197,7 @@ public class ExportImportConfigurationModelImpl extends BaseModelImpl<ExportImpo
 
 	private static final ClassLoader _classLoader = ExportImportConfiguration.class.getClassLoader();
 	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
-			ExportImportConfiguration.class
+			ExportImportConfiguration.class, ModelWrapper.class
 		};
 	private long _mvccVersion;
 	private long _exportImportConfigurationId;

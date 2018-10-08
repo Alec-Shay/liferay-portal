@@ -15,6 +15,7 @@
 package com.liferay.portal.service.impl;
 
 import com.liferay.announcements.kernel.model.AnnouncementsDelivery;
+import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.RequiredUserException;
 import com.liferay.portal.kernel.exception.UserEmailAddressException;
@@ -58,9 +59,11 @@ import com.liferay.portal.kernel.service.permission.UserPermissionUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.CalendarFactoryUtil;
 import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.comparator.UserIdComparator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.workflow.WorkflowThreadLocal;
 import com.liferay.portal.service.base.UserServiceBaseImpl;
@@ -728,6 +731,129 @@ public class UserServiceImpl extends UserServiceBaseImpl {
 	}
 
 	/**
+	 * Returns the users belonging to a group.
+	 *
+	 * @param  groupId the primary key of the group
+	 * @param  status the workflow status
+	 * @param  start the lower bound of the range of users
+	 * @param  end the upper bound of the range of users (not inclusive)
+	 * @param  obc the comparator to order the users by (optionally
+	 *         <code>null</code>)
+	 * @return the matching users
+	 */
+	@Override
+	public List<User> getGroupUsers(
+			long groupId, int status, int start, int end,
+			OrderByComparator<User> obc)
+		throws PortalException {
+
+		GroupPermissionUtil.check(
+			getPermissionChecker(), groupId, ActionKeys.VIEW_MEMBERS);
+
+		return userLocalService.getGroupUsers(groupId, status, start, end, obc);
+	}
+
+	/**
+	 * Returns the users belonging to a group.
+	 *
+	 * @param  groupId the primary key of the group
+	 * @param  status the workflow status
+	 * @param  obc the comparator to order the users by (optionally
+	 *         <code>null</code>)
+	 * @return the matching users
+	 */
+	@Override
+	public List<User> getGroupUsers(
+			long groupId, int status, OrderByComparator<User> obc)
+		throws PortalException {
+
+		return getGroupUsers(
+			groupId, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS, obc);
+	}
+
+	/**
+	 * Returns the number of users with the status belonging to the group.
+	 *
+	 * @param  groupId the primary key of the group
+	 * @param  status the workflow status
+	 * @return the number of users with the status belonging to the group
+	 */
+	@Override
+	public int getGroupUsersCount(long groupId, int status)
+		throws PortalException {
+
+		GroupPermissionUtil.check(
+			getPermissionChecker(), groupId, ActionKeys.VIEW);
+
+		return userLocalService.getGroupUsersCount(groupId, status);
+	}
+
+	@Override
+	public List<User> getGtCompanyUsers(long gtUserId, long companyId, int size)
+		throws PortalException {
+
+		PermissionChecker permissionChecker = getPermissionChecker();
+
+		if (!permissionChecker.isCompanyAdmin(companyId)) {
+			throw new PrincipalException.MustBeCompanyAdmin(permissionChecker);
+		}
+
+		return userPersistence.findByU_C(
+			gtUserId, companyId, 0, size, new UserIdComparator(true));
+	}
+
+	@Override
+	public List<User> getGtOrganizationUsers(
+			long gtUserId, long organizationId, int size)
+		throws PortalException {
+
+		Organization organization = organizationPersistence.findByPrimaryKey(
+			organizationId);
+
+		PermissionChecker permissionChecker = getPermissionChecker();
+
+		if (!permissionChecker.isCompanyAdmin(organization.getCompanyId())) {
+			throw new PrincipalException.MustBeCompanyAdmin(permissionChecker);
+		}
+
+		return userFinder.findByUsersOrgsGtUserId(
+			organization.getCompanyId(), organizationId, gtUserId, size);
+	}
+
+	@Override
+	public List<User> getGtUserGroupUsers(
+			long gtUserId, long userGroupId, int size)
+		throws PortalException {
+
+		UserGroup userGroup = userGroupPersistence.findByPrimaryKey(
+			userGroupId);
+
+		PermissionChecker permissionChecker = getPermissionChecker();
+
+		if (!permissionChecker.isCompanyAdmin(userGroup.getCompanyId())) {
+			throw new PrincipalException.MustBeCompanyAdmin(permissionChecker);
+		}
+
+		return userFinder.findByUsersUserGroupsGtUserId(
+			userGroup.getCompanyId(), userGroupId, gtUserId, size);
+	}
+
+	@Override
+	public int getOrganizationsAndUserGroupsUsersCount(
+			long[] organizationIds, long[] userGroupIds)
+		throws PrincipalException {
+
+		PermissionChecker permissionChecker = getPermissionChecker();
+
+		if (!permissionChecker.isOmniadmin()) {
+			throw new PrincipalException.MustBeCompanyAdmin(permissionChecker);
+		}
+
+		return userLocalService.getOrganizationsAndUserGroupsUsersCount(
+			organizationIds, userGroupIds);
+	}
+
+	/**
 	 * Returns the primary keys of all the users belonging to the organization.
 	 *
 	 * @param  organizationId the primary key of the organization
@@ -757,6 +883,70 @@ public class UserServiceImpl extends UserServiceBaseImpl {
 			getPermissionChecker(), organizationId, ActionKeys.VIEW_MEMBERS);
 
 		return userLocalService.getOrganizationUsers(organizationId);
+	}
+
+	/**
+	 * Returns the users belonging to the organization with the status.
+	 *
+	 * @param  organizationId the primary key of the organization
+	 * @param  status the workflow status
+	 * @param  start the lower bound of the range of users
+	 * @param  end the upper bound of the range of users (not inclusive)
+	 * @param  obc the comparator to order the users by (optionally
+	 *         <code>null</code>)
+	 * @return the matching users
+	 */
+	@Override
+	public List<User> getOrganizationUsers(
+			long organizationId, int status, int start, int end,
+			OrderByComparator<User> obc)
+		throws PortalException {
+
+		OrganizationPermissionUtil.check(
+			getPermissionChecker(), organizationId, ActionKeys.VIEW_MEMBERS);
+
+		return userLocalService.getOrganizationUsers(
+			organizationId, status, start, end, obc);
+	}
+
+	/**
+	 * Returns the users belonging to the organization with the status.
+	 *
+	 * @param  organizationId the primary key of the organization
+	 * @param  status the workflow status
+	 * @param  obc the comparator to order the users by (optionally
+	 *         <code>null</code>)
+	 * @return the matching users
+	 */
+	@Override
+	public List<User> getOrganizationUsers(
+			long organizationId, int status, OrderByComparator<User> obc)
+		throws PortalException {
+
+		OrganizationPermissionUtil.check(
+			getPermissionChecker(), organizationId, ActionKeys.VIEW_MEMBERS);
+
+		return userLocalService.getOrganizationUsers(
+			organizationId, status, obc);
+	}
+
+	/**
+	 * Returns the number of users with the status belonging to the
+	 * organization.
+	 *
+	 * @param  organizationId the primary key of the organization
+	 * @param  status the workflow status
+	 * @return the number of users with the status belonging to the organization
+	 */
+	@Override
+	public int getOrganizationUsersCount(long organizationId, int status)
+		throws PortalException {
+
+		OrganizationPermissionUtil.check(
+			getPermissionChecker(), organizationId, ActionKeys.VIEW);
+
+		return userLocalService.getOrganizationUsersCount(
+			organizationId, status);
 	}
 
 	/**
@@ -836,6 +1026,16 @@ public class UserServiceImpl extends UserServiceBaseImpl {
 			getPermissionChecker(), userGroupId, ActionKeys.VIEW_MEMBERS);
 
 		return userGroupPersistence.getUsers(userGroupId);
+	}
+
+	@Override
+	public List<User> getUserGroupUsers(long userGroupId, int start, int end)
+		throws PortalException {
+
+		UserGroupPermissionUtil.check(
+			getPermissionChecker(), userGroupId, ActionKeys.VIEW_MEMBERS);
+
+		return userLocalService.getUserGroupUsers(userGroupId, start, end);
 	}
 
 	/**
@@ -1575,8 +1775,8 @@ public class UserServiceImpl extends UserServiceBaseImpl {
 	 * @param      userId the primary key of the user
 	 * @param      status the user's new workflow status
 	 * @return     the user
-	 * @deprecated As of 7.0.0, replaced by {@link #updateStatus(long, int,
-	 *             ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #updateStatus(long, int, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -1720,7 +1920,8 @@ public class UserServiceImpl extends UserServiceBaseImpl {
 		long curUserId = getUserId();
 
 		if (curUserId == userId) {
-			emailAddress = StringUtil.toLowerCase(emailAddress.trim());
+			emailAddress = StringUtil.toLowerCase(
+				StringUtil.trim(emailAddress));
 
 			if (!StringUtil.equalsIgnoreCase(
 					emailAddress, user.getEmailAddress())) {
@@ -2024,13 +2225,13 @@ public class UserServiceImpl extends UserServiceBaseImpl {
 	 *             <code>uuid</code> attribute), asset category IDs, asset tag
 	 *             names, and expando bridge attributes for the user.
 	 * @return     the user
-	 * @deprecated As of 7.0.0, replaced by {@link #updateUser(long, String,
-	 *             String, String, boolean, String, String, String, String,
-	 *             long, String, boolean, byte[], String, String, String,
-	 *             String, String, String, String, long, long, boolean, int,
-	 *             int, int, String, String, String, String, String, String,
-	 *             long[], long[], long[], List, long[], List, List, List, List,
-	 *             List, ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #updateUser(long, String, String, String, boolean, String,
+	 *             String, String, String, long, String, boolean, byte[],
+	 *             String, String, String, String, String, String, String, long,
+	 *             long, boolean, int, int, int, String, String, String, String,
+	 *             String, String, long[], long[], long[], List, long[], List,
+	 *             List, List, List, List, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -2554,9 +2755,7 @@ public class UserServiceImpl extends UserServiceBaseImpl {
 
 			announcementsDeliveryService.updateDelivery(
 				userId, announcementsDelivery.getType(),
-				announcementsDelivery.getEmail(),
-				announcementsDelivery.getSms(),
-				announcementsDelivery.getWebsite());
+				announcementsDelivery.isEmail(), announcementsDelivery.isSms());
 		}
 	}
 
@@ -2642,7 +2841,7 @@ public class UserServiceImpl extends UserServiceBaseImpl {
 			fields.add("firstName");
 		}
 
-		if (male != contact.getMale()) {
+		if (male != contact.isMale()) {
 			fields.add("gender");
 		}
 

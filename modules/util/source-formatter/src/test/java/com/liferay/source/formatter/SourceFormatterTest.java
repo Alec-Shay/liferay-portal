@@ -36,7 +36,6 @@ public class SourceFormatterTest {
 		sourceFormatterArgs.setAutoFix(false);
 		sourceFormatterArgs.setPrintErrors(false);
 		sourceFormatterArgs.setThrowException(false);
-		sourceFormatterArgs.setUseProperties(false);
 
 		String fileName =
 			"src/test/resources/com/liferay/source/formatter/dependencies" +
@@ -51,7 +50,8 @@ public class SourceFormatterTest {
 
 		List<String> modifiedFileNames = sourceFormatter.getModifiedFileNames();
 
-		Assert.assertTrue(modifiedFileNames.isEmpty());
+		Assert.assertTrue(
+			modifiedFileNames.toString(), modifiedFileNames.isEmpty());
 	}
 
 	@Rule

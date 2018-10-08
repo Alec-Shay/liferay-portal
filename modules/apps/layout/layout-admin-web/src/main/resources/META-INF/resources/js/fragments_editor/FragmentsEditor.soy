@@ -1,0 +1,144 @@
+{namespace com.liferay.layout.admin.web.FragmentsEditor}
+
+/**
+ * FragmentsEditor
+ */
+{template .render}
+	{@param availableLanguages: ?}
+	{@param classPK: ?}
+	{@param defaultEditorConfigurations: ?}
+	{@param defaultLanguageId: string}
+	{@param fragmentCollections: list<[
+		fragmentEntries: list<[
+			fragmentEntryId: string,
+			imagePreviewURL: string,
+			name: string
+		]>,
+		fragmentCollectionId: string,
+		name: string
+	]>}
+	{@param fragmentEntryLinks: ?}
+	{@param imageSelectorURL: string}
+	{@param languageId: string}
+	{@param layoutData: [
+		structure: list<string>
+	]}
+	{@param portletNamespace: string}
+	{@param redirectURL: string}
+	{@param sidebarTabs: list<[enabled:bool, id:string, label:string]>}
+	{@param spritemap: string}
+	{@param? contextualSidebarVisible: bool}
+	{@param? highlightMapping: bool}
+	{@param? getAssetClassTypesURL: any}
+	{@param? getAssetDisplayContributorsURL: any}
+	{@param? hoveredFragmentEntryLinkBorder: string}
+	{@param? hoveredFragmentEntryLinkId: string}
+	{@param? id: string}
+	{@param? lastSaveDate: string}
+	{@param? mappingFieldsURL: string}
+	{@param? publishLayoutPageTemplateEntryURL: string}
+	{@param? savingChanges: bool}
+	{@param? selectMappingDialogEditableId: string}
+	{@param? selectMappingDialogEditableType: string}
+	{@param? selectMappingDialogFragmentEntryLinkId: string}
+	{@param? selectMappingDialogMappedFieldId: string}
+	{@param? selectMappingDialogVisible: bool}
+	{@param? selectMappingTypeDialogVisible: bool}
+	{@param? selectedMappingTypes: [
+		subtype: [
+			id: string,
+			label: string
+		],
+		type: [
+			id: string,
+			label: string
+		]
+	]}
+	{@param? status: string}
+	{@param? store: ?}
+	{@param? translationStatus: [
+		languageValues: list<[languageId: string, values: list<string>]>,
+		translationKeys: list<string>
+	]}
+	{@param? updateLayoutPageTemplateEntryAssetTypeURL: any}
+
+	<div class="fragments-editor" id="{$id}">
+		{call com.liferay.layout.admin.web.FragmentsEditorToolbar.render}
+			{param availableLanguages: $availableLanguages /}
+			{param classPK: $classPK /}
+			{param defaultLanguageId: $defaultLanguageId /}
+			{param languageId: $languageId /}
+			{param lastSaveDate: $lastSaveDate ?: '' /}
+			{param publishLayoutPageTemplateEntryURL: $publishLayoutPageTemplateEntryURL /}
+			{param publishRedirectURL: $redirectURL /}
+			{param publishStatus: $status /}
+			{param portletNamespace: $portletNamespace /}
+			{param savingChanges: $savingChanges ?: false /}
+			{param spritemap: $spritemap /}
+			{param store: $store /}
+			{param translationStatus: $translationStatus /}
+		{/call}
+
+		{call com.liferay.layout.admin.web.FragmentsEditorSidebar.render}
+			{param fragmentCollections: $fragmentCollections /}
+			{param fragmentEntryLinks: $fragmentEntryLinks /}
+			{param highlightMapping: $highlightMapping ?: false /}
+			{param layoutData: $layoutData /}
+			{param ref: 'sidebar' /}
+			{param selectedMappingTypes: $selectedMappingTypes /}
+			{param sidebarTabs: $sidebarTabs /}
+			{param spritemap: $spritemap /}
+			{param store: $store /}
+			{param visible: $contextualSidebarVisible ?: true /}
+		{/call}
+
+		<div class="contextual-sidebar-content">
+			{call com.liferay.layout.admin.web.FragmentEntryLinkList.render}
+				{param defaultEditorConfigurations: $defaultEditorConfigurations /}
+				{param defaultLanguageId: $defaultLanguageId /}
+				{param fragmentEntryLinks: $fragmentEntryLinks /}
+				{param hoveredFragmentEntryLinkBorder: $hoveredFragmentEntryLinkBorder /}
+				{param hoveredFragmentEntryLinkId: $hoveredFragmentEntryLinkId /}
+				{param imageSelectorURL: $imageSelectorURL /}
+				{param languageId: $languageId /}
+				{param layoutData: $layoutData /}
+				{param highlightMapping: $highlightMapping /}
+				{param mappingFieldsURL: $mappingFieldsURL /}
+				{param portletNamespace: $portletNamespace /}
+				{param ref: 'fragmentsEditorRender' /}
+				{param selectedMappingTypes: $selectedMappingTypes /}
+				{param spritemap: $spritemap /}
+				{param store: $store /}
+				{param translating: $languageId != $defaultLanguageId /}
+			{/call}
+		</div>
+
+		{if $mappingFieldsURL and $selectMappingDialogVisible}
+			{call com.liferay.layout.admin.web.SelectMappingDialog.render}
+				{param editableId: $selectMappingDialogEditableId /}
+				{param editableType: $selectMappingDialogEditableType /}
+				{param fragmentEntryLinkId: $selectMappingDialogFragmentEntryLinkId /}
+				{param mappedFieldId: $selectMappingDialogMappedFieldId /}
+				{param mappingFieldsURL: $mappingFieldsURL /}
+				{param portletNamespace: $portletNamespace /}
+				{param selectedMappingTypes: $selectedMappingTypes /}
+				{param spritemap: $spritemap /}
+				{param store: $store /}
+			{/call}
+		{/if}
+		{if $getAssetClassTypesURL
+			and $getAssetDisplayContributorsURL
+			and $updateLayoutPageTemplateEntryAssetTypeURL
+			and $selectMappingTypeDialogVisible}
+			{call com.liferay.layout.admin.web.SelectMappingTypeDialog.render}
+				{param classPK: $classPK /}
+				{param getAssetClassTypesURL: $getAssetClassTypesURL /}
+				{param getAssetDisplayContributorsURL: $getAssetDisplayContributorsURL /}
+				{param portletNamespace: $portletNamespace /}
+				{param spritemap: $spritemap /}
+				{param store: $store /}
+				{param updateLayoutPageTemplateEntryAssetTypeURL: $updateLayoutPageTemplateEntryAssetTypeURL /}
+			{/call}
+		{/if}
+	</div>
+{/template}

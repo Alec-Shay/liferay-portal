@@ -16,9 +16,9 @@ package com.liferay.portal.service.persistence.impl;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.portal.kernel.dao.orm.EntityCache;
+import com.liferay.petra.string.StringBundler;
+
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
-import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
 import com.liferay.portal.kernel.dao.orm.Query;
@@ -32,13 +32,15 @@ import com.liferay.portal.kernel.model.ServiceComponent;
 import com.liferay.portal.kernel.service.persistence.ServiceComponentPersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.model.impl.ServiceComponentImpl;
 import com.liferay.portal.model.impl.ServiceComponentModelImpl;
 
 import java.io.Serializable;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -201,7 +203,7 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 		List<ServiceComponent> list = null;
 
 		if (retrieveFromCache) {
-			list = (List<ServiceComponent>)finderCache.getResult(finderPath,
+			list = (List<ServiceComponent>)FinderCacheUtil.getResult(finderPath,
 					finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
@@ -234,7 +236,7 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 			if (buildNamespace == null) {
 				query.append(_FINDER_COLUMN_BUILDNAMESPACE_BUILDNAMESPACE_1);
 			}
-			else if (buildNamespace.equals(StringPool.BLANK)) {
+			else if (buildNamespace.equals("")) {
 				query.append(_FINDER_COLUMN_BUILDNAMESPACE_BUILDNAMESPACE_3);
 			}
 			else {
@@ -282,10 +284,10 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				FinderCacheUtil.putResult(finderPath, finderArgs, list);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -323,7 +325,7 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 		msg.append("buildNamespace=");
 		msg.append(buildNamespace);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchServiceComponentException(msg.toString());
 	}
@@ -374,7 +376,7 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 		msg.append("buildNamespace=");
 		msg.append(buildNamespace);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchServiceComponentException(msg.toString());
 	}
@@ -468,7 +470,7 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 		if (buildNamespace == null) {
 			query.append(_FINDER_COLUMN_BUILDNAMESPACE_BUILDNAMESPACE_1);
 		}
-		else if (buildNamespace.equals(StringPool.BLANK)) {
+		else if (buildNamespace.equals("")) {
 			query.append(_FINDER_COLUMN_BUILDNAMESPACE_BUILDNAMESPACE_3);
 		}
 		else {
@@ -592,7 +594,8 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 
 		Object[] finderArgs = new Object[] { buildNamespace };
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs,
+				this);
 
 		if (count == null) {
 			StringBundler query = new StringBundler(2);
@@ -604,7 +607,7 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 			if (buildNamespace == null) {
 				query.append(_FINDER_COLUMN_BUILDNAMESPACE_BUILDNAMESPACE_1);
 			}
-			else if (buildNamespace.equals(StringPool.BLANK)) {
+			else if (buildNamespace.equals("")) {
 				query.append(_FINDER_COLUMN_BUILDNAMESPACE_BUILDNAMESPACE_3);
 			}
 			else {
@@ -630,10 +633,10 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 
 				count = (Long)q.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -685,7 +688,7 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 			msg.append(", buildNumber=");
 			msg.append(buildNumber);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -726,7 +729,7 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 		Object result = null;
 
 		if (retrieveFromCache) {
-			result = finderCache.getResult(FINDER_PATH_FETCH_BY_BNS_BNU,
+			result = FinderCacheUtil.getResult(FINDER_PATH_FETCH_BY_BNS_BNU,
 					finderArgs, this);
 		}
 
@@ -750,7 +753,7 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 			if (buildNamespace == null) {
 				query.append(_FINDER_COLUMN_BNS_BNU_BUILDNAMESPACE_1);
 			}
-			else if (buildNamespace.equals(StringPool.BLANK)) {
+			else if (buildNamespace.equals("")) {
 				query.append(_FINDER_COLUMN_BNS_BNU_BUILDNAMESPACE_3);
 			}
 			else {
@@ -781,7 +784,7 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 				List<ServiceComponent> list = q.list();
 
 				if (list.isEmpty()) {
-					finderCache.putResult(FINDER_PATH_FETCH_BY_BNS_BNU,
+					FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_BNS_BNU,
 						finderArgs, list);
 				}
 				else {
@@ -790,18 +793,10 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 					result = serviceComponent;
 
 					cacheResult(serviceComponent);
-
-					if ((serviceComponent.getBuildNamespace() == null) ||
-							!serviceComponent.getBuildNamespace()
-												 .equals(buildNamespace) ||
-							(serviceComponent.getBuildNumber() != buildNumber)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_BNS_BNU,
-							finderArgs, serviceComponent);
-					}
 				}
 			}
 			catch (Exception e) {
-				finderCache.removeResult(FINDER_PATH_FETCH_BY_BNS_BNU,
+				FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_BNS_BNU,
 					finderArgs);
 
 				throw processException(e);
@@ -848,7 +843,8 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 
 		Object[] finderArgs = new Object[] { buildNamespace, buildNumber };
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs,
+				this);
 
 		if (count == null) {
 			StringBundler query = new StringBundler(3);
@@ -860,7 +856,7 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 			if (buildNamespace == null) {
 				query.append(_FINDER_COLUMN_BNS_BNU_BUILDNAMESPACE_1);
 			}
-			else if (buildNamespace.equals(StringPool.BLANK)) {
+			else if (buildNamespace.equals("")) {
 				query.append(_FINDER_COLUMN_BNS_BNU_BUILDNAMESPACE_3);
 			}
 			else {
@@ -890,10 +886,10 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 
 				count = (Long)q.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -912,6 +908,24 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 
 	public ServiceComponentPersistenceImpl() {
 		setModelClass(ServiceComponent.class);
+
+		try {
+			Field field = BasePersistenceImpl.class.getDeclaredField(
+					"_dbColumnNames");
+
+			field.setAccessible(true);
+
+			Map<String, String> dbColumnNames = new HashMap<String, String>();
+
+			dbColumnNames.put("data", "data_");
+
+			field.set(this, dbColumnNames);
+		}
+		catch (Exception e) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(e, e);
+			}
+		}
 	}
 
 	/**
@@ -921,11 +935,11 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 	 */
 	@Override
 	public void cacheResult(ServiceComponent serviceComponent) {
-		entityCache.putResult(ServiceComponentModelImpl.ENTITY_CACHE_ENABLED,
+		EntityCacheUtil.putResult(ServiceComponentModelImpl.ENTITY_CACHE_ENABLED,
 			ServiceComponentImpl.class, serviceComponent.getPrimaryKey(),
 			serviceComponent);
 
-		finderCache.putResult(FINDER_PATH_FETCH_BY_BNS_BNU,
+		FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_BNS_BNU,
 			new Object[] {
 				serviceComponent.getBuildNamespace(),
 				serviceComponent.getBuildNumber()
@@ -942,7 +956,7 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 	@Override
 	public void cacheResult(List<ServiceComponent> serviceComponents) {
 		for (ServiceComponent serviceComponent : serviceComponents) {
-			if (entityCache.getResult(
+			if (EntityCacheUtil.getResult(
 						ServiceComponentModelImpl.ENTITY_CACHE_ENABLED,
 						ServiceComponentImpl.class,
 						serviceComponent.getPrimaryKey()) == null) {
@@ -958,32 +972,32 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 	 * Clears the cache for all service components.
 	 *
 	 * <p>
-	 * The {@link EntityCache} and {@link FinderCache} are both cleared by this method.
+	 * The {@link com.liferay.portal.kernel.dao.orm.EntityCache} and {@link com.liferay.portal.kernel.dao.orm.FinderCache} are both cleared by this method.
 	 * </p>
 	 */
 	@Override
 	public void clearCache() {
-		entityCache.clearCache(ServiceComponentImpl.class);
+		EntityCacheUtil.clearCache(ServiceComponentImpl.class);
 
-		finderCache.clearCache(FINDER_CLASS_NAME_ENTITY);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_ENTITY);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 	}
 
 	/**
 	 * Clears the cache for the service component.
 	 *
 	 * <p>
-	 * The {@link EntityCache} and {@link FinderCache} are both cleared by this method.
+	 * The {@link com.liferay.portal.kernel.dao.orm.EntityCache} and {@link com.liferay.portal.kernel.dao.orm.FinderCache} are both cleared by this method.
 	 * </p>
 	 */
 	@Override
 	public void clearCache(ServiceComponent serviceComponent) {
-		entityCache.removeResult(ServiceComponentModelImpl.ENTITY_CACHE_ENABLED,
+		EntityCacheUtil.removeResult(ServiceComponentModelImpl.ENTITY_CACHE_ENABLED,
 			ServiceComponentImpl.class, serviceComponent.getPrimaryKey());
 
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 
 		clearUniqueFindersCache((ServiceComponentModelImpl)serviceComponent,
 			true);
@@ -991,11 +1005,11 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 
 	@Override
 	public void clearCache(List<ServiceComponent> serviceComponents) {
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 
 		for (ServiceComponent serviceComponent : serviceComponents) {
-			entityCache.removeResult(ServiceComponentModelImpl.ENTITY_CACHE_ENABLED,
+			EntityCacheUtil.removeResult(ServiceComponentModelImpl.ENTITY_CACHE_ENABLED,
 				ServiceComponentImpl.class, serviceComponent.getPrimaryKey());
 
 			clearUniqueFindersCache((ServiceComponentModelImpl)serviceComponent,
@@ -1010,9 +1024,9 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 				serviceComponentModelImpl.getBuildNumber()
 			};
 
-		finderCache.putResult(FINDER_PATH_COUNT_BY_BNS_BNU, args,
+		FinderCacheUtil.putResult(FINDER_PATH_COUNT_BY_BNS_BNU, args,
 			Long.valueOf(1), false);
-		finderCache.putResult(FINDER_PATH_FETCH_BY_BNS_BNU, args,
+		FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_BNS_BNU, args,
 			serviceComponentModelImpl, false);
 	}
 
@@ -1025,8 +1039,8 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 					serviceComponentModelImpl.getBuildNumber()
 				};
 
-			finderCache.removeResult(FINDER_PATH_COUNT_BY_BNS_BNU, args);
-			finderCache.removeResult(FINDER_PATH_FETCH_BY_BNS_BNU, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_BNS_BNU, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_BNS_BNU, args);
 		}
 
 		if ((serviceComponentModelImpl.getColumnBitmask() &
@@ -1036,8 +1050,8 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 					serviceComponentModelImpl.getOriginalBuildNumber()
 				};
 
-			finderCache.removeResult(FINDER_PATH_COUNT_BY_BNS_BNU, args);
-			finderCache.removeResult(FINDER_PATH_FETCH_BY_BNS_BNU, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_BNS_BNU, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_BNS_BNU, args);
 		}
 	}
 
@@ -1112,8 +1126,6 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 
 	@Override
 	protected ServiceComponent removeImpl(ServiceComponent serviceComponent) {
-		serviceComponent = toUnwrappedModel(serviceComponent);
-
 		Session session = null;
 
 		try {
@@ -1144,9 +1156,23 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 
 	@Override
 	public ServiceComponent updateImpl(ServiceComponent serviceComponent) {
-		serviceComponent = toUnwrappedModel(serviceComponent);
-
 		boolean isNew = serviceComponent.isNew();
+
+		if (!(serviceComponent instanceof ServiceComponentModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(serviceComponent.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(serviceComponent);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in serviceComponent proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom ServiceComponent implementation " +
+				serviceComponent.getClass());
+		}
 
 		ServiceComponentModelImpl serviceComponentModelImpl = (ServiceComponentModelImpl)serviceComponent;
 
@@ -1171,10 +1197,26 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 			closeSession(session);
 		}
 
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 
-		if (isNew || !ServiceComponentModelImpl.COLUMN_BITMASK_ENABLED) {
-			finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		if (!ServiceComponentModelImpl.COLUMN_BITMASK_ENABLED) {
+			FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		}
+		else
+		 if (isNew) {
+			Object[] args = new Object[] {
+					serviceComponentModelImpl.getBuildNamespace()
+				};
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_BUILDNAMESPACE,
+				args);
+			FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_BUILDNAMESPACE,
+				args);
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_ALL,
+				FINDER_ARGS_EMPTY);
+			FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_ALL,
+				FINDER_ARGS_EMPTY);
 		}
 
 		else {
@@ -1184,23 +1226,23 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 						serviceComponentModelImpl.getOriginalBuildNamespace()
 					};
 
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_BUILDNAMESPACE,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_BUILDNAMESPACE,
 					args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_BUILDNAMESPACE,
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_BUILDNAMESPACE,
 					args);
 
 				args = new Object[] {
 						serviceComponentModelImpl.getBuildNamespace()
 					};
 
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_BUILDNAMESPACE,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_BUILDNAMESPACE,
 					args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_BUILDNAMESPACE,
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_BUILDNAMESPACE,
 					args);
 			}
 		}
 
-		entityCache.putResult(ServiceComponentModelImpl.ENTITY_CACHE_ENABLED,
+		EntityCacheUtil.putResult(ServiceComponentModelImpl.ENTITY_CACHE_ENABLED,
 			ServiceComponentImpl.class, serviceComponent.getPrimaryKey(),
 			serviceComponent, false);
 
@@ -1210,27 +1252,6 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 		serviceComponent.resetOriginalValues();
 
 		return serviceComponent;
-	}
-
-	protected ServiceComponent toUnwrappedModel(
-		ServiceComponent serviceComponent) {
-		if (serviceComponent instanceof ServiceComponentImpl) {
-			return serviceComponent;
-		}
-
-		ServiceComponentImpl serviceComponentImpl = new ServiceComponentImpl();
-
-		serviceComponentImpl.setNew(serviceComponent.isNew());
-		serviceComponentImpl.setPrimaryKey(serviceComponent.getPrimaryKey());
-
-		serviceComponentImpl.setMvccVersion(serviceComponent.getMvccVersion());
-		serviceComponentImpl.setServiceComponentId(serviceComponent.getServiceComponentId());
-		serviceComponentImpl.setBuildNamespace(serviceComponent.getBuildNamespace());
-		serviceComponentImpl.setBuildNumber(serviceComponent.getBuildNumber());
-		serviceComponentImpl.setBuildDate(serviceComponent.getBuildDate());
-		serviceComponentImpl.setData(serviceComponent.getData());
-
-		return serviceComponentImpl;
 	}
 
 	/**
@@ -1278,7 +1299,7 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 	 */
 	@Override
 	public ServiceComponent fetchByPrimaryKey(Serializable primaryKey) {
-		Serializable serializable = entityCache.getResult(ServiceComponentModelImpl.ENTITY_CACHE_ENABLED,
+		Serializable serializable = EntityCacheUtil.getResult(ServiceComponentModelImpl.ENTITY_CACHE_ENABLED,
 				ServiceComponentImpl.class, primaryKey);
 
 		if (serializable == nullModel) {
@@ -1300,12 +1321,12 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 					cacheResult(serviceComponent);
 				}
 				else {
-					entityCache.putResult(ServiceComponentModelImpl.ENTITY_CACHE_ENABLED,
+					EntityCacheUtil.putResult(ServiceComponentModelImpl.ENTITY_CACHE_ENABLED,
 						ServiceComponentImpl.class, primaryKey, nullModel);
 				}
 			}
 			catch (Exception e) {
-				entityCache.removeResult(ServiceComponentModelImpl.ENTITY_CACHE_ENABLED,
+				EntityCacheUtil.removeResult(ServiceComponentModelImpl.ENTITY_CACHE_ENABLED,
 					ServiceComponentImpl.class, primaryKey);
 
 				throw processException(e);
@@ -1355,7 +1376,7 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 		Set<Serializable> uncachedPrimaryKeys = null;
 
 		for (Serializable primaryKey : primaryKeys) {
-			Serializable serializable = entityCache.getResult(ServiceComponentModelImpl.ENTITY_CACHE_ENABLED,
+			Serializable serializable = EntityCacheUtil.getResult(ServiceComponentModelImpl.ENTITY_CACHE_ENABLED,
 					ServiceComponentImpl.class, primaryKey);
 
 			if (serializable != nullModel) {
@@ -1382,14 +1403,14 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 		query.append(_SQL_SELECT_SERVICECOMPONENT_WHERE_PKS_IN);
 
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
-			query.append(String.valueOf(primaryKey));
+			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 
@@ -1409,7 +1430,7 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 			}
 
 			for (Serializable primaryKey : uncachedPrimaryKeys) {
-				entityCache.putResult(ServiceComponentModelImpl.ENTITY_CACHE_ENABLED,
+				EntityCacheUtil.putResult(ServiceComponentModelImpl.ENTITY_CACHE_ENABLED,
 					ServiceComponentImpl.class, primaryKey, nullModel);
 			}
 		}
@@ -1502,7 +1523,7 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 		List<ServiceComponent> list = null;
 
 		if (retrieveFromCache) {
-			list = (List<ServiceComponent>)finderCache.getResult(finderPath,
+			list = (List<ServiceComponent>)FinderCacheUtil.getResult(finderPath,
 					finderArgs, this);
 		}
 
@@ -1551,10 +1572,10 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				FinderCacheUtil.putResult(finderPath, finderArgs, list);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -1584,7 +1605,7 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 	 */
 	@Override
 	public int countAll() {
-		Long count = (Long)finderCache.getResult(FINDER_PATH_COUNT_ALL,
+		Long count = (Long)FinderCacheUtil.getResult(FINDER_PATH_COUNT_ALL,
 				FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
@@ -1597,11 +1618,11 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 
 				count = (Long)q.uniqueResult();
 
-				finderCache.putResult(FINDER_PATH_COUNT_ALL, FINDER_ARGS_EMPTY,
-					count);
+				FinderCacheUtil.putResult(FINDER_PATH_COUNT_ALL,
+					FINDER_ARGS_EMPTY, count);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(FINDER_PATH_COUNT_ALL,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_ALL,
 					FINDER_ARGS_EMPTY);
 
 				throw processException(e);
@@ -1631,14 +1652,12 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 	}
 
 	public void destroy() {
-		entityCache.removeCache(ServiceComponentImpl.class.getName());
-		finderCache.removeCache(FINDER_CLASS_NAME_ENTITY);
-		finderCache.removeCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.removeCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		EntityCacheUtil.removeCache(ServiceComponentImpl.class.getName());
+		FinderCacheUtil.removeCache(FINDER_CLASS_NAME_ENTITY);
+		FinderCacheUtil.removeCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.removeCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 	}
 
-	protected EntityCache entityCache = EntityCacheUtil.getEntityCache();
-	protected FinderCache finderCache = FinderCacheUtil.getFinderCache();
 	private static final String _SQL_SELECT_SERVICECOMPONENT = "SELECT serviceComponent FROM ServiceComponent serviceComponent";
 	private static final String _SQL_SELECT_SERVICECOMPONENT_WHERE_PKS_IN = "SELECT serviceComponent FROM ServiceComponent serviceComponent WHERE serviceComponentId IN (";
 	private static final String _SQL_SELECT_SERVICECOMPONENT_WHERE = "SELECT serviceComponent FROM ServiceComponent serviceComponent WHERE ";

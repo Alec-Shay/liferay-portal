@@ -23,7 +23,6 @@ import com.liferay.knowledge.base.exception.NoSuchCommentException;
 import com.liferay.knowledge.base.model.KBArticle;
 import com.liferay.knowledge.base.model.KBFolder;
 import com.liferay.knowledge.base.service.KBArticleLocalService;
-import com.liferay.knowledge.base.service.permission.KBArticlePermission;
 import com.liferay.knowledge.base.util.KnowledgeBaseUtil;
 import com.liferay.knowledge.base.util.comparator.KBArticlePriorityComparator;
 import com.liferay.knowledge.base.web.internal.KBUtil;
@@ -39,13 +38,14 @@ import com.liferay.portal.kernel.portlet.PortalPreferences;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.servlet.SessionMessages;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -115,7 +115,7 @@ public class DisplayPortlet extends BaseKBPortlet {
 
 		PortalPreferences portalPreferences =
 			PortletPreferencesFactoryUtil.getPortalPreferences(
-				PortalUtil.getLiferayPortletRequest(actionRequest));
+				_portal.getLiferayPortletRequest(actionRequest));
 
 		PortletPreferences portletPreferences = actionRequest.getPreferences();
 
@@ -138,7 +138,7 @@ public class DisplayPortlet extends BaseKBPortlet {
 				kbFolder.getGroupId(), kbFolder.getUrlTitle(), urlTitle);
 
 			if ((kbArticle == null) &&
-				Validator.isNull(previousPreferredKBFolderURLTitle)) {
+				Validator.isNotNull(previousPreferredKBFolderURLTitle)) {
 
 				kbArticle = findClosestMatchingKBArticle(
 					kbFolder.getGroupId(), previousPreferredKBFolderURLTitle,
@@ -150,7 +150,7 @@ public class DisplayPortlet extends BaseKBPortlet {
 			KBWebKeys.THEME_DISPLAY);
 
 		if ((kbArticle != null) &&
-			!KBArticlePermission.contains(
+			!_kbArticleModelResourcePermission.contains(
 				themeDisplay.getPermissionChecker(), kbArticle,
 				KBActionKeys.VIEW)) {
 
@@ -203,7 +203,7 @@ public class DisplayPortlet extends BaseKBPortlet {
 			WebKeys.THEME_DISPLAY);
 
 		LiferayPortletURL liferayPortletURL = PortletURLFactoryUtil.create(
-			actionRequest, PortalUtil.getPortletId(actionRequest),
+			actionRequest, _portal.getPortletId(actionRequest),
 			themeDisplay.getPlid(), PortletRequest.RENDER_PHASE);
 
 		if (parentResourcePrimKey != kbFolderId) {
@@ -278,8 +278,8 @@ public class DisplayPortlet extends BaseKBPortlet {
 				 mvcPath.equals("/display/view_article.jsp")) &&
 				!kbArticleSelection.isExactMatch()) {
 
-				HttpServletResponse response =
-					PortalUtil.getHttpServletResponse(renderResponse);
+				HttpServletResponse response = _portal.getHttpServletResponse(
+					renderResponse);
 
 				response.setStatus(404);
 			}
@@ -292,7 +292,7 @@ public class DisplayPortlet extends BaseKBPortlet {
 
 				SessionMessages.add(
 					renderRequest,
-					PortalUtil.getPortletId(renderRequest) +
+					_portal.getPortletId(renderRequest) +
 						SessionMessages.KEY_SUFFIX_HIDE_DEFAULT_ERROR_MESSAGE);
 			}
 			else {
@@ -364,6 +364,7 @@ public class DisplayPortlet extends BaseKBPortlet {
 
 		long parentResourcePrimKey = GetterUtil.getLong(
 			portletPreferences.getValue("resourcePrimKey", null));
+
 		long parentResourceClassNameId = GetterUtil.getLong(
 			portletPreferences.getValue("resourceClassNameId", null),
 			kbFolderClassNameId);
@@ -382,7 +383,7 @@ public class DisplayPortlet extends BaseKBPortlet {
 				renderRequest, "kbFolderUrlTitle");
 
 			return kbArticleSelector.findByUrlTitle(
-				PortalUtil.getScopeGroupId(renderRequest),
+				_portal.getScopeGroupId(renderRequest),
 				preferredKBFolderURLTitle, parentResourcePrimKey,
 				kbFolderUrlTitle, urlTitle);
 		}
@@ -392,8 +393,8 @@ public class DisplayPortlet extends BaseKBPortlet {
 			KBArticleConstants.DEFAULT_PARENT_RESOURCE_PRIM_KEY);
 
 		return kbArticleSelector.findByResourcePrimKey(
-			PortalUtil.getScopeGroupId(renderRequest),
-			preferredKBFolderURLTitle, parentResourcePrimKey, resourcePrimKey);
+			_portal.getScopeGroupId(renderRequest), preferredKBFolderURLTitle,
+			parentResourcePrimKey, resourcePrimKey);
 	}
 
 	protected String getPreferredKBFolderUrlTitle(
@@ -410,36 +411,29 @@ public class DisplayPortlet extends BaseKBPortlet {
 			portalPreferences, contentRootPrefix);
 	}
 
-	@Reference(unbind = "-")
-	protected void setClassNameLocalService(
-		ClassNameLocalService classNameLocalService) {
-
-		_classNameLocalService = classNameLocalService;
-	}
-
-	@Reference(unbind = "-")
-	protected void setKBArticleLocalService(
-		KBArticleLocalService kbArticleLocalService) {
-
-		_kbArticleLocalService = kbArticleLocalService;
-	}
-
-	@Reference(unbind = "-")
-	protected void setKBArticleSelectorFactory(
-		KBArticleSelectorFactory kbArticleSelectorFactory) {
-
-		_kbArticleSelectorFactory = kbArticleSelectorFactory;
-	}
-
 	@Reference(
-		target = "(&(release.bundle.symbolic.name=com.liferay.knowledge.base.web)(release.schema.version=1.0.0))",
+		target = "(&(release.bundle.symbolic.name=com.liferay.knowledge.base.web)(release.schema.version=1.2.0))",
 		unbind = "-"
 	)
 	protected void setRelease(Release release) {
 	}
 
+	@Reference
 	private ClassNameLocalService _classNameLocalService;
+
+	@Reference
 	private KBArticleLocalService _kbArticleLocalService;
+
+	@Reference(
+		target = "(model.class.name=com.liferay.knowledge.base.model.KBArticle)"
+	)
+	private ModelResourcePermission<KBArticle>
+		_kbArticleModelResourcePermission;
+
+	@Reference
 	private KBArticleSelectorFactory _kbArticleSelectorFactory;
+
+	@Reference
+	private Portal _portal;
 
 }

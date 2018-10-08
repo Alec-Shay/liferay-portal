@@ -19,7 +19,7 @@ import com.liferay.portal.kernel.editor.configuration.EditorConfiguration;
 import com.liferay.portal.kernel.editor.configuration.EditorConfigurationFactoryUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Portlet;
-import com.liferay.portal.kernel.model.PortletConstants;
+import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactory;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactoryUtil;
 import com.liferay.portal.kernel.servlet.BrowserSnifferUtil;
@@ -38,8 +38,8 @@ import com.liferay.registry.ServiceReference;
 import com.liferay.registry.collections.ServiceReferenceMapper;
 import com.liferay.registry.collections.ServiceTrackerCollections;
 import com.liferay.registry.collections.ServiceTrackerMap;
+import com.liferay.taglib.BaseValidatorTagSupport;
 import com.liferay.taglib.aui.AUIUtil;
-import com.liferay.taglib.util.IncludeTag;
 import com.liferay.taglib.util.TagResourceBundleUtil;
 
 import java.io.IOException;
@@ -62,7 +62,7 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * @author Brian Wing Shun Chan
  */
-public class InputEditorTag extends IncludeTag {
+public class InputEditorTag extends BaseValidatorTagSupport {
 
 	public static Editor getEditor(
 		HttpServletRequest request, String editorName) {
@@ -80,6 +80,11 @@ public class InputEditorTag extends IncludeTag {
 		}
 
 		return _serviceTrackerMap.getService(editorName);
+	}
+
+	@Override
+	public String getInputName() {
+		return getConfigKey();
 	}
 
 	public void setAllowBrowseDocuments(boolean allowBrowseDocuments) {
@@ -115,7 +120,8 @@ public class InputEditorTag extends IncludeTag {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #setEditorName(String)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #setEditorName(String)}
 	 */
 	@Deprecated
 	public void setEditorImpl(String editorImpl) {
@@ -135,7 +141,8 @@ public class InputEditorTag extends IncludeTag {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #setContents(String)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #setContents(String)}
 	 */
 	@Deprecated
 	public void setInitMethod(String initMethod) {
@@ -174,6 +181,10 @@ public class InputEditorTag extends IncludeTag {
 		_placeholder = placeholder;
 	}
 
+	public void setRequired(boolean required) {
+		_required = required;
+	}
+
 	public void setResizable(boolean resizable) {
 		_resizable = resizable;
 	}
@@ -196,6 +207,8 @@ public class InputEditorTag extends IncludeTag {
 
 	@Override
 	protected void cleanUp() {
+		super.cleanUp();
+
 		_allowBrowseDocuments = true;
 		_autoCreate = true;
 		_configKey = null;
@@ -211,11 +224,12 @@ public class InputEditorTag extends IncludeTag {
 		_inlineEdit = false;
 		_inlineEditSaveURL = null;
 		_name = "editor";
-		_onChangeMethod = null;
 		_onBlurMethod = null;
+		_onChangeMethod = null;
 		_onFocusMethod = null;
 		_onInitMethod = null;
 		_placeholder = null;
+		_required = false;
 		_resizable = true;
 		_showSource = true;
 		_skipEditorLoading = false;
@@ -283,7 +297,7 @@ public class InputEditorTag extends IncludeTag {
 
 		EditorConfiguration editorConfiguration =
 			EditorConfigurationFactoryUtil.getEditorConfiguration(
-				PortletConstants.getRootPortletId(portletId), getConfigKey(),
+				PortletIdCodec.decodePortletName(portletId), getConfigKey(),
 				getEditorName(request), attributes, themeDisplay,
 				getRequestBackedPortletURLFactory());
 
@@ -411,6 +425,8 @@ public class InputEditorTag extends IncludeTag {
 			"liferay-ui:input-editor:placeholder", _placeholder);
 
 		request.setAttribute(
+			"liferay-ui:input-editor:required", String.valueOf(_required));
+		request.setAttribute(
 			"liferay-ui:input-editor:resizable", String.valueOf(_resizable));
 		request.setAttribute(
 			"liferay-ui:input-editor:showSource", String.valueOf(_showSource));
@@ -434,7 +450,7 @@ public class InputEditorTag extends IncludeTag {
 	private static final String _TOOLBAR_SET_DEFAULT = "liferay";
 
 	private static final ServiceTrackerMap<String, Editor> _serviceTrackerMap =
-		ServiceTrackerCollections.singleValueMap(
+		ServiceTrackerCollections.openSingleValueMap(
 			Editor.class, null,
 			new ServiceReferenceMapper<String, Editor>() {
 
@@ -451,10 +467,6 @@ public class InputEditorTag extends IncludeTag {
 				}
 
 			});
-
-	static {
-		_serviceTrackerMap.open();
-	}
 
 	private boolean _allowBrowseDocuments = true;
 	private boolean _autoCreate = true;
@@ -476,6 +488,7 @@ public class InputEditorTag extends IncludeTag {
 	private String _onFocusMethod;
 	private String _onInitMethod;
 	private String _placeholder;
+	private boolean _required;
 	private boolean _resizable = true;
 	private boolean _showSource = true;
 	private boolean _skipEditorLoading;

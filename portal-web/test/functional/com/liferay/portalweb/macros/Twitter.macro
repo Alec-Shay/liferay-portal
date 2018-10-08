@@ -7,7 +7,7 @@
 		<execute function="AssertClick" locator1="NavTab#IDENTIFICATION" value1="Identification" />
 
 		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Social Network" />
+			<var name="panel" value="Social Network" />
 		</execute>
 
 		<execute function="Type" locator1="TextInput#TWITTER" value1="${twitterProfileName}" />
@@ -24,9 +24,6 @@
 	</command>
 
 	<command name="viewFeedEntry">
-		<var name="key_entryDate" value="${entryDate}" />
-
-		<execute function="AssertTextEquals" locator1="Activities#ENTRY_DATE" value1="${entryDate}" />
 		<execute function="AssertTextEquals" locator1="Activities#ENTRY_CONTENT" value1="${entryContent}" />
 	</command>
 </definition>

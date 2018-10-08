@@ -14,7 +14,7 @@
 
 package com.liferay.portal.upload;
 
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.tools.ToolDependencies;
 
 import java.util.ArrayList;
@@ -58,7 +58,8 @@ public class UploadServletRequestImplTest extends PowerMockito {
 
 		List<FileItem> sortedFileItems = uploadServletRequest.sort(_fileItems);
 
-		Assert.assertEquals(10, sortedFileItems.size());
+		Assert.assertEquals(
+			sortedFileItems.toString(), 10, sortedFileItems.size());
 
 		String previousFieldName = StringPool.BLANK;
 		long previousSize = 0;

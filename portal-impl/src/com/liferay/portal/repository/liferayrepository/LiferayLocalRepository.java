@@ -18,6 +18,7 @@ import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFileShortcut;
 import com.liferay.document.library.kernel.model.DLFileVersion;
 import com.liferay.document.library.kernel.model.DLFolder;
+import com.liferay.document.library.kernel.model.DLVersionNumberIncrease;
 import com.liferay.document.library.kernel.service.DLAppHelperLocalService;
 import com.liferay.document.library.kernel.service.DLFileEntryLocalService;
 import com.liferay.document.library.kernel.service.DLFileEntryService;
@@ -57,6 +58,7 @@ import com.liferay.portlet.documentlibrary.util.comparator.DLFolderOrderByCompar
 import java.io.File;
 import java.io.InputStream;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -172,14 +174,32 @@ public class LiferayLocalRepository
 		return new LiferayFolder(dlFolder);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #checkInFileEntry(long, long, DLVersionNumberIncrease, String, ServiceContext)}
+	 */
+	@Deprecated
 	@Override
 	public void checkInFileEntry(
 			long userId, long fileEntryId, boolean majorVersion,
 			String changeLog, ServiceContext serviceContext)
 		throws PortalException {
 
+		checkInFileEntry(
+			userId, fileEntryId,
+			DLVersionNumberIncrease.fromMajorVersion(majorVersion), changeLog,
+			serviceContext);
+	}
+
+	@Override
+	public void checkInFileEntry(
+			long userId, long fileEntryId,
+			DLVersionNumberIncrease dlVersionNumberIncrease, String changeLog,
+			ServiceContext serviceContext)
+		throws PortalException {
+
 		dlFileEntryLocalService.checkInFileEntry(
-			userId, fileEntryId, majorVersion, changeLog, serviceContext);
+			userId, fileEntryId, dlVersionNumberIncrease, changeLog,
+			serviceContext);
 	}
 
 	@Override
@@ -260,6 +280,33 @@ public class LiferayLocalRepository
 	}
 
 	@Override
+	public List<FileEntry> getFileEntries(
+			long folderId, String[] mimeTypes, int status, int start, int end,
+			OrderByComparator<FileEntry> obc)
+		throws PortalException {
+
+		List<Long> folderIds = new ArrayList<>(1);
+
+		folderIds.add(folderId);
+
+		QueryDefinition<DLFileEntry> queryDefinition = new QueryDefinition<>(
+			status, start, end,
+			DLFileEntryOrderByComparator.getOrderByComparator(obc));
+
+		try {
+			List<DLFileEntry> dlFileEntries =
+				dlFileEntryLocalService.getFileEntries(
+					getGroupId(), 0, new ArrayList<>(), toFolderIds(folderIds),
+					mimeTypes, queryDefinition);
+
+			return RepositoryModelUtil.toFileEntries(dlFileEntries);
+		}
+		catch (Exception e) {
+			throw new PortalException(e);
+		}
+	}
+
+	@Override
 	public List<RepositoryEntry> getFileEntriesAndFileShortcuts(
 		long folderId, int status, int start, int end) {
 
@@ -293,6 +340,28 @@ public class LiferayLocalRepository
 	public int getFileEntriesCount(long folderId, int status) {
 		return dlFileEntryLocalService.getFileEntriesCount(
 			getGroupId(), toFolderId(folderId), status);
+	}
+
+	@Override
+	public int getFileEntriesCount(
+			long folderId, String[] mimeTypes, int status)
+		throws PortalException {
+
+		List<Long> folderIds = new ArrayList<>(1);
+
+		folderIds.add(folderId);
+
+		QueryDefinition<DLFileEntry> queryDefinition = new QueryDefinition<>(
+			status);
+
+		try {
+			return dlFileEntryLocalService.getFileEntriesCount(
+				getGroupId(), 0, new ArrayList<>(), toFolderIds(folderIds),
+				mimeTypes, queryDefinition);
+		}
+		catch (Exception e) {
+			throw new PortalException(e);
+		}
 	}
 
 	@Override
@@ -480,7 +549,7 @@ public class LiferayLocalRepository
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	@Override
@@ -495,11 +564,47 @@ public class LiferayLocalRepository
 			assetLinkEntryIds);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #updateFileEntry(long, long, String, String, String, String, String, DLVersionNumberIncrease, File, ServiceContext)}
+	 */
+	@Deprecated
 	@Override
 	public FileEntry updateFileEntry(
 			long userId, long fileEntryId, String sourceFileName,
 			String mimeType, String title, String description, String changeLog,
 			boolean majorVersion, File file, ServiceContext serviceContext)
+		throws PortalException {
+
+		return updateFileEntry(
+			userId, fileEntryId, sourceFileName, mimeType, title, description,
+			changeLog, DLVersionNumberIncrease.fromMajorVersion(majorVersion),
+			file, serviceContext);
+	}
+
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #updateFileEntry(long, long, String, String, String, String, String, DLVersionNumberIncrease, InputStream, long, ServiceContext)}
+	 */
+	@Deprecated
+	@Override
+	public FileEntry updateFileEntry(
+			long userId, long fileEntryId, String sourceFileName,
+			String mimeType, String title, String description, String changeLog,
+			boolean majorVersion, InputStream is, long size,
+			ServiceContext serviceContext)
+		throws PortalException {
+
+		return updateFileEntry(
+			userId, fileEntryId, sourceFileName, mimeType, title, description,
+			changeLog, DLVersionNumberIncrease.fromMajorVersion(majorVersion),
+			is, size, serviceContext);
+	}
+
+	@Override
+	public FileEntry updateFileEntry(
+			long userId, long fileEntryId, String sourceFileName,
+			String mimeType, String title, String description, String changeLog,
+			DLVersionNumberIncrease dlVersionNumberIncrease, File file,
+			ServiceContext serviceContext)
 		throws PortalException {
 
 		long fileEntryTypeId = ParamUtil.getLong(
@@ -516,8 +621,8 @@ public class LiferayLocalRepository
 
 		DLFileEntry dlFileEntry = dlFileEntryLocalService.updateFileEntry(
 			userId, fileEntryId, sourceFileName, mimeType, title, description,
-			changeLog, majorVersion, fileEntryTypeId, ddmFormValuesMap, file,
-			null, size, serviceContext);
+			changeLog, dlVersionNumberIncrease, fileEntryTypeId,
+			ddmFormValuesMap, file, null, size, serviceContext);
 
 		return new LiferayFileEntry(dlFileEntry);
 	}
@@ -526,8 +631,8 @@ public class LiferayLocalRepository
 	public FileEntry updateFileEntry(
 			long userId, long fileEntryId, String sourceFileName,
 			String mimeType, String title, String description, String changeLog,
-			boolean majorVersion, InputStream is, long size,
-			ServiceContext serviceContext)
+			DLVersionNumberIncrease dlVersionNumberIncrease, InputStream is,
+			long size, ServiceContext serviceContext)
 		throws PortalException {
 
 		long fileEntryTypeId = ParamUtil.getLong(
@@ -538,8 +643,8 @@ public class LiferayLocalRepository
 
 		DLFileEntry dlFileEntry = dlFileEntryLocalService.updateFileEntry(
 			userId, fileEntryId, sourceFileName, mimeType, title, description,
-			changeLog, majorVersion, fileEntryTypeId, ddmFormValuesMap, null,
-			is, size, serviceContext);
+			changeLog, dlVersionNumberIncrease, fileEntryTypeId,
+			ddmFormValuesMap, null, is, size, serviceContext);
 
 		return new LiferayFileEntry(dlFileEntry);
 	}

@@ -14,7 +14,10 @@
 
 package com.liferay.portal.kernel.servlet.filters.invoker;
 
-import com.liferay.portal.kernel.concurrent.ConcurrentLFUCache;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.cache.PortalCache;
+import com.liferay.portal.kernel.cache.PortalCacheHelperUtil;
+import com.liferay.portal.kernel.cache.PortalCacheManagerNames;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.servlet.HttpOnlyCookieServletResponse;
@@ -28,7 +31,6 @@ import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.ServerDetector;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -131,7 +133,7 @@ public class InvokerFilter extends BasePortalLifecycle implements Filter {
 
 	protected void clearFilterChainsCache() {
 		if (_filterChains != null) {
-			_filterChains.clear();
+			_filterChains.removeAll();
 		}
 	}
 
@@ -148,13 +150,18 @@ public class InvokerFilter extends BasePortalLifecycle implements Filter {
 
 			invokerFilterHelper.destroy();
 		}
+
+		if (_INVOKER_FILTER_CHAIN_ENABLED) {
+			PortalCacheHelperUtil.removePortalCache(
+				PortalCacheManagerNames.SINGLE_VM, _getPortalCacheName());
+		}
 	}
 
 	@Override
 	protected void doPortalInit() throws Exception {
-		if (_INVOKER_FILTER_CHAIN_SIZE > 0) {
-			_filterChains = new ConcurrentLFUCache<>(
-				_INVOKER_FILTER_CHAIN_SIZE);
+		if (_INVOKER_FILTER_CHAIN_ENABLED) {
+			_filterChains = PortalCacheHelperUtil.getPortalCache(
+				PortalCacheManagerNames.SINGLE_VM, _getPortalCacheName());
 		}
 
 		ServletContext servletContext = _filterConfig.getServletContext();
@@ -183,7 +190,9 @@ public class InvokerFilter extends BasePortalLifecycle implements Filter {
 	protected InvokerFilterChain getInvokerFilterChain(
 		HttpServletRequest request, String uri, FilterChain filterChain) {
 
-		if (_filterChains == null) {
+		if ((_filterChains == null) ||
+			Validator.isNotNull(request.getQueryString())) {
+
 			return _invokerFilterHelper.createInvokerFilterChain(
 				request, _dispatcher, uri, filterChain);
 		}
@@ -219,8 +228,8 @@ public class InvokerFilter extends BasePortalLifecycle implements Filter {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #getURI(HttpServletRequest,
-	 *             String)}
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #getURI(HttpServletRequest, String)}
 	 */
 	@Deprecated
 	protected String getURI(HttpServletRequest request) {
@@ -239,7 +248,7 @@ public class InvokerFilter extends BasePortalLifecycle implements Filter {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	protected String getURL(HttpServletRequest request) {
@@ -320,8 +329,22 @@ public class InvokerFilter extends BasePortalLifecycle implements Filter {
 			request, response);
 	}
 
-	private static final int _INVOKER_FILTER_CHAIN_SIZE = GetterUtil.getInteger(
-		PropsUtil.get(PropsKeys.INVOKER_FILTER_CHAIN_SIZE));
+	private String _getPortalCacheName() {
+		ServletContext servletContext = _filterConfig.getServletContext();
+
+		String servletContextName = servletContext.getContextPath();
+
+		if (Validator.isNull(servletContextName)) {
+			return _filterConfig.getFilterName();
+		}
+
+		return StringBundler.concat(
+			servletContextName, StringPool.DASH, _filterConfig.getFilterName());
+	}
+
+	private static final boolean _INVOKER_FILTER_CHAIN_ENABLED =
+		GetterUtil.getBoolean(
+			PropsUtil.get(PropsKeys.INVOKER_FILTER_CHAIN_ENABLED));
 
 	private static final int _INVOKER_FILTER_URI_MAX_LENGTH =
 		GetterUtil.getInteger(
@@ -334,7 +357,7 @@ public class InvokerFilter extends BasePortalLifecycle implements Filter {
 
 	private String _contextPath;
 	private Dispatcher _dispatcher;
-	private ConcurrentLFUCache<String, InvokerFilterChain> _filterChains;
+	private PortalCache<String, InvokerFilterChain> _filterChains;
 	private FilterConfig _filterConfig;
 	private InvokerFilterHelper _invokerFilterHelper;
 

@@ -59,6 +59,7 @@ public class ContactLocalServiceImpl extends ContactLocalServiceBaseImpl {
 		throws PortalException {
 
 		User user = userPersistence.findByPrimaryKey(userId);
+
 		Date birthday = PortalUtil.getDate(
 			birthdayMonth, birthdayDay, birthdayYear,
 			ContactBirthdayException.class);
@@ -140,6 +141,18 @@ public class ContactLocalServiceImpl extends ContactLocalServiceBaseImpl {
 		}
 
 		return contact;
+	}
+
+	@Override
+	public List<Contact> getCompanyContacts(
+		long companyId, int start, int end) {
+
+		return contactPersistence.findByCompanyId(companyId, start, end);
+	}
+
+	@Override
+	public int getCompanyContactsCount(long companyId) {
+		return contactPersistence.countByCompanyId(companyId);
 	}
 
 	@Override

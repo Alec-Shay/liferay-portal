@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.servlet;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
@@ -44,6 +45,10 @@ public class PortalWebResourcesUtil {
 		PortalWebResources portalWebResources = _portalWebResourcesMap.get(
 			resourceType);
 
+		if (portalWebResources == null) {
+			return -1;
+		}
+
 		return portalWebResources.getLastModified();
 	}
 
@@ -51,7 +56,25 @@ public class PortalWebResourcesUtil {
 		PortalWebResources portalWebResources = _portalWebResourcesMap.get(
 			resourceType);
 
+		if (portalWebResources == null) {
+			return StringPool.BLANK;
+		}
+
 		return portalWebResources.getContextPath();
+	}
+
+	public static long getPathLastModified(
+		String requestURI, long defaultValue) {
+
+		for (PortalWebResources portalWebResources :
+				_portalWebResourcesMap.values()) {
+
+			if (requestURI.startsWith(portalWebResources.getContextPath())) {
+				return portalWebResources.getLastModified();
+			}
+		}
+
+		return defaultValue;
 	}
 
 	public static String getPathResourceType(String path) {
@@ -90,6 +113,10 @@ public class PortalWebResourcesUtil {
 	}
 
 	public static URL getResource(ServletContext servletContext, String path) {
+		if (servletContext == null) {
+			return null;
+		}
+
 		path = stripContextPath(servletContext, path);
 
 		try {

@@ -74,10 +74,6 @@ public class WrapPortletTag
 			content = ThemeUtil.includeFTL(
 				servletContext, request, response, wrapPage, theme, false);
 		}
-		else if (extension.equals(ThemeHelper.TEMPLATE_EXTENSION_VM)) {
-			content = ThemeUtil.includeVM(
-				servletContext, request, response, wrapPage, theme, false);
-		}
 
 		return _CONTENT_WRAPPER_PRE.concat(content).concat(
 			_CONTENT_WRAPPER_POST);
@@ -90,6 +86,7 @@ public class WrapPortletTag
 				WebKeys.THEME_DISPLAY);
 
 			Theme theme = themeDisplay.getTheme();
+
 			PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
 
 			// Portlet content
@@ -99,7 +96,8 @@ public class WrapPortletTag
 			// Page
 
 			ThemeUtil.include(
-				servletContext, request, new PipingServletResponse(pageContext),
+				servletContext, request,
+				PipingServletResponse.createPipingServletResponse(pageContext),
 				getPage(), theme);
 
 			return EVAL_PAGE;

@@ -4,15 +4,15 @@
 		"url": "https://issues.liferay.com/"
 	},
 	"dependencies": {
-		"gulp": "^3.8.10",
-		"liferay-theme-deps-7.0": "*",
-		"liferay-theme-tasks": "*",
 		"metal": "^2.2.0",
 		"metal-dom": "^2.4.0",
 		"metal-state": "^2.3.0"
 	},
 	"devDependencies": {
-		"liferay-theme-es2015-hook": "^0.1.0"
+		"gulp": "^3.8.10",
+		"liferay-theme-deps-7.1": "8.0.0-beta.1",
+		"liferay-theme-es2015-hook": "8.0.0-beta.1",
+		"liferay-theme-tasks": "8.0.0-beta.1"
 	},
 	"keywords": [
 		"liferay-theme"
@@ -20,12 +20,15 @@
 	"license": "LGPL",
 	"liferayTheme": {
 		"baseTheme": "styled",
-		"hookModules": ["liferay-theme-es2015-hook"],
+		"distName": "porygon-theme",
+		"hookModules": [
+			"liferay-theme-es2015-hook"
+		],
 		"rubySass": false,
-		"version": "7.0"
+		"version": "7.1"
 	},
 	"main": "package.json",
-	"name": "porygon-theme",
+	"name": "liferay-porygon-theme",
 	"repository": "liferay/liferay-portal",
-	"version": "1.0.9"
+	"version": "2.0.0"
 }

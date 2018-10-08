@@ -17,6 +17,7 @@ package com.liferay.portal.kernel.repository.proxy;
 import aQute.bnd.annotation.ProviderType;
 
 import com.liferay.asset.kernel.service.AssetEntryLocalService;
+import com.liferay.document.library.kernel.model.DLVersionNumberIncrease;
 import com.liferay.document.library.kernel.service.DLAppHelperLocalService;
 import com.liferay.document.library.kernel.service.DLFolderLocalService;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -29,6 +30,7 @@ import com.liferay.portal.kernel.repository.model.FileShortcut;
 import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.repository.model.RepositoryEntry;
+import com.liferay.portal.kernel.repository.util.RepositoryUserUtil;
 import com.liferay.portal.kernel.search.Hits;
 import com.liferay.portal.kernel.search.Query;
 import com.liferay.portal.kernel.search.SearchContext;
@@ -89,8 +91,9 @@ public class BaseRepositoryProxyBean
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, see {@link #addFileEntry(long, long, String,
-	 *             String, String, String, String, File, ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), see {@link #addFileEntry(long,
+	 *             long, String, String, String, String, String, File,
+	 *             ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -101,16 +104,14 @@ public class BaseRepositoryProxyBean
 		throws PortalException {
 
 		return addFileEntry(
-			com.liferay.portal.kernel.repository.util.RepositoryUserUtil.
-				getUserId(),
-			folderId, sourceFileName, mimeType, title, description, changeLog,
-			file, serviceContext);
+			RepositoryUserUtil.getUserId(), folderId, sourceFileName, mimeType,
+			title, description, changeLog, file, serviceContext);
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, see {@link #addFileEntry(long, long, String,
-	 *             String, String, String, String, InputStream, long,
-	 *             ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), see {@link #addFileEntry(long,
+	 *             long, String, String, String, String, String, InputStream,
+	 *             long, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -121,10 +122,8 @@ public class BaseRepositoryProxyBean
 		throws PortalException {
 
 		return addFileEntry(
-			com.liferay.portal.kernel.repository.util.RepositoryUserUtil.
-				getUserId(),
-			folderId, sourceFileName, mimeType, title, description, changeLog,
-			is, size, serviceContext);
+			RepositoryUserUtil.getUserId(), folderId, sourceFileName, mimeType,
+			title, description, changeLog, is, size, serviceContext);
 	}
 
 	@Override
@@ -152,8 +151,8 @@ public class BaseRepositoryProxyBean
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #addFolder(long, long,
-	 *             String, String, ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #addFolder(long, long, String, String, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -163,9 +162,8 @@ public class BaseRepositoryProxyBean
 		throws PortalException {
 
 		return addFolder(
-			com.liferay.portal.kernel.repository.util.RepositoryUserUtil.
-				getUserId(),
-			parentFolderId, name, description, serviceContext);
+			RepositoryUserUtil.getUserId(), parentFolderId, name, description,
+			serviceContext);
 	}
 
 	@Override
@@ -174,8 +172,9 @@ public class BaseRepositoryProxyBean
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #checkInFileEntry(long, long,
-	 *             boolean, String, ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #checkInFileEntry(long, long, boolean, String,
+	 *             ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -188,14 +187,32 @@ public class BaseRepositoryProxyBean
 			fileEntryId, major, changeLog, serviceContext);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #checkInFileEntry(long, long, DLVersionNumberIncrease, String, ServiceContext)}
+	 */
+	@Deprecated
 	@Override
 	public void checkInFileEntry(
 			long userId, long fileEntryId, boolean majorVersion,
 			String changeLog, ServiceContext serviceContext)
 		throws PortalException {
 
+		checkInFileEntry(
+			userId, fileEntryId,
+			DLVersionNumberIncrease.fromMajorVersion(majorVersion), changeLog,
+			serviceContext);
+	}
+
+	@Override
+	public void checkInFileEntry(
+			long userId, long fileEntryId,
+			DLVersionNumberIncrease dlVersionNumberIncrease, String changeLog,
+			ServiceContext serviceContext)
+		throws PortalException {
+
 		_baseRepository.checkInFileEntry(
-			userId, fileEntryId, majorVersion, changeLog, serviceContext);
+			userId, fileEntryId, dlVersionNumberIncrease, changeLog,
+			serviceContext);
 	}
 
 	@Override
@@ -209,8 +226,8 @@ public class BaseRepositoryProxyBean
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #checkInFileEntry(long, long,
-	 *             String, ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #checkInFileEntry(long, long, String, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -255,8 +272,8 @@ public class BaseRepositoryProxyBean
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #copyFileEntry(long, long,
-	 *             long, long, ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #copyFileEntry(long, long, long, long, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -266,9 +283,8 @@ public class BaseRepositoryProxyBean
 		throws PortalException {
 
 		return copyFileEntry(
-			com.liferay.portal.kernel.repository.util.RepositoryUserUtil.
-				getUserId(),
-			groupId, fileEntryId, destFolderId, serviceContext);
+			RepositoryUserUtil.getUserId(), groupId, fileEntryId, destFolderId,
+			serviceContext);
 	}
 
 	@Override
@@ -359,6 +375,16 @@ public class BaseRepositoryProxyBean
 
 	@Override
 	public List<FileEntry> getFileEntries(
+			long folderId, String[] mimeTypes, int status, int start, int end,
+			OrderByComparator<FileEntry> obc)
+		throws PortalException {
+
+		return _baseRepository.getFileEntries(
+			folderId, mimeTypes, status, start, end, obc);
+	}
+
+	@Override
+	public List<FileEntry> getFileEntries(
 			long folderId, String[] mimeTypes, int start, int end,
 			OrderByComparator<FileEntry> obc)
 		throws PortalException {
@@ -422,6 +448,14 @@ public class BaseRepositoryProxyBean
 		throws PortalException {
 
 		return _baseRepository.getFileEntriesCount(folderId, mimeTypes);
+	}
+
+	@Override
+	public int getFileEntriesCount(
+			long folderId, String[] mimeTypes, int status)
+		throws PortalException {
+
+		return _baseRepository.getFileEntriesCount(folderId, mimeTypes, status);
 	}
 
 	@Override
@@ -668,7 +702,7 @@ public class BaseRepositoryProxyBean
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	@Override
@@ -677,7 +711,7 @@ public class BaseRepositoryProxyBean
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	@Override
@@ -729,8 +763,8 @@ public class BaseRepositoryProxyBean
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #moveFileEntry(long, long,
-	 *             long, ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #moveFileEntry(long, long, long, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -739,9 +773,8 @@ public class BaseRepositoryProxyBean
 		throws PortalException {
 
 		return moveFileEntry(
-			com.liferay.portal.kernel.repository.util.RepositoryUserUtil.
-				getUserId(),
-			fileEntryId, newFolderId, serviceContext);
+			RepositoryUserUtil.getUserId(), fileEntryId, newFolderId,
+			serviceContext);
 	}
 
 	@Override
@@ -757,8 +790,8 @@ public class BaseRepositoryProxyBean
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #moveFolder(long, long, long,
-	 *             ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #moveFolder(long, long, long, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -768,9 +801,8 @@ public class BaseRepositoryProxyBean
 		throws PortalException {
 
 		return moveFolder(
-			com.liferay.portal.kernel.repository.util.RepositoryUserUtil.
-				getUserId(),
-			folderId, newParentFolderId, serviceContext);
+			RepositoryUserUtil.getUserId(), folderId, newParentFolderId,
+			serviceContext);
 	}
 
 	@Override
@@ -806,8 +838,8 @@ public class BaseRepositoryProxyBean
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #revertFileEntry(long, long,
-	 *             String, ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #revertFileEntry(long, long, String, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -924,6 +956,10 @@ public class BaseRepositoryProxyBean
 		_baseRepository.unlockFolder(parentFolderId, name, lockUuid);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #updateFileEntry(long, long, String, String, String, String, String, DLVersionNumberIncrease, File, ServiceContext)}
+	 */
+	@Deprecated
 	@Override
 	public FileEntry updateFileEntry(
 			long userId, long fileEntryId, String sourceFileName,
@@ -931,13 +967,16 @@ public class BaseRepositoryProxyBean
 			boolean majorVersion, File file, ServiceContext serviceContext)
 		throws PortalException {
 
-		FileEntry fileEntry = _baseRepository.updateFileEntry(
+		return updateFileEntry(
 			userId, fileEntryId, sourceFileName, mimeType, title, description,
-			changeLog, majorVersion, file, serviceContext);
-
-		return newFileEntryProxyBean(fileEntry);
+			changeLog, DLVersionNumberIncrease.fromMajorVersion(majorVersion),
+			file, serviceContext);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #updateFileEntry(long, long, String, String, String, String, String, DLVersionNumberIncrease, InputStream, long, ServiceContext)}
+	 */
+	@Deprecated
 	@Override
 	public FileEntry updateFileEntry(
 			long userId, long fileEntryId, String sourceFileName,
@@ -946,17 +985,46 @@ public class BaseRepositoryProxyBean
 			ServiceContext serviceContext)
 		throws PortalException {
 
+		return updateFileEntry(
+			userId, fileEntryId, sourceFileName, mimeType, title, description,
+			changeLog, DLVersionNumberIncrease.fromMajorVersion(majorVersion),
+			is, size, serviceContext);
+	}
+
+	@Override
+	public FileEntry updateFileEntry(
+			long userId, long fileEntryId, String sourceFileName,
+			String mimeType, String title, String description, String changeLog,
+			DLVersionNumberIncrease dlVersionNumberIncrease, File file,
+			ServiceContext serviceContext)
+		throws PortalException {
+
 		FileEntry fileEntry = _baseRepository.updateFileEntry(
 			userId, fileEntryId, sourceFileName, mimeType, title, description,
-			changeLog, majorVersion, is, size, serviceContext);
+			changeLog, dlVersionNumberIncrease, file, serviceContext);
+
+		return newFileEntryProxyBean(fileEntry);
+	}
+
+	@Override
+	public FileEntry updateFileEntry(
+			long userId, long fileEntryId, String sourceFileName,
+			String mimeType, String title, String description, String changeLog,
+			DLVersionNumberIncrease dlVersionNumberIncrease, InputStream is,
+			long size, ServiceContext serviceContext)
+		throws PortalException {
+
+		FileEntry fileEntry = _baseRepository.updateFileEntry(
+			userId, fileEntryId, sourceFileName, mimeType, title, description,
+			changeLog, dlVersionNumberIncrease, is, size, serviceContext);
 
 		return newFileEntryProxyBean(fileEntry);
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #updateFileEntry(long, long,
-	 *             String, String, String, String, String, boolean, File,
-	 *             ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #updateFileEntry(long, long, String, String, String, String,
+	 *             String, boolean, File, ServiceContext)}
 	 */
 	@Deprecated
 	@Override
@@ -974,9 +1042,9 @@ public class BaseRepositoryProxyBean
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #updateFileEntry(long, long,
-	 *             String, String, String, String, String, boolean, InputStream,
-	 *             long, ServiceContext)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #updateFileEntry(long, long, String, String, String, String,
+	 *             String, boolean, InputStream, long, ServiceContext)}
 	 */
 	@Deprecated
 	@Override

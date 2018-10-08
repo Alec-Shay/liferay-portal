@@ -49,6 +49,8 @@ import com.liferay.portal.test.rule.AdviseWith;
 import com.liferay.portal.test.rule.AspectJNewEnvTestRule;
 import com.liferay.portal.util.PropsImpl;
 import com.liferay.portal.util.PropsValues;
+import com.liferay.registry.BasicRegistryImpl;
+import com.liferay.registry.RegistryUtil;
 
 import java.io.DataInputStream;
 import java.io.File;
@@ -97,10 +99,12 @@ public class HttpClientSPIAgentTest {
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
 		new AggregateTestRule(
-			CodeCoverageAssertor.INSTANCE, AspectJNewEnvTestRule.INSTANCE);
+			AspectJNewEnvTestRule.INSTANCE, CodeCoverageAssertor.INSTANCE);
 
 	@Before
 	public void setUp() {
+		RegistryUtil.setRegistry(new BasicRegistryImpl());
+
 		PropsUtil.setProps(new PropsImpl());
 
 		_portlet = new PortletImpl() {
@@ -204,7 +208,7 @@ public class HttpClientSPIAgentTest {
 
 				socket.close();
 
-				Assert.assertTrue(logRecords.isEmpty());
+				Assert.assertTrue(logRecords.toString(), logRecords.isEmpty());
 
 				// Clean up when input is shutdown, failed with log
 
@@ -230,7 +234,8 @@ public class HttpClientSPIAgentTest {
 
 				socket.close();
 
-				Assert.assertEquals(1, logRecords.size());
+				Assert.assertEquals(
+					logRecords.toString(), 1, logRecords.size());
 
 				LogRecord logRecord = logRecords.get(0);
 
@@ -293,7 +298,7 @@ public class HttpClientSPIAgentTest {
 			PropsValues.PORTAL_RESILIENCY_SPI_AGENT_CLIENT_POOL_MAX_SIZE,
 			socketBlockingQueue.remainingCapacity());
 
-		StringBundler sb = new StringBundler();
+		StringBundler sb = new StringBundler(6);
 
 		sb.append("POST ");
 		sb.append(HttpClientSPIAgent.SPI_AGENT_CONTEXT_PATH);
@@ -415,7 +420,7 @@ public class HttpClientSPIAgentTest {
 
 				closePeers(socket, serverSocket);
 
-				Assert.assertTrue(logRecords.isEmpty());
+				Assert.assertTrue(logRecords.toString(), logRecords.isEmpty());
 
 				// Error with log
 
@@ -441,7 +446,8 @@ public class HttpClientSPIAgentTest {
 
 				closePeers(socket, serverSocket);
 
-				Assert.assertEquals(1, logRecords.size());
+				Assert.assertEquals(
+					logRecords.toString(), 1, logRecords.size());
 
 				LogRecord logRecord = logRecords.get(0);
 
@@ -469,7 +475,7 @@ public class HttpClientSPIAgentTest {
 
 				closePeers(socket, serverSocket);
 
-				Assert.assertTrue(logRecords.isEmpty());
+				Assert.assertTrue(logRecords.toString(), logRecords.isEmpty());
 			}
 		}
 	}
@@ -526,7 +532,7 @@ public class HttpClientSPIAgentTest {
 		}
 	}
 
-	@AdviseWith(adviceClasses = {PropsUtilAdvice.class})
+	@AdviseWith(adviceClasses = PropsUtilAdvice.class)
 	@NewEnv(type = NewEnv.Type.CLASSLOADER)
 	@Test
 	public void testPrepareRequest() throws Exception {
@@ -667,7 +673,7 @@ public class HttpClientSPIAgentTest {
 
 				closePeers(socket, serverSocket);
 
-				Assert.assertTrue(logRecords.isEmpty());
+				Assert.assertTrue(logRecords.toString(), logRecords.isEmpty());
 
 				// Force close, failed with log
 
@@ -687,7 +693,8 @@ public class HttpClientSPIAgentTest {
 
 				closePeers(socket, serverSocket);
 
-				Assert.assertEquals(1, logRecords.size());
+				Assert.assertEquals(
+					logRecords.toString(), 1, logRecords.size());
 
 				LogRecord logRecord = logRecords.get(0);
 
@@ -855,7 +862,7 @@ public class HttpClientSPIAgentTest {
 				Assert.assertSame(IOException.class, throwable.getClass());
 			}
 
-			Assert.assertTrue(logRecords.isEmpty());
+			Assert.assertTrue(logRecords.toString(), logRecords.isEmpty());
 
 			swapSocketImpl(socket, socketImpl);
 
@@ -890,7 +897,7 @@ public class HttpClientSPIAgentTest {
 				Assert.assertSame(IOException.class, throwable.getClass());
 			}
 
-			Assert.assertEquals(1, logRecords.size());
+			Assert.assertEquals(logRecords.toString(), 1, logRecords.size());
 
 			LogRecord logRecord = logRecords.get(0);
 
@@ -1116,7 +1123,7 @@ public class HttpClientSPIAgentTest {
 		Set<String> files = ReflectionTestUtil.getFieldValue(
 			Class.forName("java.io.DeleteOnExitHook"), "files");
 
-		Assert.assertTrue(files.contains(tempFile.getPath()));
+		Assert.assertTrue(files.toString(), files.contains(tempFile.getPath()));
 	}
 
 	protected void closePeers(Socket socket, ServerSocket serverSocket)

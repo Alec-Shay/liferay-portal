@@ -14,6 +14,7 @@
 
 package com.liferay.portlet;
 
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
@@ -30,7 +31,6 @@ import com.liferay.portal.kernel.transaction.TransactionConfig;
 import com.liferay.portal.kernel.transaction.TransactionInvokerUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.ProxyUtil;
-import com.liferay.portal.kernel.util.ReflectionUtil;
 import com.liferay.portal.spring.transaction.DefaultTransactionExecutor;
 import com.liferay.portal.spring.transaction.TransactionAttributeAdapter;
 import com.liferay.portal.spring.transaction.TransactionInterceptor;
@@ -82,6 +82,9 @@ public class PortalPreferencesImplTest {
 			PortalPreferencesLocalService.class.getMethod(
 				"updatePortalPreferences",
 				com.liferay.portal.kernel.model.PortalPreferences.class);
+
+		_platformTransactionManager = ReflectionTestUtil.getFieldValue(
+			_originalTransactionExecutor, "_platformTransactionManager");
 	}
 
 	@Before
@@ -418,14 +421,12 @@ public class PortalPreferencesImplTest {
 
 		@Override
 		public void commit(
-			PlatformTransactionManager platformTransactionManager,
 			TransactionAttributeAdapter transactionAttributeAdapter,
 			TransactionStatusAdapter transactionStatusAdapter) {
 
 			if (!_synchronizeThreadLocal.get()) {
 				_originalTransactionExecutor.commit(
-					platformTransactionManager, transactionAttributeAdapter,
-					transactionStatusAdapter);
+					transactionAttributeAdapter, transactionStatusAdapter);
 
 				return;
 			}
@@ -434,8 +435,7 @@ public class PortalPreferencesImplTest {
 				_cyclicBarrier.await();
 
 				_originalTransactionExecutor.commit(
-					platformTransactionManager, transactionAttributeAdapter,
-					transactionStatusAdapter);
+					transactionAttributeAdapter, transactionStatusAdapter);
 			}
 			catch (Throwable t) {
 				ReflectionUtil.throwException(t);
@@ -447,6 +447,8 @@ public class PortalPreferencesImplTest {
 		}
 
 		private SynchronizedTransactionExecutor(long testOwnerId) {
+			super(_platformTransactionManager);
+
 			_testOwnerId = testOwnerId;
 		}
 
@@ -514,13 +516,14 @@ public class PortalPreferencesImplTest {
 
 	private static final String _VALUE_2 = "value2";
 
-	private static final String[] _VALUES_1 = new String[] {"values1"};
+	private static final String[] _VALUES_1 = {"values1"};
 
-	private static final String[] _VALUES_2 = new String[] {"values2"};
+	private static final String[] _VALUES_2 = {"values2"};
 
 	private static PortalPreferencesLocalService
 		_originalPortalPreferencesLocalService;
 	private static DefaultTransactionExecutor _originalTransactionExecutor;
+	private static PlatformTransactionManager _platformTransactionManager;
 	private static final ThreadLocal<Boolean> _synchronizeThreadLocal =
 		new InheritableThreadLocal<>();
 	private static TransactionInterceptor _transactionInterceptor;

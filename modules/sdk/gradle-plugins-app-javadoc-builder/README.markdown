@@ -5,7 +5,7 @@ single, combined HTML document for an application that spans different
 subprojects, each one representing a different component of the same
 application.
 
-The plugin has been successfully tested with Gradle 2.5 up to 3.2.1.
+The plugin has been successfully tested with Gradle 2.5 up to 3.5.1.
 
 ## Usage
 
@@ -19,7 +19,7 @@ buildscript {
 
 	repositories {
 		maven {
-			url "https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/public"
+			url "https://repository-cdn.liferay.com/nexus/content/groups/public"
 		}
 	}
 }

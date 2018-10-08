@@ -18,7 +18,6 @@ import com.liferay.portal.kernel.exception.NoSuchResourceActionException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 
 import java.io.InputStream;
 
@@ -32,6 +31,14 @@ import javax.servlet.http.HttpServletRequest;
  * @author Daeyoung Song
  */
 public class ResourceActionsUtil {
+
+	public static void check(Portlet portlet) {
+		getResourceActions().check(portlet);
+	}
+
+	public static void check(String portletName) {
+		getResourceActions().check(portletName);
+	}
 
 	public static void checkAction(String name, String actionId)
 		throws NoSuchResourceActionException {
@@ -52,7 +59,7 @@ public class ResourceActionsUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	public static List<String> getActionsNames(
@@ -62,7 +69,7 @@ public class ResourceActionsUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	public static List<String> getActionsNames(
@@ -193,8 +200,6 @@ public class ResourceActionsUtil {
 	}
 
 	public static ResourceActions getResourceActions() {
-		PortalRuntimePermission.checkGetBeanProperty(ResourceActionsUtil.class);
-
 		return _resourceActions;
 	}
 
@@ -254,8 +259,16 @@ public class ResourceActionsUtil {
 		getResourceActions().read(servletContextName, classLoader, source);
 	}
 
+	public static void read(
+			String servletContextName, ClassLoader classLoader,
+			String... sources)
+		throws Exception {
+
+		getResourceActions().read(servletContextName, classLoader, sources);
+	}
+
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	public static void read(String servletContextName, InputStream inputStream)
@@ -264,9 +277,20 @@ public class ResourceActionsUtil {
 		getResourceActions().read(servletContextName, inputStream);
 	}
 
-	public void setResourceActions(ResourceActions resourceActions) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
+	public static void readAndCheck(
+			String servletContextName, ClassLoader classLoader,
+			String... sources)
+		throws Exception {
 
+		getResourceActions().readAndCheck(
+			servletContextName, classLoader, sources);
+	}
+
+	public static void removePortletResource(String portletName) {
+		getResourceActions().removePortletResource(portletName);
+	}
+
+	public void setResourceActions(ResourceActions resourceActions) {
 		_resourceActions = resourceActions;
 	}
 

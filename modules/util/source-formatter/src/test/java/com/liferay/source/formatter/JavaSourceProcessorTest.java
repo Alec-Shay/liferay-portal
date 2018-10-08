@@ -43,8 +43,7 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 		test(
 			"ConstructorParameterOrder.testjava",
 			"'_value = value;' should come before '_attribute = attribute;' " +
-				"to match order of constructor parameters",
-			23);
+				"to match order of constructor parameters");
 	}
 
 	@Test
@@ -66,7 +65,7 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 
 	@Test
 	public void testDuplicateVariables() throws Exception {
-		test("DuplicateVariables.testjava", "Duplicate _s2");
+		test("DuplicateVariables.testjava", "Duplicate _STRING_2");
 	}
 
 	@Test
@@ -114,15 +113,15 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 		test(
 			"IfClauseParentheses.testjava",
 			new String[] {
-				"Missing parentheses in if-statement",
-				"Missing parentheses in if-statement",
-				"Missing parentheses in if-statement",
-				"Missing parentheses in if-statement",
-				"Redundant parentheses in if-statement",
-				"Redundant parentheses in if-statement",
-				"Redundant parentheses in if-statement"
+				"Missing parentheses", "Missing parentheses",
+				"Missing parentheses", "Missing parentheses",
+				"Missing parentheses",
+				"Unnecessary parentheses around expression.",
+				"Redundant parentheses",
+				"Unnecessary parentheses around expression.",
+				"Missing parentheses"
 			},
-			new Integer[] {25, 29, 33, 39, 43, 47, 51});
+			new Integer[] {25, 29, 33, 39, 43, 43, 47, 51, 59});
 	}
 
 	@Test
@@ -162,12 +161,16 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 		test(
 			"IncorrectLineBreaks1.testjava",
 			new String[] {
-				"Line should not start with '='",
+				"'=' should be on the previous line.",
 				"There should be a line break after '||'",
 				"There should be a line break after '\"Hello World\", " +
 					"\"Hello\", \"World\"),'",
+				"Add the string 'Hello World Hello World ' to the previous " +
+					"literal string",
 				"There should be a line break after '\"Hello World Hello " +
 					"World Hello World\",'",
+				"There should be a line break after " +
+					"'anotherStringWithAVeryLongName,'",
 				"There should be a line break after '='",
 				"There should be a line break after '+'",
 				"There should be a line break after '='",
@@ -178,16 +181,18 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 				"There should be a line break after '('",
 				"There should be a line break after '('",
 				"'null) {' should be added to previous line",
+				"There should be a line break after 'stringArray,'",
 				"There should be a line break before 'new " +
 					"Comparator<String>() {'",
 				"There should be a line break after '},'",
 				"There should be a line break before 'throws'",
+				"There should be a line break after 'companyId,'",
 				"There should be a line break before 'throws'",
-				"'new String[] {' should be added to previous line"
+				"There should be a line break after '}'"
 			},
 			new Integer[] {
-				31, 35, 43, 47, 49, 52, 55, 59, 62, 67, 71, 76, 80, 87, 98, 111,
-				116, 122, 132
+				32, 36, 44, 48, 48, 53, 56, 59, 62, 66, 69, 74, 78, 83, 87, 94,
+				105, 105, 118, 123, 130, 140, 158
 			});
 		test("IncorrectLineBreaks2.testjava");
 	}
@@ -212,9 +217,11 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 			new String[] {
 				"There should be a line break after '('",
 				"There should be a line break after '{'",
-				"Line starts with 3 tabs, but should be 4"
+				"Line starts with '3' tabs, but '4' tabs are expected",
+				"Line starts with '2' tabs, but '3' tabs are expected",
+				"Line starts with '3' tabs, but '4' tabs are expected"
 			},
-			new Integer[] {26, 30, 37});
+			new Integer[] {26, 30, 31, 32, 37});
 	}
 
 	@Test
@@ -222,15 +229,16 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 		test(
 			"IncorrectVariableNames1.testjava",
 			new String[] {
-				"Protected or public constant '_TEST_1' must match " +
-					"pattern '^[a-zA-Z0-9][_a-zA-Z0-9]*$'",
+				"public constant '_TEST_1' of type 'int' must match pattern " +
+					"'^[A-Z0-9][_A-Z0-9]*$'",
 				"Protected or public non-static field '_test2' must match " +
 					"pattern '^[a-z0-9][_a-zA-Z0-9]*$'"
 			},
 			new Integer[] {22, 28});
 		test(
 			"IncorrectVariableNames2.testjava",
-			"Private constant 'STRING_1' must match pattern '^_[_a-zA-Z0-9]*$'",
+			"private constant 'STRING_1' of type 'String' must match pattern " +
+				"'^_[A-Z0-9][_A-Z0-9]*$'",
 			26);
 		test(
 			"IncorrectVariableNames3.testjava",
@@ -260,8 +268,28 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 	}
 
 	@Test
+	public void testJavaParameterAnnotations() throws Exception {
+		test("JavaParameterAnnotations.testjava");
+	}
+
+	@Test
 	public void testJavaTermDividers() throws Exception {
 		test("JavaTermDividers.testjava");
+	}
+
+	@Test
+	public void testJavaTermMetadataIncorrectLineBreaks() throws Exception {
+		test("JavaTermMetadataIncorrectLineBreaks.testjava");
+	}
+
+	@Test
+	public void testJavaVariableFinalableFields1() throws Exception {
+		test("JavaVariableFinalableFields1.testjava");
+	}
+
+	@Test
+	public void testJavaVariableFinalableFields2() throws Exception {
+		test("JavaVariableFinalableFields2.testjava");
 	}
 
 	@Test
@@ -278,7 +306,7 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 
 	@Test
 	public void testLPS28266() throws Exception {
-		test("LPS28266.testjava", "Use rs.getInt(1) for count, see LPS-28266");
+		test("LPS28266.testjava", "Use rs.getInt(1) for count");
 	}
 
 	@Test
@@ -304,9 +332,9 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 	}
 
 	@Test
-	public void testPackagePath() throws Exception {
+	public void testPackageName() throws Exception {
 		test(
-			"PackagePath.testjava",
+			"PackageName.testjava",
 			"The declared package 'com.liferay.source.formatter.hello.world' " +
 				"does not match the expected package");
 	}
@@ -328,7 +356,8 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 		test(
 			"SecureRandomNumberGeneration.testjava",
 			"Use SecureRandomUtil or com.liferay.portal.kernel.security." +
-				"SecureRandom instead of java.security.SecureRandom");
+				"SecureRandom instead of java.security.SecureRandom, see " +
+					"LPS-39058");
 	}
 
 	@Test

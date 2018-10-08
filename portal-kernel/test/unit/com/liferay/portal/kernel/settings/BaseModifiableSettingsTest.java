@@ -19,12 +19,10 @@ import java.util.Collection;
 import org.junit.Assert;
 import org.junit.Test;
 
-import org.powermock.api.mockito.PowerMockito;
-
 /**
  * @author Iván Zaera
  */
-public class BaseModifiableSettingsTest extends PowerMockito {
+public class BaseModifiableSettingsTest {
 
 	@Test
 	public void testReset() {
@@ -53,7 +51,7 @@ public class BaseModifiableSettingsTest extends PowerMockito {
 
 		Collection<String> keys = _baseModifiableSettings.getModifiedKeys();
 
-		Assert.assertEquals(3, keys.size());
+		Assert.assertEquals(keys.toString(), 3, keys.size());
 
 		Assert.assertEquals(
 			"otherValue", _baseModifiableSettings.getValue("otherKey", null));

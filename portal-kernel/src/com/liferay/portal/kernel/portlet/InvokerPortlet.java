@@ -17,6 +17,7 @@ package com.liferay.portal.kernel.portlet;
 import aQute.bnd.annotation.ProviderType;
 
 import javax.portlet.EventPortlet;
+import javax.portlet.HeaderPortlet;
 import javax.portlet.Portlet;
 import javax.portlet.PortletConfig;
 import javax.portlet.PortletContext;
@@ -25,10 +26,11 @@ import javax.portlet.ResourceServingPortlet;
 
 /**
  * @author Michael Young
+ * @author Neil Griffin
  */
 @ProviderType
 public interface InvokerPortlet
-	extends EventPortlet, Portlet, ResourceServingPortlet {
+	extends EventPortlet, HeaderPortlet, Portlet, ResourceServingPortlet {
 
 	public static final String INIT_INVOKER_PORTLET_NAME =
 		"com.liferay.portal.invokerPortletName";
@@ -49,8 +51,18 @@ public interface InvokerPortlet
 
 	public boolean isFacesPortlet();
 
+	public boolean isHeaderPortlet();
+
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	public boolean isStrutsBridgePortlet();
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	public boolean isStrutsPortlet();
 
 	public void setPortletFilters() throws PortletException;

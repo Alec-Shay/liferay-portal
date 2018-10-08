@@ -19,8 +19,11 @@ import aQute.bnd.annotation.ProviderType;
 import com.liferay.expando.kernel.model.ExpandoBridge;
 import com.liferay.expando.kernel.util.ExpandoBridgeFactoryUtil;
 
+import com.liferay.petra.string.StringBundler;
+
 import com.liferay.portal.kernel.bean.AutoEscapeBeanHandler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.ModelWrapper;
 import com.liferay.portal.kernel.model.Ticket;
 import com.liferay.portal.kernel.model.TicketModel;
 import com.liferay.portal.kernel.model.impl.BaseModelImpl;
@@ -28,8 +31,6 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.io.Serializable;
@@ -107,9 +108,10 @@ public class TicketModelImpl extends BaseModelImpl<Ticket>
 			true);
 	public static final long CLASSNAMEID_COLUMN_BITMASK = 1L;
 	public static final long CLASSPK_COLUMN_BITMASK = 2L;
-	public static final long KEY_COLUMN_BITMASK = 4L;
-	public static final long TYPE_COLUMN_BITMASK = 8L;
-	public static final long TICKETID_COLUMN_BITMASK = 16L;
+	public static final long COMPANYID_COLUMN_BITMASK = 4L;
+	public static final long KEY_COLUMN_BITMASK = 8L;
+	public static final long TYPE_COLUMN_BITMASK = 16L;
+	public static final long TICKETID_COLUMN_BITMASK = 32L;
 	public static final long LOCK_EXPIRATION_TIME = GetterUtil.getLong(com.liferay.portal.util.PropsUtil.get(
 				"lock.expiration.time.com.liferay.portal.kernel.model.Ticket"));
 
@@ -259,7 +261,19 @@ public class TicketModelImpl extends BaseModelImpl<Ticket>
 
 	@Override
 	public void setCompanyId(long companyId) {
+		_columnBitmask |= COMPANYID_COLUMN_BITMASK;
+
+		if (!_setOriginalCompanyId) {
+			_setOriginalCompanyId = true;
+
+			_originalCompanyId = _companyId;
+		}
+
 		_companyId = companyId;
+	}
+
+	public long getOriginalCompanyId() {
+		return _originalCompanyId;
 	}
 
 	@Override
@@ -275,7 +289,7 @@ public class TicketModelImpl extends BaseModelImpl<Ticket>
 	@Override
 	public String getClassName() {
 		if (getClassNameId() <= 0) {
-			return StringPool.BLANK;
+			return "";
 		}
 
 		return PortalUtil.getClassName(getClassNameId());
@@ -339,7 +353,7 @@ public class TicketModelImpl extends BaseModelImpl<Ticket>
 	@Override
 	public String getKey() {
 		if (_key == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _key;
@@ -386,7 +400,7 @@ public class TicketModelImpl extends BaseModelImpl<Ticket>
 	@Override
 	public String getExtraInfo() {
 		if (_extraInfo == null) {
-			return StringPool.BLANK;
+			return "";
 		}
 		else {
 			return _extraInfo;
@@ -516,6 +530,10 @@ public class TicketModelImpl extends BaseModelImpl<Ticket>
 	@Override
 	public void resetOriginalValues() {
 		TicketModelImpl ticketModelImpl = this;
+
+		ticketModelImpl._originalCompanyId = ticketModelImpl._companyId;
+
+		ticketModelImpl._setOriginalCompanyId = false;
 
 		ticketModelImpl._originalClassNameId = ticketModelImpl._classNameId;
 
@@ -672,11 +690,13 @@ public class TicketModelImpl extends BaseModelImpl<Ticket>
 
 	private static final ClassLoader _classLoader = Ticket.class.getClassLoader();
 	private static final Class<?>[] _escapedModelInterfaces = new Class[] {
-			Ticket.class
+			Ticket.class, ModelWrapper.class
 		};
 	private long _mvccVersion;
 	private long _ticketId;
 	private long _companyId;
+	private long _originalCompanyId;
+	private boolean _setOriginalCompanyId;
 	private Date _createDate;
 	private long _classNameId;
 	private long _originalClassNameId;

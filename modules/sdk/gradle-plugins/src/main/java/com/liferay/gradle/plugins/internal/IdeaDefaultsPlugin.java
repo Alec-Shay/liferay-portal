@@ -17,6 +17,8 @@ package com.liferay.gradle.plugins.internal;
 import com.liferay.gradle.plugins.BaseDefaultsPlugin;
 import com.liferay.gradle.plugins.internal.util.FileUtil;
 import com.liferay.gradle.plugins.internal.util.GradleUtil;
+import com.liferay.gradle.plugins.node.NodePlugin;
+import com.liferay.gradle.plugins.node.tasks.NpmInstallTask;
 
 import groovy.lang.Closure;
 
@@ -53,7 +55,7 @@ public class IdeaDefaultsPlugin extends BaseDefaultsPlugin<IdeaPlugin> {
 		Project project, final IdeaPlugin ideaPlugin) {
 
 		_configureIdeaModuleIml(project, ideaPlugin);
-		_configureTaskIdea(ideaPlugin);
+		_configureTaskIdea(project);
 
 		project.afterEvaluate(
 			new Action<Project>() {
@@ -77,29 +79,34 @@ public class IdeaDefaultsPlugin extends BaseDefaultsPlugin<IdeaPlugin> {
 	private void _configureIdeaModuleExcludeDirs(
 		Project project, IdeaPlugin ideaPlugin) {
 
-		if (!GradleUtil.hasPlugin(project, JavaPlugin.class)) {
-			return;
-		}
-
 		IdeaModule ideaModule = _getIdeaModule(ideaPlugin);
 
 		Set<File> excludeDirs = ideaModule.getExcludeDirs();
 
-		SourceSet sourceSet = GradleUtil.getSourceSet(
-			project, SourceSet.MAIN_SOURCE_SET_NAME);
+		if (GradleUtil.hasPlugin(project, JavaPlugin.class)) {
+			SourceSet sourceSet = GradleUtil.getSourceSet(
+				project, SourceSet.MAIN_SOURCE_SET_NAME);
 
-		SourceSetOutput sourceSetOutput = sourceSet.getOutput();
+			SourceSetOutput sourceSetOutput = sourceSet.getOutput();
 
-		File classesDir = sourceSetOutput.getClassesDir();
+			File classesDir = sourceSetOutput.getClassesDir();
 
-		if (!FileUtil.isChild(classesDir, project.getBuildDir())) {
-			excludeDirs.add(classesDir);
+			if (!FileUtil.isChild(classesDir, project.getBuildDir())) {
+				excludeDirs.add(classesDir);
+			}
+
+			File resourcesDir = sourceSetOutput.getResourcesDir();
+
+			if (!FileUtil.isChild(resourcesDir, project.getBuildDir())) {
+				excludeDirs.add(resourcesDir);
+			}
 		}
 
-		File resourcesDir = sourceSetOutput.getResourcesDir();
+		if (GradleUtil.hasPlugin(project, NodePlugin.class)) {
+			NpmInstallTask npmInstallTask = (NpmInstallTask)GradleUtil.getTask(
+				project, NodePlugin.NPM_INSTALL_TASK_NAME);
 
-		if (!FileUtil.isChild(resourcesDir, project.getBuildDir())) {
-			excludeDirs.add(resourcesDir);
+			excludeDirs.add(npmInstallTask.getNodeModulesDir());
 		}
 
 		ideaModule.setExcludeDirs(excludeDirs);
@@ -179,10 +186,10 @@ public class IdeaDefaultsPlugin extends BaseDefaultsPlugin<IdeaPlugin> {
 		ideaModuleIml.withXml(closure);
 	}
 
-	private void _configureTaskIdea(IdeaPlugin ideaPlugin) {
-		Task task = ideaPlugin.getLifecycleTask();
+	private void _configureTaskIdea(Project project) {
+		Task task = GradleUtil.getTask(project, _IDEA_TASK_NAME);
 
-		task.dependsOn(ideaPlugin.getCleanTask());
+		task.dependsOn(_CLEAN_IDEA_TASK_NAME);
 	}
 
 	private IdeaModule _getIdeaModule(IdeaPlugin ideaPlugin) {
@@ -192,5 +199,9 @@ public class IdeaDefaultsPlugin extends BaseDefaultsPlugin<IdeaPlugin> {
 
 		return ideaModule;
 	}
+
+	private static final String _CLEAN_IDEA_TASK_NAME = "cleanIdea";
+
+	private static final String _IDEA_TASK_NAME = "idea";
 
 }

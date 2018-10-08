@@ -14,15 +14,14 @@
 
 package com.liferay.chat.internal.portal.profile;
 
-import com.liferay.chat.configuration.ChatGroupServiceConfigurationBeanDeclaration;
+import com.liferay.chat.internal.configuration.ChatGroupServiceConfigurationBeanDeclaration;
 import com.liferay.chat.internal.events.LoginPostAction;
 import com.liferay.chat.internal.events.SessionDestroyAction;
+import com.liferay.chat.internal.jabber.JabberImpl;
+import com.liferay.chat.internal.jabber.JabberUtil;
 import com.liferay.chat.internal.model.listener.UserModelListener;
 import com.liferay.chat.internal.poller.ChatPollerProcessor;
-import com.liferay.chat.jabber.JabberImpl;
-import com.liferay.chat.jabber.JabberUtil;
-import com.liferay.chat.util.BuddyFinderUtil;
-import com.liferay.chat.util.DefaultBuddyFinderImpl;
+import com.liferay.chat.internal.util.DefaultBuddyFinderImpl;
 import com.liferay.portal.profile.BaseDSModulePortalProfile;
 import com.liferay.portal.profile.PortalProfile;
 
@@ -42,14 +41,13 @@ public class ModulePortalProfile extends BaseDSModulePortalProfile {
 
 	@Activate
 	public void activate(ComponentContext componentContext) {
-		Set<String> supportedPortalProfileNames = new HashSet<String>(
+		Set<String> supportedPortalProfileNames = new HashSet<>(
 			Arrays.asList(
 				PortalProfile.PORTAL_PROFILE_NAME_CE,
 				PortalProfile.PORTAL_PROFILE_NAME_DXP));
 
 		init(
 			componentContext, supportedPortalProfileNames,
-			BuddyFinderUtil.class.getName(),
 			ChatGroupServiceConfigurationBeanDeclaration.class.getName(),
 			ChatPollerProcessor.class.getName(),
 			DefaultBuddyFinderImpl.class.getName(), JabberImpl.class.getName(),

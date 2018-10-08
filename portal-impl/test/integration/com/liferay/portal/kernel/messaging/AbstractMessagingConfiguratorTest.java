@@ -25,6 +25,7 @@ import com.liferay.registry.RegistryUtil;
 import com.liferay.registry.ServiceTracker;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -104,14 +105,15 @@ public class AbstractMessagingConfiguratorTest {
 
 			Object[] services = serviceTracker.getServices();
 
-			Assert.assertEquals(2, services.length);
+			Assert.assertEquals(Arrays.toString(services), 2, services.length);
 
 			for (Object service : services) {
 				Destination destination = (Destination)service;
 
 				String destinationName = destination.getName();
 
-				Assert.assertTrue(destinationName.contains("plugintest"));
+				Assert.assertTrue(
+					destinationName, destinationName.contains("plugintest"));
 
 				if (destinationName.equals("liferay/plugintest1")) {
 					Assert.assertEquals(
@@ -188,14 +190,15 @@ public class AbstractMessagingConfiguratorTest {
 
 			Object[] services = serviceTracker.getServices();
 
-			Assert.assertEquals(2, services.length);
+			Assert.assertEquals(Arrays.toString(services), 2, services.length);
 
 			for (Object service : services) {
 				Destination destination = (Destination)service;
 
 				String destinationName = destination.getName();
 
-				Assert.assertTrue(destinationName.contains("portaltest"));
+				Assert.assertTrue(
+					destinationName, destinationName.contains("portaltest"));
 
 				if (destinationName.equals("liferay/portaltest1")) {
 					Assert.assertEquals(

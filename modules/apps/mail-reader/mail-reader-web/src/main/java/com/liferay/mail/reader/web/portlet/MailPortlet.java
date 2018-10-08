@@ -25,7 +25,7 @@ import com.liferay.portal.kernel.portlet.PortletResponseUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 import com.liferay.portal.kernel.util.MimeTypesUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Portal;
 
 import java.io.IOException;
 
@@ -53,7 +53,7 @@ import org.osgi.service.component.annotations.Reference;
 		"com.liferay.portlet.icon=/icons/mail.png",
 		"com.liferay.portlet.use-default-template=true",
 		"javax.portlet.display-name=Mail", "javax.portlet.expiration-cache=0",
-		"javax.portlet.init-param.template-path=/",
+		"javax.portlet.init-param.template-path=/META-INF/resources/",
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + MailPortletKeys.MAIL,
 		"javax.portlet.portlet-info.keywords=Mail",
@@ -75,7 +75,7 @@ public class MailPortlet extends MVCPortlet {
 		String mvcPath = resourceRequest.getParameter("mvcPath");
 
 		if (mvcPath.equals("/attachment.jsp")) {
-			HttpServletRequest request = PortalUtil.getHttpServletRequest(
+			HttpServletRequest request = _portal.getHttpServletRequest(
 				resourceRequest);
 
 			long attachmentId = ParamUtil.getLong(
@@ -123,5 +123,8 @@ public class MailPortlet extends MVCPortlet {
 	private static final Log _log = LogFactoryUtil.getLog(MailPortlet.class);
 
 	private static AttachmentLocalService _attachmentLocalService;
+
+	@Reference
+	private Portal _portal;
 
 }

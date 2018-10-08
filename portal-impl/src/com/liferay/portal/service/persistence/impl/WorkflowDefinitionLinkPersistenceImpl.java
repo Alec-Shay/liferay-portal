@@ -16,10 +16,10 @@ package com.liferay.portal.service.persistence.impl;
 
 import aQute.bnd.annotation.ProviderType;
 
+import com.liferay.petra.string.StringBundler;
+
 import com.liferay.portal.kernel.bean.BeanReference;
-import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
-import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
 import com.liferay.portal.kernel.dao.orm.Query;
@@ -37,13 +37,14 @@ import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.WorkflowDefinitionLinkPersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.model.impl.WorkflowDefinitionLinkImpl;
 import com.liferay.portal.model.impl.WorkflowDefinitionLinkModelImpl;
 
 import java.io.Serializable;
+
+import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
 import java.util.Date;
@@ -202,7 +203,7 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 		List<WorkflowDefinitionLink> list = null;
 
 		if (retrieveFromCache) {
-			list = (List<WorkflowDefinitionLink>)finderCache.getResult(finderPath,
+			list = (List<WorkflowDefinitionLink>)FinderCacheUtil.getResult(finderPath,
 					finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
@@ -268,10 +269,10 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				FinderCacheUtil.putResult(finderPath, finderArgs, list);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -309,7 +310,7 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 		msg.append("companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchWorkflowDefinitionLinkException(msg.toString());
 	}
@@ -360,7 +361,7 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 		msg.append("companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchWorkflowDefinitionLinkException(msg.toString());
 	}
@@ -565,7 +566,8 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 
 		Object[] finderArgs = new Object[] { companyId };
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs,
+				this);
 
 		if (count == null) {
 			StringBundler query = new StringBundler(2);
@@ -589,10 +591,10 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 
 				count = (Long)q.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -734,7 +736,7 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 		List<WorkflowDefinitionLink> list = null;
 
 		if (retrieveFromCache) {
-			list = (List<WorkflowDefinitionLink>)finderCache.getResult(finderPath,
+			list = (List<WorkflowDefinitionLink>)FinderCacheUtil.getResult(finderPath,
 					finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
@@ -810,10 +812,10 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				FinderCacheUtil.putResult(finderPath, finderArgs, list);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -860,7 +862,7 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 		msg.append(", classNameId=");
 		msg.append(classNameId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchWorkflowDefinitionLinkException(msg.toString());
 	}
@@ -923,7 +925,7 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 		msg.append(", classNameId=");
 		msg.append(classNameId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchWorkflowDefinitionLinkException(msg.toString());
 	}
@@ -1147,7 +1149,8 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 
 		Object[] finderArgs = new Object[] { groupId, companyId, classNameId };
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs,
+				this);
 
 		if (count == null) {
 			StringBundler query = new StringBundler(4);
@@ -1179,10 +1182,10 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 
 				count = (Long)q.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -1335,7 +1338,7 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 		List<WorkflowDefinitionLink> list = null;
 
 		if (retrieveFromCache) {
-			list = (List<WorkflowDefinitionLink>)finderCache.getResult(finderPath,
+			list = (List<WorkflowDefinitionLink>)FinderCacheUtil.getResult(finderPath,
 					finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
@@ -1372,7 +1375,7 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 			if (workflowDefinitionName == null) {
 				query.append(_FINDER_COLUMN_C_W_W_WORKFLOWDEFINITIONNAME_1);
 			}
-			else if (workflowDefinitionName.equals(StringPool.BLANK)) {
+			else if (workflowDefinitionName.equals("")) {
 				query.append(_FINDER_COLUMN_C_W_W_WORKFLOWDEFINITIONNAME_3);
 			}
 			else {
@@ -1426,10 +1429,10 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				FinderCacheUtil.putResult(finderPath, finderArgs, list);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -1477,7 +1480,7 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 		msg.append(", workflowDefinitionVersion=");
 		msg.append(workflowDefinitionVersion);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchWorkflowDefinitionLinkException(msg.toString());
 	}
@@ -1542,7 +1545,7 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 		msg.append(", workflowDefinitionVersion=");
 		msg.append(workflowDefinitionVersion);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchWorkflowDefinitionLinkException(msg.toString());
 	}
@@ -1649,7 +1652,7 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 		if (workflowDefinitionName == null) {
 			query.append(_FINDER_COLUMN_C_W_W_WORKFLOWDEFINITIONNAME_1);
 		}
-		else if (workflowDefinitionName.equals(StringPool.BLANK)) {
+		else if (workflowDefinitionName.equals("")) {
 			query.append(_FINDER_COLUMN_C_W_W_WORKFLOWDEFINITIONNAME_3);
 		}
 		else {
@@ -1788,7 +1791,8 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 				companyId, workflowDefinitionName, workflowDefinitionVersion
 			};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs,
+				this);
 
 		if (count == null) {
 			StringBundler query = new StringBundler(4);
@@ -1802,7 +1806,7 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 			if (workflowDefinitionName == null) {
 				query.append(_FINDER_COLUMN_C_W_W_WORKFLOWDEFINITIONNAME_1);
 			}
-			else if (workflowDefinitionName.equals(StringPool.BLANK)) {
+			else if (workflowDefinitionName.equals("")) {
 				query.append(_FINDER_COLUMN_C_W_W_WORKFLOWDEFINITIONNAME_3);
 			}
 			else {
@@ -1834,10 +1838,10 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 
 				count = (Long)q.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -1914,7 +1918,7 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 			msg.append(", typePK=");
 			msg.append(typePK);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -1965,7 +1969,7 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 		Object result = null;
 
 		if (retrieveFromCache) {
-			result = finderCache.getResult(FINDER_PATH_FETCH_BY_G_C_C_C_T,
+			result = FinderCacheUtil.getResult(FINDER_PATH_FETCH_BY_G_C_C_C_T,
 					finderArgs, this);
 		}
 
@@ -2020,7 +2024,7 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 				List<WorkflowDefinitionLink> list = q.list();
 
 				if (list.isEmpty()) {
-					finderCache.putResult(FINDER_PATH_FETCH_BY_G_C_C_C_T,
+					FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_G_C_C_C_T,
 						finderArgs, list);
 				}
 				else {
@@ -2040,19 +2044,10 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 					result = workflowDefinitionLink;
 
 					cacheResult(workflowDefinitionLink);
-
-					if ((workflowDefinitionLink.getGroupId() != groupId) ||
-							(workflowDefinitionLink.getCompanyId() != companyId) ||
-							(workflowDefinitionLink.getClassNameId() != classNameId) ||
-							(workflowDefinitionLink.getClassPK() != classPK) ||
-							(workflowDefinitionLink.getTypePK() != typePK)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_G_C_C_C_T,
-							finderArgs, workflowDefinitionLink);
-					}
 				}
 			}
 			catch (Exception e) {
-				finderCache.removeResult(FINDER_PATH_FETCH_BY_G_C_C_C_T,
+				FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_G_C_C_C_T,
 					finderArgs);
 
 				throw processException(e);
@@ -2109,7 +2104,8 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 				groupId, companyId, classNameId, classPK, typePK
 			};
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs,
+				this);
 
 		if (count == null) {
 			StringBundler query = new StringBundler(6);
@@ -2149,10 +2145,10 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 
 				count = (Long)q.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -2181,11 +2177,11 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 	 */
 	@Override
 	public void cacheResult(WorkflowDefinitionLink workflowDefinitionLink) {
-		entityCache.putResult(WorkflowDefinitionLinkModelImpl.ENTITY_CACHE_ENABLED,
+		EntityCacheUtil.putResult(WorkflowDefinitionLinkModelImpl.ENTITY_CACHE_ENABLED,
 			WorkflowDefinitionLinkImpl.class,
 			workflowDefinitionLink.getPrimaryKey(), workflowDefinitionLink);
 
-		finderCache.putResult(FINDER_PATH_FETCH_BY_G_C_C_C_T,
+		FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_G_C_C_C_T,
 			new Object[] {
 				workflowDefinitionLink.getGroupId(),
 				workflowDefinitionLink.getCompanyId(),
@@ -2206,7 +2202,7 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 	public void cacheResult(
 		List<WorkflowDefinitionLink> workflowDefinitionLinks) {
 		for (WorkflowDefinitionLink workflowDefinitionLink : workflowDefinitionLinks) {
-			if (entityCache.getResult(
+			if (EntityCacheUtil.getResult(
 						WorkflowDefinitionLinkModelImpl.ENTITY_CACHE_ENABLED,
 						WorkflowDefinitionLinkImpl.class,
 						workflowDefinitionLink.getPrimaryKey()) == null) {
@@ -2222,33 +2218,33 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 	 * Clears the cache for all workflow definition links.
 	 *
 	 * <p>
-	 * The {@link EntityCache} and {@link FinderCache} are both cleared by this method.
+	 * The {@link com.liferay.portal.kernel.dao.orm.EntityCache} and {@link com.liferay.portal.kernel.dao.orm.FinderCache} are both cleared by this method.
 	 * </p>
 	 */
 	@Override
 	public void clearCache() {
-		entityCache.clearCache(WorkflowDefinitionLinkImpl.class);
+		EntityCacheUtil.clearCache(WorkflowDefinitionLinkImpl.class);
 
-		finderCache.clearCache(FINDER_CLASS_NAME_ENTITY);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_ENTITY);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 	}
 
 	/**
 	 * Clears the cache for the workflow definition link.
 	 *
 	 * <p>
-	 * The {@link EntityCache} and {@link FinderCache} are both cleared by this method.
+	 * The {@link com.liferay.portal.kernel.dao.orm.EntityCache} and {@link com.liferay.portal.kernel.dao.orm.FinderCache} are both cleared by this method.
 	 * </p>
 	 */
 	@Override
 	public void clearCache(WorkflowDefinitionLink workflowDefinitionLink) {
-		entityCache.removeResult(WorkflowDefinitionLinkModelImpl.ENTITY_CACHE_ENABLED,
+		EntityCacheUtil.removeResult(WorkflowDefinitionLinkModelImpl.ENTITY_CACHE_ENABLED,
 			WorkflowDefinitionLinkImpl.class,
 			workflowDefinitionLink.getPrimaryKey());
 
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 
 		clearUniqueFindersCache((WorkflowDefinitionLinkModelImpl)workflowDefinitionLink,
 			true);
@@ -2256,11 +2252,11 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 
 	@Override
 	public void clearCache(List<WorkflowDefinitionLink> workflowDefinitionLinks) {
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 
 		for (WorkflowDefinitionLink workflowDefinitionLink : workflowDefinitionLinks) {
-			entityCache.removeResult(WorkflowDefinitionLinkModelImpl.ENTITY_CACHE_ENABLED,
+			EntityCacheUtil.removeResult(WorkflowDefinitionLinkModelImpl.ENTITY_CACHE_ENABLED,
 				WorkflowDefinitionLinkImpl.class,
 				workflowDefinitionLink.getPrimaryKey());
 
@@ -2279,9 +2275,9 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 				workflowDefinitionLinkModelImpl.getTypePK()
 			};
 
-		finderCache.putResult(FINDER_PATH_COUNT_BY_G_C_C_C_T, args,
+		FinderCacheUtil.putResult(FINDER_PATH_COUNT_BY_G_C_C_C_T, args,
 			Long.valueOf(1), false);
-		finderCache.putResult(FINDER_PATH_FETCH_BY_G_C_C_C_T, args,
+		FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_G_C_C_C_T, args,
 			workflowDefinitionLinkModelImpl, false);
 	}
 
@@ -2297,8 +2293,8 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 					workflowDefinitionLinkModelImpl.getTypePK()
 				};
 
-			finderCache.removeResult(FINDER_PATH_COUNT_BY_G_C_C_C_T, args);
-			finderCache.removeResult(FINDER_PATH_FETCH_BY_G_C_C_C_T, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_G_C_C_C_T, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_G_C_C_C_T, args);
 		}
 
 		if ((workflowDefinitionLinkModelImpl.getColumnBitmask() &
@@ -2311,8 +2307,8 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 					workflowDefinitionLinkModelImpl.getOriginalTypePK()
 				};
 
-			finderCache.removeResult(FINDER_PATH_COUNT_BY_G_C_C_C_T, args);
-			finderCache.removeResult(FINDER_PATH_FETCH_BY_G_C_C_C_T, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_G_C_C_C_T, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_G_C_C_C_T, args);
 		}
 	}
 
@@ -2390,8 +2386,6 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 	@Override
 	protected WorkflowDefinitionLink removeImpl(
 		WorkflowDefinitionLink workflowDefinitionLink) {
-		workflowDefinitionLink = toUnwrappedModel(workflowDefinitionLink);
-
 		Session session = null;
 
 		try {
@@ -2423,9 +2417,23 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 	@Override
 	public WorkflowDefinitionLink updateImpl(
 		WorkflowDefinitionLink workflowDefinitionLink) {
-		workflowDefinitionLink = toUnwrappedModel(workflowDefinitionLink);
-
 		boolean isNew = workflowDefinitionLink.isNew();
+
+		if (!(workflowDefinitionLink instanceof WorkflowDefinitionLinkModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(workflowDefinitionLink.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(workflowDefinitionLink);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in workflowDefinitionLink proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom WorkflowDefinitionLink implementation " +
+				workflowDefinitionLink.getClass());
+		}
 
 		WorkflowDefinitionLinkModelImpl workflowDefinitionLinkModelImpl = (WorkflowDefinitionLinkModelImpl)workflowDefinitionLink;
 
@@ -2474,10 +2482,45 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 			closeSession(session);
 		}
 
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 
-		if (isNew || !WorkflowDefinitionLinkModelImpl.COLUMN_BITMASK_ENABLED) {
-			finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		if (!WorkflowDefinitionLinkModelImpl.COLUMN_BITMASK_ENABLED) {
+			FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		}
+		else
+		 if (isNew) {
+			Object[] args = new Object[] {
+					workflowDefinitionLinkModelImpl.getCompanyId()
+				};
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_COMPANYID, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_COMPANYID,
+				args);
+
+			args = new Object[] {
+					workflowDefinitionLinkModelImpl.getGroupId(),
+					workflowDefinitionLinkModelImpl.getCompanyId(),
+					workflowDefinitionLinkModelImpl.getClassNameId()
+				};
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_G_C_C, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_C,
+				args);
+
+			args = new Object[] {
+					workflowDefinitionLinkModelImpl.getCompanyId(),
+					workflowDefinitionLinkModelImpl.getWorkflowDefinitionName(),
+					workflowDefinitionLinkModelImpl.getWorkflowDefinitionVersion()
+				};
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_C_W_W, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_C_W_W,
+				args);
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_ALL,
+				FINDER_ARGS_EMPTY);
+			FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_ALL,
+				FINDER_ARGS_EMPTY);
 		}
 
 		else {
@@ -2487,16 +2530,18 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 						workflowDefinitionLinkModelImpl.getOriginalCompanyId()
 					};
 
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_COMPANYID, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_COMPANYID,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_COMPANYID,
+					args);
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_COMPANYID,
 					args);
 
 				args = new Object[] {
 						workflowDefinitionLinkModelImpl.getCompanyId()
 					};
 
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_COMPANYID, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_COMPANYID,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_COMPANYID,
+					args);
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_COMPANYID,
 					args);
 			}
 
@@ -2508,8 +2553,8 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 						workflowDefinitionLinkModelImpl.getOriginalClassNameId()
 					};
 
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_G_C_C, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_C,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_G_C_C, args);
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_C,
 					args);
 
 				args = new Object[] {
@@ -2518,8 +2563,8 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 						workflowDefinitionLinkModelImpl.getClassNameId()
 					};
 
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_G_C_C, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_C,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_G_C_C, args);
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_C,
 					args);
 			}
 
@@ -2531,8 +2576,8 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 						workflowDefinitionLinkModelImpl.getOriginalWorkflowDefinitionVersion()
 					};
 
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_C_W_W, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_C_W_W,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_C_W_W, args);
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_C_W_W,
 					args);
 
 				args = new Object[] {
@@ -2541,13 +2586,13 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 						workflowDefinitionLinkModelImpl.getWorkflowDefinitionVersion()
 					};
 
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_C_W_W, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_C_W_W,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_C_W_W, args);
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_C_W_W,
 					args);
 			}
 		}
 
-		entityCache.putResult(WorkflowDefinitionLinkModelImpl.ENTITY_CACHE_ENABLED,
+		EntityCacheUtil.putResult(WorkflowDefinitionLinkModelImpl.ENTITY_CACHE_ENABLED,
 			WorkflowDefinitionLinkImpl.class,
 			workflowDefinitionLink.getPrimaryKey(), workflowDefinitionLink,
 			false);
@@ -2558,34 +2603,6 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 		workflowDefinitionLink.resetOriginalValues();
 
 		return workflowDefinitionLink;
-	}
-
-	protected WorkflowDefinitionLink toUnwrappedModel(
-		WorkflowDefinitionLink workflowDefinitionLink) {
-		if (workflowDefinitionLink instanceof WorkflowDefinitionLinkImpl) {
-			return workflowDefinitionLink;
-		}
-
-		WorkflowDefinitionLinkImpl workflowDefinitionLinkImpl = new WorkflowDefinitionLinkImpl();
-
-		workflowDefinitionLinkImpl.setNew(workflowDefinitionLink.isNew());
-		workflowDefinitionLinkImpl.setPrimaryKey(workflowDefinitionLink.getPrimaryKey());
-
-		workflowDefinitionLinkImpl.setMvccVersion(workflowDefinitionLink.getMvccVersion());
-		workflowDefinitionLinkImpl.setWorkflowDefinitionLinkId(workflowDefinitionLink.getWorkflowDefinitionLinkId());
-		workflowDefinitionLinkImpl.setGroupId(workflowDefinitionLink.getGroupId());
-		workflowDefinitionLinkImpl.setCompanyId(workflowDefinitionLink.getCompanyId());
-		workflowDefinitionLinkImpl.setUserId(workflowDefinitionLink.getUserId());
-		workflowDefinitionLinkImpl.setUserName(workflowDefinitionLink.getUserName());
-		workflowDefinitionLinkImpl.setCreateDate(workflowDefinitionLink.getCreateDate());
-		workflowDefinitionLinkImpl.setModifiedDate(workflowDefinitionLink.getModifiedDate());
-		workflowDefinitionLinkImpl.setClassNameId(workflowDefinitionLink.getClassNameId());
-		workflowDefinitionLinkImpl.setClassPK(workflowDefinitionLink.getClassPK());
-		workflowDefinitionLinkImpl.setTypePK(workflowDefinitionLink.getTypePK());
-		workflowDefinitionLinkImpl.setWorkflowDefinitionName(workflowDefinitionLink.getWorkflowDefinitionName());
-		workflowDefinitionLinkImpl.setWorkflowDefinitionVersion(workflowDefinitionLink.getWorkflowDefinitionVersion());
-
-		return workflowDefinitionLinkImpl;
 	}
 
 	/**
@@ -2634,7 +2651,7 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 	 */
 	@Override
 	public WorkflowDefinitionLink fetchByPrimaryKey(Serializable primaryKey) {
-		Serializable serializable = entityCache.getResult(WorkflowDefinitionLinkModelImpl.ENTITY_CACHE_ENABLED,
+		Serializable serializable = EntityCacheUtil.getResult(WorkflowDefinitionLinkModelImpl.ENTITY_CACHE_ENABLED,
 				WorkflowDefinitionLinkImpl.class, primaryKey);
 
 		if (serializable == nullModel) {
@@ -2656,12 +2673,12 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 					cacheResult(workflowDefinitionLink);
 				}
 				else {
-					entityCache.putResult(WorkflowDefinitionLinkModelImpl.ENTITY_CACHE_ENABLED,
+					EntityCacheUtil.putResult(WorkflowDefinitionLinkModelImpl.ENTITY_CACHE_ENABLED,
 						WorkflowDefinitionLinkImpl.class, primaryKey, nullModel);
 				}
 			}
 			catch (Exception e) {
-				entityCache.removeResult(WorkflowDefinitionLinkModelImpl.ENTITY_CACHE_ENABLED,
+				EntityCacheUtil.removeResult(WorkflowDefinitionLinkModelImpl.ENTITY_CACHE_ENABLED,
 					WorkflowDefinitionLinkImpl.class, primaryKey);
 
 				throw processException(e);
@@ -2712,7 +2729,7 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 		Set<Serializable> uncachedPrimaryKeys = null;
 
 		for (Serializable primaryKey : primaryKeys) {
-			Serializable serializable = entityCache.getResult(WorkflowDefinitionLinkModelImpl.ENTITY_CACHE_ENABLED,
+			Serializable serializable = EntityCacheUtil.getResult(WorkflowDefinitionLinkModelImpl.ENTITY_CACHE_ENABLED,
 					WorkflowDefinitionLinkImpl.class, primaryKey);
 
 			if (serializable != nullModel) {
@@ -2739,14 +2756,14 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 		query.append(_SQL_SELECT_WORKFLOWDEFINITIONLINK_WHERE_PKS_IN);
 
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
-			query.append(String.valueOf(primaryKey));
+			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 
@@ -2767,7 +2784,7 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 			}
 
 			for (Serializable primaryKey : uncachedPrimaryKeys) {
-				entityCache.putResult(WorkflowDefinitionLinkModelImpl.ENTITY_CACHE_ENABLED,
+				EntityCacheUtil.putResult(WorkflowDefinitionLinkModelImpl.ENTITY_CACHE_ENABLED,
 					WorkflowDefinitionLinkImpl.class, primaryKey, nullModel);
 			}
 		}
@@ -2860,7 +2877,7 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 		List<WorkflowDefinitionLink> list = null;
 
 		if (retrieveFromCache) {
-			list = (List<WorkflowDefinitionLink>)finderCache.getResult(finderPath,
+			list = (List<WorkflowDefinitionLink>)FinderCacheUtil.getResult(finderPath,
 					finderArgs, this);
 		}
 
@@ -2909,10 +2926,10 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				FinderCacheUtil.putResult(finderPath, finderArgs, list);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -2942,7 +2959,7 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 	 */
 	@Override
 	public int countAll() {
-		Long count = (Long)finderCache.getResult(FINDER_PATH_COUNT_ALL,
+		Long count = (Long)FinderCacheUtil.getResult(FINDER_PATH_COUNT_ALL,
 				FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
@@ -2955,11 +2972,11 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 
 				count = (Long)q.uniqueResult();
 
-				finderCache.putResult(FINDER_PATH_COUNT_ALL, FINDER_ARGS_EMPTY,
-					count);
+				FinderCacheUtil.putResult(FINDER_PATH_COUNT_ALL,
+					FINDER_ARGS_EMPTY, count);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(FINDER_PATH_COUNT_ALL,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_ALL,
 					FINDER_ARGS_EMPTY);
 
 				throw processException(e);
@@ -2984,16 +3001,14 @@ public class WorkflowDefinitionLinkPersistenceImpl extends BasePersistenceImpl<W
 	}
 
 	public void destroy() {
-		entityCache.removeCache(WorkflowDefinitionLinkImpl.class.getName());
-		finderCache.removeCache(FINDER_CLASS_NAME_ENTITY);
-		finderCache.removeCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.removeCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		EntityCacheUtil.removeCache(WorkflowDefinitionLinkImpl.class.getName());
+		FinderCacheUtil.removeCache(FINDER_CLASS_NAME_ENTITY);
+		FinderCacheUtil.removeCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.removeCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 	}
 
 	@BeanReference(type = CompanyProviderWrapper.class)
 	protected CompanyProvider companyProvider;
-	protected EntityCache entityCache = EntityCacheUtil.getEntityCache();
-	protected FinderCache finderCache = FinderCacheUtil.getFinderCache();
 	private static final String _SQL_SELECT_WORKFLOWDEFINITIONLINK = "SELECT workflowDefinitionLink FROM WorkflowDefinitionLink workflowDefinitionLink";
 	private static final String _SQL_SELECT_WORKFLOWDEFINITIONLINK_WHERE_PKS_IN = "SELECT workflowDefinitionLink FROM WorkflowDefinitionLink workflowDefinitionLink WHERE workflowDefinitionLinkId IN (";
 	private static final String _SQL_SELECT_WORKFLOWDEFINITIONLINK_WHERE = "SELECT workflowDefinitionLink FROM WorkflowDefinitionLink workflowDefinitionLink WHERE ";

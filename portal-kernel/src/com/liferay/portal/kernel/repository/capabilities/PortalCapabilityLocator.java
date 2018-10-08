@@ -14,11 +14,15 @@
 
 package com.liferay.portal.kernel.repository.capabilities;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.repository.DocumentRepository;
+import com.liferay.portal.kernel.repository.event.RepositoryEventTrigger;
 
 /**
  * @author Adolfo Pérez
  */
+@ProviderType
 public interface PortalCapabilityLocator {
 
 	public BulkOperationCapability getBulkOperationCapability(
@@ -31,10 +35,16 @@ public interface PortalCapabilityLocator {
 		DocumentRepository documentRepository);
 
 	public ProcessorCapability getProcessorCapability(
-		DocumentRepository documentRepository);
+		DocumentRepository documentRepository,
+		ProcessorCapability.ResourceGenerationStrategy
+			resourceGenerationStrategy);
 
 	public RelatedModelCapability getRelatedModelCapability(
 		DocumentRepository documentRepository);
+
+	public RepositoryEventTriggerCapability getRepositoryEventTriggerCapability(
+		DocumentRepository documentRepository,
+		RepositoryEventTrigger repositoryEventTrigger);
 
 	public SyncCapability getSyncCapability(
 		DocumentRepository documentRepository);

@@ -14,13 +14,12 @@
 
 package com.liferay.portal.util;
 
-import com.liferay.portal.kernel.security.pacl.DoPrivileged;
-import com.liferay.portal.kernel.util.CharPool;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.Html;
-import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.URLCodec;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.HashMap;
@@ -46,7 +45,6 @@ import net.htmlparser.jericho.TextExtractor;
  * @author Connor McKay
  * @author Shuyang Zhou
  */
-@DoPrivileged
 public class HtmlImpl implements Html {
 
 	public static final int ESCAPE_MODE_ATTRIBUTE = 1;
@@ -222,65 +220,121 @@ public class HtmlImpl implements Html {
 			prefix = "\\x";
 		}
 		else if (mode == ESCAPE_MODE_URL) {
-			return HttpUtil.encodeURL(text, true);
+			return URLCodec.encodeURL(text, true);
 		}
 		else {
 			return escape(text);
 		}
 
-		StringBuilder sb = new StringBuilder(text.length());
-
+		StringBuilder sb = null;
 		char[] hexBuffer = new char[4];
-
-		boolean modified = false;
+		int lastReplacementIndex = 0;
 
 		for (int i = 0; i < text.length(); i++) {
 			char c = text.charAt(i);
 
 			if (c < _VALID_CHARS.length) {
-				if (_VALID_CHARS[c]) {
-					sb.append(c);
-				}
-				else {
-					sb.append(prefix);
+				if (!_VALID_CHARS[c]) {
+					String replacement = null;
 
-					_appendHexChars(sb, hexBuffer, c);
-
-					sb.append(postfix);
-
-					if ((mode == ESCAPE_MODE_CSS) &&
-						(i < (text.length() - 1))) {
-
-						char nextChar = text.charAt(i + 1);
-
-						if ((nextChar >= CharPool.NUMBER_0) &&
-							(nextChar <= CharPool.NUMBER_9)) {
-
-							sb.append(CharPool.SPACE);
+					if (mode == ESCAPE_MODE_ATTRIBUTE) {
+						if (c == CharPool.AMPERSAND) {
+							replacement = StringPool.AMPERSAND_ENCODED;
+						}
+						else if (c == CharPool.APOSTROPHE) {
+							replacement = "&#39;";
+						}
+						else if (c == CharPool.QUOTE) {
+							replacement = "&quot;";
+						}
+						else if (!_isValidXmlCharacter(c)) {
+							replacement = StringPool.SPACE;
+						}
+						else {
+							continue;
 						}
 					}
 
-					modified = true;
+					if (sb == null) {
+						sb = new StringBuilder(text.length() + 64);
+					}
+
+					if (i > lastReplacementIndex) {
+						sb.append(text, lastReplacementIndex, i);
+					}
+
+					if (replacement != null) {
+						sb.append(replacement);
+					}
+					else {
+						sb.append(prefix);
+
+						_appendHexChars(sb, hexBuffer, c);
+
+						sb.append(postfix);
+
+						if ((mode == ESCAPE_MODE_CSS) &&
+							(i < (text.length() - 1))) {
+
+							char nextChar = text.charAt(i + 1);
+
+							if ((nextChar >= CharPool.NUMBER_0) &&
+								(nextChar <= CharPool.NUMBER_9)) {
+
+								sb.append(CharPool.SPACE);
+							}
+						}
+					}
+
+					lastReplacementIndex = i + 1;
 				}
 			}
 			else if ((mode == ESCAPE_MODE_ATTRIBUTE) &&
 					 (!_isValidXmlCharacter(c) ||
 					  _isUnicodeCompatibilityCharacter(c))) {
 
+				if (sb == null) {
+					sb = new StringBuilder(text.length() + 64);
+				}
+
+				if (i > lastReplacementIndex) {
+					sb.append(text, lastReplacementIndex, i);
+				}
+
 				sb.append(CharPool.SPACE);
 
-				modified = true;
+				lastReplacementIndex = i + 1;
 			}
-			else {
-				sb.append(c);
+			else if ((mode == ESCAPE_MODE_JS) &&
+					 ((c == '\u2028') || (c == '\u2029'))) {
+
+				if (sb == null) {
+					sb = new StringBuilder(text.length() + 64);
+				}
+
+				if (i > lastReplacementIndex) {
+					sb.append(text, lastReplacementIndex, i);
+				}
+
+				sb.append("\\u");
+
+				_appendHexChars(sb, hexBuffer, c);
+
+				sb.append(postfix);
+
+				lastReplacementIndex = i + 1;
 			}
 		}
 
-		if (modified) {
-			return sb.toString();
+		if (sb == null) {
+			return text;
 		}
 
-		return text;
+		if (lastReplacementIndex < text.length()) {
+			sb.append(text, lastReplacementIndex, text.length());
+		}
+
+		return sb.toString();
 	}
 
 	/**
@@ -326,21 +380,25 @@ public class HtmlImpl implements Html {
 			return StringPool.BLANK;
 		}
 
+		char c = href.charAt(0);
+
+		if ((c == CharPool.BACK_SLASH) || (c == CharPool.SLASH)) {
+			return escapeAttribute(href);
+		}
+
+		c = Character.toLowerCase(c);
+
+		if ((c >= CharPool.LOWER_CASE_A) && (c <= CharPool.LOWER_CASE_Z) &&
+			(c != CharPool.LOWER_CASE_D) && (c != CharPool.LOWER_CASE_J)) {
+
+			return escapeAttribute(href);
+		}
+
 		int index = href.indexOf(StringPool.COLON);
 
-		if (index == 4) {
-			String protocol = StringUtil.toLowerCase(href.substring(0, 4));
-
-			if (protocol.equals("data")) {
-				href = StringUtil.replaceFirst(href, CharPool.COLON, "%3a");
-			}
-		}
-		else if (index == 10) {
-			String protocol = StringUtil.toLowerCase(href.substring(0, 10));
-
-			if (protocol.equals("javascript")) {
-				href = StringUtil.replaceFirst(href, CharPool.COLON, "%3a");
-			}
+		if (index > -1) {
+			href = StringUtil.replaceFirst(
+				href, StringPool.COLON, "%3a", index);
 		}
 
 		return escapeAttribute(href);
@@ -401,8 +459,8 @@ public class HtmlImpl implements Html {
 
 			boolean hasToken = false;
 
-			for (int j = 0; j < _XPATH_TOKENS.length; j++) {
-				if (c == _XPATH_TOKENS[j]) {
+			for (char xPathToken : _XPATH_TOKENS) {
+				if (c == xPathToken) {
 					hasToken = true;
 
 					break;
@@ -559,7 +617,7 @@ public class HtmlImpl implements Html {
 	 * @param      text the text
 	 * @return     the converted text, or <code>null</code> if the text is
 	 *             <code>null</code>
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
 	 */
 	@Deprecated
 	@Override
@@ -775,10 +833,10 @@ public class HtmlImpl implements Html {
 		if ((pos + tag.length + 1) <= text.length()) {
 			char item = '\0';
 
-			for (int i = 0; i < tag.length; i++) {
+			for (char c : tag) {
 				item = text.charAt(pos++);
 
-				if (Character.toLowerCase(item) != tag[i]) {
+				if (Character.toLowerCase(item) != c) {
 					return false;
 				}
 			}
@@ -789,9 +847,8 @@ public class HtmlImpl implements Html {
 
 			return !Character.isLetter(item);
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	protected int stripTag(char[] tag, String text, int pos) {
@@ -887,12 +944,11 @@ public class HtmlImpl implements Html {
 		'e', 'f'
 	};
 
-	private static final String[] _MS_WORD_HTML = new String[] {
-		"&reg;", StringPool.APOSTROPHE, StringPool.QUOTE, StringPool.QUOTE
-	};
+	private static final String[] _MS_WORD_HTML =
+		{"&reg;", StringPool.APOSTROPHE, StringPool.QUOTE, StringPool.QUOTE};
 
 	private static final String[] _MS_WORD_UNICODE =
-		new String[] {"\u00ae", "\u2019", "\u201c", "\u201d"};
+		{"\u00ae", "\u2019", "\u201c", "\u201d"};
 
 	private static final char[] _TAG_SCRIPT = {'s', 'c', 'r', 'i', 'p', 't'};
 
@@ -907,25 +963,29 @@ public class HtmlImpl implements Html {
 		'<', '>', '*', '$', '"', '"', ' ', 9, 10, 13, 133, 8232
 	};
 
-	private static final Map<String, String> _unescapeMap = new HashMap<>();
+	private static final Pattern _pattern = Pattern.compile("([\\s<&]|$)");
+	private static final Map<String, String> _unescapeMap =
+		new HashMap<String, String>() {
+			{
+				put("#34", "\"");
+				put("#35", "#");
+				put("#37", "%");
+				put("#39", "'");
+				put("#40", "(");
+				put("#41", ")");
+				put("#43", "+");
+				put("#44", ",");
+				put("#45", "-");
+				put("#59", ";");
+				put("#61", "=");
+				put("amp", "&");
+				put("gt", ">");
+				put("lt", "<");
+				put("rsquo", "\u2019");
+			}
+		};
 
 	static {
-		_unescapeMap.put("#34", "\"");
-		_unescapeMap.put("#35", "#");
-		_unescapeMap.put("#37", "%");
-		_unescapeMap.put("#39", "'");
-		_unescapeMap.put("#40", "(");
-		_unescapeMap.put("#41", ")");
-		_unescapeMap.put("#43", "+");
-		_unescapeMap.put("#44", ",");
-		_unescapeMap.put("#45", "-");
-		_unescapeMap.put("#59", ";");
-		_unescapeMap.put("#61", "=");
-		_unescapeMap.put("amp", "&");
-		_unescapeMap.put("gt", ">");
-		_unescapeMap.put("lt", "<");
-		_unescapeMap.put("rsquo", "\u2019");
-
 		for (int i = 0; i < _VALID_CHARS.length; i++) {
 			if (Character.isLetterOrDigit(i)) {
 				_VALID_CHARS[i] = true;
@@ -935,7 +995,5 @@ public class HtmlImpl implements Html {
 		_VALID_CHARS['-'] = true;
 		_VALID_CHARS['_'] = true;
 	}
-
-	private final Pattern _pattern = Pattern.compile("([\\s<&]|$)");
 
 }

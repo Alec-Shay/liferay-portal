@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<web-app id="Liferay_Portal" version="3.0" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
+<web-app id="Liferay_Portal" metadata-complete="true" version="3.0" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
 	<context-param>
 		<param-name>axis.servicesPath</param-name>
 		<param-value>/api/axis/</param-value>
@@ -22,8 +22,22 @@
 		<param-value>/o/</param-value>
 	</context-param>
 	<filter>
+		<filter-name>Invoker Filter - ASYNC</filter-name>
+		<filter-class>com.liferay.portal.kernel.servlet.filters.invoker.InvokerFilter</filter-class>
+		<async-supported>true</async-supported>
+		<init-param>
+			<param-name>dispatcher</param-name>
+			<param-value>ASYNC</param-value>
+		</init-param>
+		<init-param>
+			<param-name>register-portal-lifecycle</param-name>
+			<param-value>false</param-value>
+		</init-param>
+	</filter>
+	<filter>
 		<filter-name>Invoker Filter - ERROR</filter-name>
 		<filter-class>com.liferay.portal.kernel.servlet.filters.invoker.InvokerFilter</filter-class>
+		<async-supported>true</async-supported>
 		<init-param>
 			<param-name>dispatcher</param-name>
 			<param-value>ERROR</param-value>
@@ -36,6 +50,7 @@
 	<filter>
 		<filter-name>Invoker Filter - FORWARD</filter-name>
 		<filter-class>com.liferay.portal.kernel.servlet.filters.invoker.InvokerFilter</filter-class>
+		<async-supported>true</async-supported>
 		<init-param>
 			<param-name>dispatcher</param-name>
 			<param-value>FORWARD</param-value>
@@ -48,6 +63,7 @@
 	<filter>
 		<filter-name>Invoker Filter - INCLUDE</filter-name>
 		<filter-class>com.liferay.portal.kernel.servlet.filters.invoker.InvokerFilter</filter-class>
+		<async-supported>true</async-supported>
 		<init-param>
 			<param-name>dispatcher</param-name>
 			<param-value>INCLUDE</param-value>
@@ -60,6 +76,7 @@
 	<filter>
 		<filter-name>Invoker Filter - REQUEST</filter-name>
 		<filter-class>com.liferay.portal.kernel.servlet.filters.invoker.InvokerFilter</filter-class>
+		<async-supported>true</async-supported>
 		<init-param>
 			<param-name>dispatcher</param-name>
 			<param-value>REQUEST</param-value>
@@ -91,12 +108,6 @@
 	</filter-mapping>
 	<listener>
 		<listener-class>com.liferay.portal.spring.context.PortalContextLoaderListener</listener-class>
-	</listener>
-	<listener>
-		<listener-class>com.liferay.portal.servlet.PortalSessionListener</listener-class>
-	</listener>
-	<listener>
-		<listener-class>com.liferay.portal.kernel.servlet.PortletSessionListenerManager</listener-class>
 	</listener>
 	<servlet>
 		<servlet-name>Main Servlet</servlet-name>
@@ -142,36 +153,28 @@
 	</servlet>
 	<servlet>
 		<servlet-name>Friendly URL Servlet - Private Group</servlet-name>
-		<servlet-class>com.liferay.portal.servlet.FriendlyURLServlet</servlet-class>
+		<servlet-class>com.liferay.portal.servlet.ServletAdapter</servlet-class>
 		<init-param>
-			<param-name>private</param-name>
-			<param-value>true</param-value>
-		</init-param>
-		<init-param>
-			<param-name>user</param-name>
-			<param-value>false</param-value>
+			<param-name>filter</param-name>
+			<param-value>(servlet.init.private=true)(servlet.init.user=false)(servlet.type=friendly-url)</param-value>
 		</init-param>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
 	<servlet>
 		<servlet-name>Friendly URL Servlet - Private User</servlet-name>
-		<servlet-class>com.liferay.portal.servlet.FriendlyURLServlet</servlet-class>
+		<servlet-class>com.liferay.portal.servlet.ServletAdapter</servlet-class>
 		<init-param>
-			<param-name>private</param-name>
-			<param-value>true</param-value>
-		</init-param>
-		<init-param>
-			<param-name>user</param-name>
-			<param-value>true</param-value>
+			<param-name>filter</param-name>
+			<param-value>(servlet.init.private=true)(servlet.init.user=true)(servlet.type=friendly-url)</param-value>
 		</init-param>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
 	<servlet>
 		<servlet-name>Friendly URL Servlet - Public</servlet-name>
-		<servlet-class>com.liferay.portal.servlet.FriendlyURLServlet</servlet-class>
+		<servlet-class>com.liferay.portal.servlet.ServletAdapter</servlet-class>
 		<init-param>
-			<param-name>private</param-name>
-			<param-value>false</param-value>
+			<param-name>filter</param-name>
+			<param-value>(servlet.init.private=false)(servlet.type=friendly-url)</param-value>
 		</init-param>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
@@ -204,6 +207,7 @@
 		<servlet-name>Module Framework Servlet</servlet-name>
 		<servlet-class>com.liferay.portal.module.framework.ModuleFrameworkServletAdapter</servlet-class>
 		<load-on-startup>1</load-on-startup>
+		<async-supported>true</async-supported>
 	</servlet>
 	<servlet>
 		<servlet-name>Netvibes Servlet</servlet-name>
@@ -820,7 +824,15 @@
 			<taglib-location>/WEB-INF/tld/x.tld</taglib-location>
 		</taglib>
 		<taglib>
+			<taglib-uri>http://java.sun.com/portlet</taglib-uri>
+			<taglib-location>/WEB-INF/tld/liferay-portlet_1_0.tld</taglib-location>
+		</taglib>
+		<taglib>
 			<taglib-uri>http://java.sun.com/portlet_2_0</taglib-uri>
+			<taglib-location>/WEB-INF/tld/liferay-portlet_2_0.tld</taglib-location>
+		</taglib>
+		<taglib>
+			<taglib-uri>http://xmlns.jcp.org/portlet_3_0</taglib-uri>
 			<taglib-location>/WEB-INF/tld/liferay-portlet.tld</taglib-location>
 		</taglib>
 		<taglib>
@@ -846,34 +858,6 @@
 		<taglib>
 			<taglib-uri>http://liferay.com/tld/util</taglib-uri>
 			<taglib-location>/WEB-INF/tld/liferay-util.tld</taglib-location>
-		</taglib>
-		<taglib>
-			<taglib-uri>http://struts.apache.org/tags-bean</taglib-uri>
-			<taglib-location>/WEB-INF/tld/struts-bean.tld</taglib-location>
-		</taglib>
-		<taglib>
-			<taglib-uri>http://struts.apache.org/tags-bean-el</taglib-uri>
-			<taglib-location>/WEB-INF/tld/struts-bean-el.tld</taglib-location>
-		</taglib>
-		<taglib>
-			<taglib-uri>http://struts.apache.org/tags-html</taglib-uri>
-			<taglib-location>/WEB-INF/tld/struts-html.tld</taglib-location>
-		</taglib>
-		<taglib>
-			<taglib-uri>http://struts.apache.org/tags-html-el</taglib-uri>
-			<taglib-location>/WEB-INF/tld/struts-html-el.tld</taglib-location>
-		</taglib>
-		<taglib>
-			<taglib-uri>http://struts.apache.org/tags-logic</taglib-uri>
-			<taglib-location>/WEB-INF/tld/struts-logic.tld</taglib-location>
-		</taglib>
-		<taglib>
-			<taglib-uri>http://struts.apache.org/tags-logic-el</taglib-uri>
-			<taglib-location>/WEB-INF/tld/struts-logic-el.tld</taglib-location>
-		</taglib>
-		<taglib>
-			<taglib-uri>http://struts.apache.org/tags-nested</taglib-uri>
-			<taglib-location>/WEB-INF/tld/struts-nested.tld</taglib-location>
 		</taglib>
 	</jsp-config>
 	<security-constraint>

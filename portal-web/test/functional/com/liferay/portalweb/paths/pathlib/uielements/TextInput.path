@@ -9,6 +9,11 @@
 </thead>
 <tbody>
 <tr>
+	<td>ALERT</td>
+	<td>//div[contains(@class,'has-error')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ANSWER</td>
 	<td>//div[label[contains(.,'Answer')]]/input[@type='text']</td>
 	<td></td>
@@ -16,6 +21,11 @@
 <tr>
 	<td>BODY</td>
 	<td>//body</td>
+	<td></td>
+</tr>
+<tr>
+	<td>BLOGS_ENTRY_URL</td>
+	<td>//input[contains(@id,'_urlTitle')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -41,6 +51,11 @@
 <tr>
 	<td>CUSTOM_FIELD</td>
 	<td>//input[@type='text' and contains(@name,'ExpandoAttribute')] | //textarea[contains(@name,'ExpandoAttribute')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CUSTOM_TITLE</td>
+	<td>//input[contains(@id,'customTitle')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -159,8 +174,18 @@
 	<td></td>
 </tr>
 <tr>
+	<td>GENERIC_TEXT_INPUT</td>
+	<td>//div[label[contains(.,'${key_fieldLabel}')]]//input[@type='text']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>GOOGLE_ANALYTICS_ID</td>
 	<td>//input[contains(@id,'googleAnalyticsId')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>IMAGE_ID</td>
+	<td>//input[contains(@id,'newUuid')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -171,16 +196,6 @@
 <tr>
 	<td>INITIAL_URL</td>
 	<td>//input[contains(@id,'_initUrl')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>INTEREST_PAID</td>
-	<td>//input[@type='text' and contains(@name,'interestPaid')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>INTEREST_RATE</td>
-	<td>//input[@type='text' and contains(@name,'interestRate')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -205,7 +220,7 @@
 </tr>
 <tr>
 	<td>GOOGLE_CLIENT_ID</td>
-	<td>//div[label[contains(.,'Google Client ID')]]/input[@type='text'] | //input[contains(@id,'google-client-id')]</td>
+	<td>//input[contains(@id,'googleClientId')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -219,18 +234,23 @@
 	<td></td>
 </tr>
 <tr>
-	<td>LOAN_AMOUNT</td>
-	<td>//input[@type='text' and contains(@name,'loanAmount')]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>MAIL_DOMAIN</td>
 	<td>//input[contains(@id,'mx') and contains(@class,'input-text')]</td>
 	<td></td>
 </tr>
 <tr>
+	<td>MAX_HEIGHT</td>
+	<td>//input[contains(@id,'maxHeight')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>MAX_USERS</td>
 	<td>//input[contains(@id,'maxUsers') and contains(@class,'input-text')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>MAX_WIDTH</td>
+	<td>//input[contains(@id,'maxWidth')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -274,13 +294,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>MONTHLY_PAYMENT</td>
-	<td>//input[@type='text' and contains(@name,'monthlyPayment')]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>NAME</td>
-	<td>//div[label[contains(.,'Name')]]//input[@type='text'] | //input[contains(@id,'name')]</td>
+	<td>//div[label[contains(.,'Name')]]//input[@type='text'] | //div[contains(@class,'form-group')]//input[contains(@id,'name')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -355,7 +370,7 @@
 </tr>
 <tr>
 	<td>REGULAR_EXPRESSION</td>
-	<td>//div[label[contains(.,'Regular Expression')]]//input[@type='text']</td>
+	<td>//div[label[contains(.,'Regular Expression')]]//textarea</td>
 	<td></td>
 </tr>
 <tr>
@@ -375,7 +390,7 @@
 </tr>
 <tr>
 	<td>SEARCH</td>
-	<td>//input[@title='Search'] | //*[@data-qa-id='searchInput']</td>
+	<td>//input[contains(@title,'S') or contains(@title,'s')][contains(@title,'earch')] | //input[contains(@aria-label,'S') or contains(@title,'s')][contains(@aria-label,'earch')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -386,6 +401,11 @@
 <tr>
 	<td>SELECT_FILES</td>
 	<td>//div[contains(@id,'uploaderContent') and contains(.,'Select Files')]/input</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SEO_HTML_TITLE</td>
+	<td>//div[label[contains(.,'HTML')]]//input</td>
 	<td></td>
 </tr>
 <tr>
@@ -449,8 +469,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>TOTAL_PAID</td>
-	<td>//input[@type='text' and contains(@name,'totalPaid')]</td>
+	<td>TRACKBACKS</td>
+	<td>//input[contains(@id,'trackbacks')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -475,7 +495,7 @@
 </tr>
 <tr>
 	<td>URL_REQUIRED</td>
-	<td>//div[contains(@class,'error')]</td>
+	<td>//div[contains(@id,'urlHelper')]/div[contains(@role,'alert')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -486,16 +506,6 @@
 <tr>
 	<td>WEB_ID</td>
 	<td>//input[contains(@id,'webId') and contains(@class,'input-text')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>WORD</td>
-	<td>//input[@id='_com_liferay_dictionary_web_portlet_DictionaryPortlet_word']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>YEARS</td>
-	<td>//input[@type='text' and contains(@name,'years')]</td>
 	<td></td>
 </tr>
 <tr>

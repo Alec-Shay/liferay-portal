@@ -14,9 +14,11 @@
 
 package com.liferay.portal.fabric.netty.fileserver;
 
+import com.liferay.petra.io.BigEndianCodec;
+import com.liferay.petra.io.unsync.UnsyncByteArrayInputStream;
+import com.liferay.petra.reflect.ReflectionUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.fabric.netty.fileserver.handlers.FileServerTestUtil;
-import com.liferay.portal.kernel.io.BigEndianCodec;
-import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.portal.kernel.nio.FileSystemProviderWrapper;
 import com.liferay.portal.kernel.nio.FileSystemWrapper;
 import com.liferay.portal.kernel.nio.PathWrapper;
@@ -24,8 +26,6 @@ import com.liferay.portal.kernel.test.CaptureHandler;
 import com.liferay.portal.kernel.test.JDKLoggerTestUtil;
 import com.liferay.portal.kernel.test.SwappableSecurityManager;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
-import com.liferay.portal.kernel.util.JavaDetector;
-import com.liferay.portal.kernel.util.ReflectionUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -141,12 +141,7 @@ public class FileHelperUtilTest {
 			Assert.fail();
 		}
 		catch (Exception e) {
-			if (JavaDetector.isJDK8()) {
-				Assert.assertSame(ioException, e.getCause());
-			}
-			else {
-				Assert.assertSame(ioException, e);
-			}
+			Assert.assertSame(ioException, e.getCause());
 		}
 		finally {
 			Files.delete(undeleteableFilePath);
@@ -568,8 +563,9 @@ public class FileHelperUtilTest {
 		}
 		catch (IOException ioe) {
 			Assert.assertEquals(
-				"Zip stream for entry " + fileEntryName + " is " + actualSize +
-					" bytes but should " + annotatedSize + " bytes",
+				StringBundler.concat(
+					"Zip stream for entry ", fileEntryName, " is ", actualSize,
+					" bytes but should ", annotatedSize, " bytes"),
 				ioe.getMessage());
 		}
 	}
@@ -670,7 +666,7 @@ public class FileHelperUtilTest {
 
 			List<LogRecord> logRecords = captureHandler.getLogRecords();
 
-			Assert.assertEquals(1, logRecords.size());
+			Assert.assertEquals(logRecords.toString(), 1, logRecords.size());
 
 			LogRecord logRecord = logRecords.remove(0);
 
@@ -691,7 +687,7 @@ public class FileHelperUtilTest {
 				FileHelperUtil.unzip(
 					zipFilePath, FileHelperUtil.TEMP_DIR_PATH));
 
-			Assert.assertEquals(1, logRecords.size());
+			Assert.assertEquals(logRecords.toString(), 1, logRecords.size());
 
 			logRecord = logRecords.remove(0);
 
@@ -718,7 +714,7 @@ public class FileHelperUtilTest {
 
 			List<LogRecord> logRecords = captureHandler.getLogRecords();
 
-			Assert.assertTrue(logRecords.isEmpty());
+			Assert.assertTrue(logRecords.toString(), logRecords.isEmpty());
 
 			try (FileSystem fileSystem = FileSystems.newFileSystem(
 					zipFilePath, null)) {
@@ -733,7 +729,7 @@ public class FileHelperUtilTest {
 				FileHelperUtil.unzip(
 					zipFilePath, FileHelperUtil.TEMP_DIR_PATH));
 
-			Assert.assertTrue(logRecords.isEmpty());
+			Assert.assertTrue(logRecords.toString(), logRecords.isEmpty());
 
 			FileServerTestUtil.assertFileEquals(folderPath, unzipFolderPath);
 		}

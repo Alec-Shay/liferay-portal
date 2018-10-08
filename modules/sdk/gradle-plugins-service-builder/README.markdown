@@ -1,10 +1,10 @@
 # Service Builder Gradle Plugin
 
-The Service Builder Gradle plugin allows you to generate a service layer
-defined in a [Service Builder](https://dev.liferay.com/develop/tutorials/-/knowledge_base/7-0/what-is-service-builder)
+The Service Builder Gradle plugin lets you generate a service layer defined in a
+[Service Builder](https://dev.liferay.com/develop/tutorials/-/knowledge_base/7-0/what-is-service-builder)
 `service.xml` file.
 
-The plugin has been successfully tested with Gradle 2.5 up to 3.2.1.
+The plugin has been successfully tested with Gradle 2.5 up to 3.5.1.
 
 ## Usage
 
@@ -13,12 +13,12 @@ To use the plugin, include it in your build script:
 ```gradle
 buildscript {
 	dependencies {
-		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.service.builder", version: "1.0.28"
+		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.service.builder", version: "2.1.58"
 	}
 
 	repositories {
 		maven {
-			url "https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/public"
+			url "https://repository-cdn.liferay.com/nexus/content/groups/public"
 		}
 	}
 }
@@ -37,7 +37,7 @@ all:
 ```gradle
 repositories {
 	maven {
-		url "https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/public"
+		url "https://repository-cdn.liferay.com/nexus/content/groups/public"
 	}
 }
 ```
@@ -98,7 +98,6 @@ Property Name | Default Value
 [`main`](https://docs.gradle.org/current/dsl/org.gradle.api.tasks.JavaExec.html#org.gradle.api.tasks.JavaExec:main) | `"com.liferay.portal.tools.service.builder.ServiceBuilder"`
 [`systemProperties`](https://docs.gradle.org/current/dsl/org.gradle.api.tasks.JavaExec.html#org.gradle.api.tasks.JavaExec:systemProperties) | `["file.encoding": "UTF-8"]`
 
-
 #### Task Properties
 
 Property Name | Type | Default Value | Description
@@ -109,6 +108,7 @@ Property Name | Type | Default Value | Description
 `beanLocatorUtil` | `String` | `"com.liferay.util.bean.PortletBeanLocatorUtil"` | The fully qualified class name of a bean locator class to use in the generated service classes. It sets the `service.bean.locator.util` argument.
 `buildNumber` | `long` | `1` | A specific value to assign the `build.number` property in the `service.properties` file. It sets the `service.build.number` argument.
 `buildNumberIncrement` | `boolean` | `true` | Whether to automatically increment the `build.number` property in the `service.properties` file by one at every service generation. It sets the `service.build.number.increment` argument.
+`databaseNameMaxLength` | `int` | `30` | The upper bound for database table and column name lengths to ensure it works on all databases. It sets the `service.database.name.max.length` argument.
 <a name="hbmfile"></a>`hbmFile` | `File` | `null` | A Hibernate Mapping file to generate. It sets the `service.hbm.file` argument.
 <a name="impldir"></a>`implDir` | `File` | `null` | A directory where the service Java source files are generated. It sets the `service.impl.dir` argument.
 <a name="inputfile"></a>`inputFile` | `File` | `null` | The project's `service.xml` file. It sets the `service.input.file` argument.
@@ -128,6 +128,8 @@ Property Name | Type | Default Value | Description
 `sqlSequencesFileName` | `String` | `"sequences.sql"` | A name (relative to `sqlDir`) for the file in which the SQL sequence creation instructions are generated. It sets the `service.sql.sequences.file` argument.
 `targetEntityName` | `String` | `null` | If specified, it's the name of the entity for which Liferay Service Builder should generate the service. It sets the `service.target.entity.name` argument.
 `testDir` | `File` | `null` | If specified, it's a directory where integration test Java source files are generated. It sets the `service.test.dir` argument.
+`uadDir` | `File` | `null` | A directory where the UAD (user-associated data) Java source files are generated. It sets the `service.uad.dir` argument.
+`uadTestIntegrationDir` | `File` | `null` | A directory where integration test UAD (user-associated data) Java source files are generated. It sets the `service.uad.test.integration.dir` argument.
 
 The properties of type `File` supports any type that can be resolved by [`project.file`](https://docs.gradle.org/current/dsl/org.gradle.api.Project.html#org.gradle.api.Project:file(java.lang.Object)).
 Moreover, it is possible to use Closures and Callables as values for the
@@ -146,6 +148,29 @@ manually adding a dependency to the `serviceBuilder` configuration:
 
 ```gradle
 dependencies {
-	serviceBuilder group: "com.liferay", name: "com.liferay.portal.tools.service.builder", version: "1.0.142"
+	serviceBuilder group: "com.liferay", name: "com.liferay.portal.tools.service.builder", version: "1.0.241"
 }
 ```
+
+If you're applying the
+[`com.liferay.gradle.plugins`](https://github.com/liferay/liferay-portal/tree/master/modules/sdk/gradle-plugins)
+or
+[`com.liferay.gradle.plugins.workspace`](https://github.com/liferay/liferay-portal/blob/master/modules/sdk/gradle-plugins-workspace)
+plugins to your project, the Service Builder dependency is already added to the
+`serviceBuilder` configuration. Therefore, if you try to apply a customized
+version of Service Builder, it's not recognized; you must override the
+configuration already applied.
+
+To do this, you must customize the classpath of the `buildService` task. If
+you're supplying the customized Service Builder plugin through a module named
+`custom-sb-api`, you could modify the `buildService` task like this:
+
+```gradle
+buildService {
+	apiDir = "../custom-sb-api/src/main/java"
+	classpath = configurations.serviceBuilder.filter { file -> !file.name.contains("com.liferay.portal.tools.service.builder") }
+}
+```
+
+If you do this in conjunction with the `serviceBuilder` dependency
+configuration, the custom Service Builder version is used.

@@ -14,8 +14,8 @@
 
 package com.liferay.portal.util;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.HttpUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.test.mockito.ReturnArgumentCalledAnswer;
 
@@ -461,12 +461,6 @@ public class PortalImplUnitTest extends PowerMockito {
 				Mockito.anyString(), Mockito.anyString(), Mockito.eq(false))
 		).thenReturn(
 			StringPool.BLANK
-		);
-
-		when(
-			HttpUtil.encodeURL(Mockito.anyString())
-		).thenAnswer(
-			new ReturnArgumentCalledAnswer<String>(0)
 		);
 
 		when(

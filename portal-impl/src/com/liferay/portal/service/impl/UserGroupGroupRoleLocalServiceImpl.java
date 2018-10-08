@@ -179,6 +179,13 @@ public class UserGroupGroupRoleLocalServiceImpl
 	}
 
 	@Override
+	public List<UserGroupGroupRole> getUserGroupGroupRolesByUser(
+		long userId, long groupId) {
+
+		return userGroupGroupRoleFinder.findByUserGroupsUsers(userId, groupId);
+	}
+
+	@Override
 	public boolean hasUserGroupGroupRole(
 		long userGroupId, long groupId, long roleId) {
 
@@ -191,9 +198,8 @@ public class UserGroupGroupRoleLocalServiceImpl
 		if (userGroupGroupRole != null) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	@Override

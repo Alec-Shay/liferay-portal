@@ -37,8 +37,6 @@ import com.liferay.portal.kernel.service.ResourcePermissionLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
-import com.liferay.portal.kernel.test.rule.Sync;
-import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
 import com.liferay.portal.kernel.test.util.CompanyTestUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.OrganizationTestUtil;
@@ -50,6 +48,7 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.model.impl.PortletImpl;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.AfterClass;
@@ -64,21 +63,18 @@ import org.junit.Test;
  * @author Roberto Díaz
  * @author Tomas Polesovsky
  */
-@Sync
 public class PermissionCheckerTest {
 
 	@ClassRule
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
-		new AggregateTestRule(
-			new LiferayIntegrationTestRule(),
-			SynchronousDestinationTestRule.INSTANCE);
+		new LiferayIntegrationTestRule();
 
 	@BeforeClass
 	public static void setUpClass() throws Exception {
 		registerResourceActions();
 
-		checkResourceActions(_PORTLET_RESOURCE_NAME);
+		ResourceActionsUtil.check(_PORTLET_RESOURCE_NAME);
 	}
 
 	@AfterClass
@@ -621,6 +617,38 @@ public class PermissionCheckerTest {
 	}
 
 	@Test
+	public void testIsGroupAdminForSubgroupWithManageSubgroupsPermission()
+		throws Exception {
+
+		Group parentGroup = GroupTestUtil.addGroup();
+
+		Group subgroup = GroupTestUtil.addGroup(parentGroup.getGroupId());
+
+		_groups.add(subgroup);
+
+		_groups.add(parentGroup);
+
+		_role = RoleTestUtil.addRole(
+			RandomTestUtil.randomString(), RoleConstants.TYPE_SITE);
+
+		_user = UserTestUtil.addGroupUser(parentGroup, _role.getName());
+
+		PermissionChecker permissionChecker = _getPermissionChecker(_user);
+
+		Assert.assertFalse(
+			permissionChecker.isGroupAdmin(subgroup.getGroupId()));
+
+		ResourcePermissionLocalServiceUtil.addResourcePermission(
+			_user.getCompanyId(), Group.class.getName(),
+			ResourceConstants.SCOPE_GROUP,
+			String.valueOf(parentGroup.getGroupId()), _role.getRoleId(),
+			ActionKeys.MANAGE_SUBGROUPS);
+
+		Assert.assertTrue(
+			permissionChecker.isGroupAdmin(subgroup.getGroupId()));
+	}
+
+	@Test
 	public void testIsGroupAdminWithCompanyAdmin() throws Exception {
 		PermissionChecker permissionChecker = _getPermissionChecker(
 			TestPropsValues.getUser());
@@ -659,7 +687,7 @@ public class PermissionCheckerTest {
 	}
 
 	@Test
-	public void testIsGroupMemberWithNonGroupMember() throws Exception {
+	public void testIsGroupMemberWithNongroupMember() throws Exception {
 		_user = UserTestUtil.addUser();
 
 		PermissionChecker permissionChecker = _getPermissionChecker(_user);
@@ -854,25 +882,6 @@ public class PermissionCheckerTest {
 				_organization.getOrganizationId()));
 	}
 
-	protected static void checkResourceActions(String portletName) {
-		List<String> portletActions =
-			ResourceActionsUtil.getPortletResourceActions(portletName);
-
-		ResourceActionLocalServiceUtil.checkResourceActions(
-			portletName, portletActions);
-
-		List<String> modelNames = ResourceActionsUtil.getPortletModelResources(
-			portletName);
-
-		for (String modelName : modelNames) {
-			List<String> modelActions =
-				ResourceActionsUtil.getModelResourceActions(modelName);
-
-			ResourceActionLocalServiceUtil.checkResourceActions(
-				modelName, modelActions);
-		}
-	}
-
 	protected static void registerResourceActions() throws Exception {
 		Package pkg = PermissionCheckerTest.class.getPackage();
 
@@ -971,6 +980,9 @@ public class PermissionCheckerTest {
 
 	@DeleteAfterTestRun
 	private Group _group;
+
+	@DeleteAfterTestRun
+	private final List<Group> _groups = new ArrayList<>();
 
 	@DeleteAfterTestRun
 	private Organization _organization;

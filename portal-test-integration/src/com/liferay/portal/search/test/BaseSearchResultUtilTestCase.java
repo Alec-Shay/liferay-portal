@@ -69,7 +69,9 @@ public abstract class BaseSearchResultUtilTestCase extends PowerMockito {
 		List<RelatedSearchResult<Comment>> commentRelatedSearchResults =
 			searchResult.getCommentRelatedSearchResults();
 
-		Assert.assertTrue(commentRelatedSearchResults.isEmpty());
+		Assert.assertTrue(
+			commentRelatedSearchResults.toString(),
+			commentRelatedSearchResults.isEmpty());
 	}
 
 	protected void assertEmptyFileEntryRelatedSearchResults(
@@ -78,20 +80,22 @@ public abstract class BaseSearchResultUtilTestCase extends PowerMockito {
 		List<RelatedSearchResult<FileEntry>> fileEntryRelatedSearchResults =
 			searchResult.getFileEntryRelatedSearchResults();
 
-		Assert.assertTrue(fileEntryRelatedSearchResults.isEmpty());
+		Assert.assertTrue(
+			fileEntryRelatedSearchResults.toString(),
+			fileEntryRelatedSearchResults.isEmpty());
 	}
 
 	protected void assertEmptyVersions(SearchResult searchResult) {
 		List<String> versions = searchResult.getVersions();
 
-		Assert.assertTrue(versions.isEmpty());
+		Assert.assertTrue(versions.toString(), versions.isEmpty());
 	}
 
 	protected SearchResult assertOneSearchResult(Document document) {
 		List<SearchResult> searchResults = SearchTestUtil.getSearchResults(
 			searchResultTranslator, document);
 
-		Assert.assertEquals(1, searchResults.size());
+		Assert.assertEquals(searchResults.toString(), 1, searchResults.size());
 
 		return searchResults.get(0);
 	}

@@ -16,10 +16,10 @@ package com.liferay.portal.service.persistence.impl;
 
 import aQute.bnd.annotation.ProviderType;
 
+import com.liferay.petra.string.StringBundler;
+
 import com.liferay.portal.kernel.bean.BeanReference;
-import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
-import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
 import com.liferay.portal.kernel.dao.orm.Query;
@@ -37,15 +37,17 @@ import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.RepositoryEntryPersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 import com.liferay.portal.model.impl.RepositoryEntryImpl;
 import com.liferay.portal.model.impl.RepositoryEntryModelImpl;
 
 import java.io.Serializable;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
 import java.util.Date;
@@ -197,7 +199,7 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 		List<RepositoryEntry> list = null;
 
 		if (retrieveFromCache) {
-			list = (List<RepositoryEntry>)finderCache.getResult(finderPath,
+			list = (List<RepositoryEntry>)FinderCacheUtil.getResult(finderPath,
 					finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
@@ -229,7 +231,7 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_UUID_3);
 			}
 			else {
@@ -277,10 +279,10 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				FinderCacheUtil.putResult(finderPath, finderArgs, list);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -318,7 +320,7 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 		msg.append("uuid=");
 		msg.append(uuid);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRepositoryEntryException(msg.toString());
 	}
@@ -368,7 +370,7 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 		msg.append("uuid=");
 		msg.append(uuid);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRepositoryEntryException(msg.toString());
 	}
@@ -460,7 +462,7 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_UUID_1);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_UUID_3);
 		}
 		else {
@@ -584,7 +586,8 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 
 		Object[] finderArgs = new Object[] { uuid };
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs,
+				this);
 
 		if (count == null) {
 			StringBundler query = new StringBundler(2);
@@ -596,7 +599,7 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_UUID_3);
 			}
 			else {
@@ -622,10 +625,10 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 
 				count = (Long)q.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -676,7 +679,7 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 			msg.append(", groupId=");
 			msg.append(groupId);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -716,7 +719,7 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 		Object result = null;
 
 		if (retrieveFromCache) {
-			result = finderCache.getResult(FINDER_PATH_FETCH_BY_UUID_G,
+			result = FinderCacheUtil.getResult(FINDER_PATH_FETCH_BY_UUID_G,
 					finderArgs, this);
 		}
 
@@ -739,7 +742,7 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_G_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_G_UUID_3);
 			}
 			else {
@@ -770,7 +773,7 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 				List<RepositoryEntry> list = q.list();
 
 				if (list.isEmpty()) {
-					finderCache.putResult(FINDER_PATH_FETCH_BY_UUID_G,
+					FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_UUID_G,
 						finderArgs, list);
 				}
 				else {
@@ -779,17 +782,11 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 					result = repositoryEntry;
 
 					cacheResult(repositoryEntry);
-
-					if ((repositoryEntry.getUuid() == null) ||
-							!repositoryEntry.getUuid().equals(uuid) ||
-							(repositoryEntry.getGroupId() != groupId)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_UUID_G,
-							finderArgs, repositoryEntry);
-					}
 				}
 			}
 			catch (Exception e) {
-				finderCache.removeResult(FINDER_PATH_FETCH_BY_UUID_G, finderArgs);
+				FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_UUID_G,
+					finderArgs);
 
 				throw processException(e);
 			}
@@ -834,7 +831,8 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 
 		Object[] finderArgs = new Object[] { uuid, groupId };
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs,
+				this);
 
 		if (count == null) {
 			StringBundler query = new StringBundler(3);
@@ -846,7 +844,7 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_G_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_G_UUID_3);
 			}
 			else {
@@ -876,10 +874,10 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 
 				count = (Long)q.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -1012,7 +1010,7 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 		List<RepositoryEntry> list = null;
 
 		if (retrieveFromCache) {
-			list = (List<RepositoryEntry>)finderCache.getResult(finderPath,
+			list = (List<RepositoryEntry>)FinderCacheUtil.getResult(finderPath,
 					finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
@@ -1045,7 +1043,7 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_3);
 			}
 			else {
@@ -1097,10 +1095,10 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				FinderCacheUtil.putResult(finderPath, finderArgs, list);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -1142,7 +1140,7 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 		msg.append(", companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRepositoryEntryException(msg.toString());
 	}
@@ -1198,7 +1196,7 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 		msg.append(", companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRepositoryEntryException(msg.toString());
 	}
@@ -1293,7 +1291,7 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 		if (uuid == null) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_1);
 		}
-		else if (uuid.equals(StringPool.BLANK)) {
+		else if (uuid.equals("")) {
 			query.append(_FINDER_COLUMN_UUID_C_UUID_3);
 		}
 		else {
@@ -1423,7 +1421,8 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 
 		Object[] finderArgs = new Object[] { uuid, companyId };
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs,
+				this);
 
 		if (count == null) {
 			StringBundler query = new StringBundler(3);
@@ -1435,7 +1434,7 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 			if (uuid == null) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_1);
 			}
-			else if (uuid.equals(StringPool.BLANK)) {
+			else if (uuid.equals("")) {
 				query.append(_FINDER_COLUMN_UUID_C_UUID_3);
 			}
 			else {
@@ -1465,10 +1464,10 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 
 				count = (Long)q.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -1598,7 +1597,7 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 		List<RepositoryEntry> list = null;
 
 		if (retrieveFromCache) {
-			list = (List<RepositoryEntry>)finderCache.getResult(finderPath,
+			list = (List<RepositoryEntry>)FinderCacheUtil.getResult(finderPath,
 					finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
@@ -1664,10 +1663,10 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				FinderCacheUtil.putResult(finderPath, finderArgs, list);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -1705,7 +1704,7 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 		msg.append("repositoryId=");
 		msg.append(repositoryId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRepositoryEntryException(msg.toString());
 	}
@@ -1756,7 +1755,7 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 		msg.append("repositoryId=");
 		msg.append(repositoryId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchRepositoryEntryException(msg.toString());
 	}
@@ -1959,7 +1958,8 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 
 		Object[] finderArgs = new Object[] { repositoryId };
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs,
+				this);
 
 		if (count == null) {
 			StringBundler query = new StringBundler(2);
@@ -1983,10 +1983,10 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 
 				count = (Long)q.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -2034,7 +2034,7 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 			msg.append(", mappedId=");
 			msg.append(mappedId);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -2074,7 +2074,7 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 		Object result = null;
 
 		if (retrieveFromCache) {
-			result = finderCache.getResult(FINDER_PATH_FETCH_BY_R_M,
+			result = FinderCacheUtil.getResult(FINDER_PATH_FETCH_BY_R_M,
 					finderArgs, this);
 		}
 
@@ -2099,7 +2099,7 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 			if (mappedId == null) {
 				query.append(_FINDER_COLUMN_R_M_MAPPEDID_1);
 			}
-			else if (mappedId.equals(StringPool.BLANK)) {
+			else if (mappedId.equals("")) {
 				query.append(_FINDER_COLUMN_R_M_MAPPEDID_3);
 			}
 			else {
@@ -2128,8 +2128,8 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 				List<RepositoryEntry> list = q.list();
 
 				if (list.isEmpty()) {
-					finderCache.putResult(FINDER_PATH_FETCH_BY_R_M, finderArgs,
-						list);
+					FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_R_M,
+						finderArgs, list);
 				}
 				else {
 					RepositoryEntry repositoryEntry = list.get(0);
@@ -2137,17 +2137,11 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 					result = repositoryEntry;
 
 					cacheResult(repositoryEntry);
-
-					if ((repositoryEntry.getRepositoryId() != repositoryId) ||
-							(repositoryEntry.getMappedId() == null) ||
-							!repositoryEntry.getMappedId().equals(mappedId)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_R_M,
-							finderArgs, repositoryEntry);
-					}
 				}
 			}
 			catch (Exception e) {
-				finderCache.removeResult(FINDER_PATH_FETCH_BY_R_M, finderArgs);
+				FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_R_M,
+					finderArgs);
 
 				throw processException(e);
 			}
@@ -2192,7 +2186,8 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 
 		Object[] finderArgs = new Object[] { repositoryId, mappedId };
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs,
+				this);
 
 		if (count == null) {
 			StringBundler query = new StringBundler(3);
@@ -2206,7 +2201,7 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 			if (mappedId == null) {
 				query.append(_FINDER_COLUMN_R_M_MAPPEDID_1);
 			}
-			else if (mappedId.equals(StringPool.BLANK)) {
+			else if (mappedId.equals("")) {
 				query.append(_FINDER_COLUMN_R_M_MAPPEDID_3);
 			}
 			else {
@@ -2234,10 +2229,10 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 
 				count = (Long)q.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -2256,6 +2251,24 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 
 	public RepositoryEntryPersistenceImpl() {
 		setModelClass(RepositoryEntry.class);
+
+		try {
+			Field field = BasePersistenceImpl.class.getDeclaredField(
+					"_dbColumnNames");
+
+			field.setAccessible(true);
+
+			Map<String, String> dbColumnNames = new HashMap<String, String>();
+
+			dbColumnNames.put("uuid", "uuid_");
+
+			field.set(this, dbColumnNames);
+		}
+		catch (Exception e) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(e, e);
+			}
+		}
 	}
 
 	/**
@@ -2265,15 +2278,15 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 	 */
 	@Override
 	public void cacheResult(RepositoryEntry repositoryEntry) {
-		entityCache.putResult(RepositoryEntryModelImpl.ENTITY_CACHE_ENABLED,
+		EntityCacheUtil.putResult(RepositoryEntryModelImpl.ENTITY_CACHE_ENABLED,
 			RepositoryEntryImpl.class, repositoryEntry.getPrimaryKey(),
 			repositoryEntry);
 
-		finderCache.putResult(FINDER_PATH_FETCH_BY_UUID_G,
+		FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_UUID_G,
 			new Object[] { repositoryEntry.getUuid(), repositoryEntry.getGroupId() },
 			repositoryEntry);
 
-		finderCache.putResult(FINDER_PATH_FETCH_BY_R_M,
+		FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_R_M,
 			new Object[] {
 				repositoryEntry.getRepositoryId(), repositoryEntry.getMappedId()
 			}, repositoryEntry);
@@ -2289,7 +2302,7 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 	@Override
 	public void cacheResult(List<RepositoryEntry> repositoryEntries) {
 		for (RepositoryEntry repositoryEntry : repositoryEntries) {
-			if (entityCache.getResult(
+			if (EntityCacheUtil.getResult(
 						RepositoryEntryModelImpl.ENTITY_CACHE_ENABLED,
 						RepositoryEntryImpl.class,
 						repositoryEntry.getPrimaryKey()) == null) {
@@ -2305,43 +2318,43 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 	 * Clears the cache for all repository entries.
 	 *
 	 * <p>
-	 * The {@link EntityCache} and {@link FinderCache} are both cleared by this method.
+	 * The {@link com.liferay.portal.kernel.dao.orm.EntityCache} and {@link com.liferay.portal.kernel.dao.orm.FinderCache} are both cleared by this method.
 	 * </p>
 	 */
 	@Override
 	public void clearCache() {
-		entityCache.clearCache(RepositoryEntryImpl.class);
+		EntityCacheUtil.clearCache(RepositoryEntryImpl.class);
 
-		finderCache.clearCache(FINDER_CLASS_NAME_ENTITY);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_ENTITY);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 	}
 
 	/**
 	 * Clears the cache for the repository entry.
 	 *
 	 * <p>
-	 * The {@link EntityCache} and {@link FinderCache} are both cleared by this method.
+	 * The {@link com.liferay.portal.kernel.dao.orm.EntityCache} and {@link com.liferay.portal.kernel.dao.orm.FinderCache} are both cleared by this method.
 	 * </p>
 	 */
 	@Override
 	public void clearCache(RepositoryEntry repositoryEntry) {
-		entityCache.removeResult(RepositoryEntryModelImpl.ENTITY_CACHE_ENABLED,
+		EntityCacheUtil.removeResult(RepositoryEntryModelImpl.ENTITY_CACHE_ENABLED,
 			RepositoryEntryImpl.class, repositoryEntry.getPrimaryKey());
 
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 
 		clearUniqueFindersCache((RepositoryEntryModelImpl)repositoryEntry, true);
 	}
 
 	@Override
 	public void clearCache(List<RepositoryEntry> repositoryEntries) {
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 
 		for (RepositoryEntry repositoryEntry : repositoryEntries) {
-			entityCache.removeResult(RepositoryEntryModelImpl.ENTITY_CACHE_ENABLED,
+			EntityCacheUtil.removeResult(RepositoryEntryModelImpl.ENTITY_CACHE_ENABLED,
 				RepositoryEntryImpl.class, repositoryEntry.getPrimaryKey());
 
 			clearUniqueFindersCache((RepositoryEntryModelImpl)repositoryEntry,
@@ -2356,9 +2369,9 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 				repositoryEntryModelImpl.getGroupId()
 			};
 
-		finderCache.putResult(FINDER_PATH_COUNT_BY_UUID_G, args,
+		FinderCacheUtil.putResult(FINDER_PATH_COUNT_BY_UUID_G, args,
 			Long.valueOf(1), false);
-		finderCache.putResult(FINDER_PATH_FETCH_BY_UUID_G, args,
+		FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_UUID_G, args,
 			repositoryEntryModelImpl, false);
 
 		args = new Object[] {
@@ -2366,9 +2379,9 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 				repositoryEntryModelImpl.getMappedId()
 			};
 
-		finderCache.putResult(FINDER_PATH_COUNT_BY_R_M, args, Long.valueOf(1),
-			false);
-		finderCache.putResult(FINDER_PATH_FETCH_BY_R_M, args,
+		FinderCacheUtil.putResult(FINDER_PATH_COUNT_BY_R_M, args,
+			Long.valueOf(1), false);
+		FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_R_M, args,
 			repositoryEntryModelImpl, false);
 	}
 
@@ -2380,8 +2393,8 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 					repositoryEntryModelImpl.getGroupId()
 				};
 
-			finderCache.removeResult(FINDER_PATH_COUNT_BY_UUID_G, args);
-			finderCache.removeResult(FINDER_PATH_FETCH_BY_UUID_G, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_UUID_G, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_UUID_G, args);
 		}
 
 		if ((repositoryEntryModelImpl.getColumnBitmask() &
@@ -2391,8 +2404,8 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 					repositoryEntryModelImpl.getOriginalGroupId()
 				};
 
-			finderCache.removeResult(FINDER_PATH_COUNT_BY_UUID_G, args);
-			finderCache.removeResult(FINDER_PATH_FETCH_BY_UUID_G, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_UUID_G, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_UUID_G, args);
 		}
 
 		if (clearCurrent) {
@@ -2401,8 +2414,8 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 					repositoryEntryModelImpl.getMappedId()
 				};
 
-			finderCache.removeResult(FINDER_PATH_COUNT_BY_R_M, args);
-			finderCache.removeResult(FINDER_PATH_FETCH_BY_R_M, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_R_M, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_R_M, args);
 		}
 
 		if ((repositoryEntryModelImpl.getColumnBitmask() &
@@ -2412,8 +2425,8 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 					repositoryEntryModelImpl.getOriginalMappedId()
 				};
 
-			finderCache.removeResult(FINDER_PATH_COUNT_BY_R_M, args);
-			finderCache.removeResult(FINDER_PATH_FETCH_BY_R_M, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_R_M, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_R_M, args);
 		}
 	}
 
@@ -2494,8 +2507,6 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 
 	@Override
 	protected RepositoryEntry removeImpl(RepositoryEntry repositoryEntry) {
-		repositoryEntry = toUnwrappedModel(repositoryEntry);
-
 		Session session = null;
 
 		try {
@@ -2526,9 +2537,23 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 
 	@Override
 	public RepositoryEntry updateImpl(RepositoryEntry repositoryEntry) {
-		repositoryEntry = toUnwrappedModel(repositoryEntry);
-
 		boolean isNew = repositoryEntry.isNew();
+
+		if (!(repositoryEntry instanceof RepositoryEntryModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(repositoryEntry.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(repositoryEntry);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in repositoryEntry proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom RepositoryEntry implementation " +
+				repositoryEntry.getClass());
+		}
 
 		RepositoryEntryModelImpl repositoryEntryModelImpl = (RepositoryEntryModelImpl)repositoryEntry;
 
@@ -2582,10 +2607,38 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 			closeSession(session);
 		}
 
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 
-		if (isNew || !RepositoryEntryModelImpl.COLUMN_BITMASK_ENABLED) {
-			finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		if (!RepositoryEntryModelImpl.COLUMN_BITMASK_ENABLED) {
+			FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		}
+		else
+		 if (isNew) {
+			Object[] args = new Object[] { repositoryEntryModelImpl.getUuid() };
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_UUID, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_UUID,
+				args);
+
+			args = new Object[] {
+					repositoryEntryModelImpl.getUuid(),
+					repositoryEntryModelImpl.getCompanyId()
+				};
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_UUID_C, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_UUID_C,
+				args);
+
+			args = new Object[] { repositoryEntryModelImpl.getRepositoryId() };
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_REPOSITORYID, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_REPOSITORYID,
+				args);
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_ALL,
+				FINDER_ARGS_EMPTY);
+			FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_ALL,
+				FINDER_ARGS_EMPTY);
 		}
 
 		else {
@@ -2595,14 +2648,14 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 						repositoryEntryModelImpl.getOriginalUuid()
 					};
 
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_UUID, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_UUID,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_UUID, args);
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_UUID,
 					args);
 
 				args = new Object[] { repositoryEntryModelImpl.getUuid() };
 
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_UUID, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_UUID,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_UUID, args);
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_UUID,
 					args);
 			}
 
@@ -2613,8 +2666,8 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 						repositoryEntryModelImpl.getOriginalCompanyId()
 					};
 
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_UUID_C, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_UUID_C,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_UUID_C, args);
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_UUID_C,
 					args);
 
 				args = new Object[] {
@@ -2622,8 +2675,8 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 						repositoryEntryModelImpl.getCompanyId()
 					};
 
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_UUID_C, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_UUID_C,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_UUID_C, args);
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_UUID_C,
 					args);
 			}
 
@@ -2633,19 +2686,21 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 						repositoryEntryModelImpl.getOriginalRepositoryId()
 					};
 
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_REPOSITORYID, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_REPOSITORYID,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_REPOSITORYID,
+					args);
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_REPOSITORYID,
 					args);
 
 				args = new Object[] { repositoryEntryModelImpl.getRepositoryId() };
 
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_REPOSITORYID, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_REPOSITORYID,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_REPOSITORYID,
+					args);
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_REPOSITORYID,
 					args);
 			}
 		}
 
-		entityCache.putResult(RepositoryEntryModelImpl.ENTITY_CACHE_ENABLED,
+		EntityCacheUtil.putResult(RepositoryEntryModelImpl.ENTITY_CACHE_ENABLED,
 			RepositoryEntryImpl.class, repositoryEntry.getPrimaryKey(),
 			repositoryEntry, false);
 
@@ -2655,33 +2710,6 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 		repositoryEntry.resetOriginalValues();
 
 		return repositoryEntry;
-	}
-
-	protected RepositoryEntry toUnwrappedModel(RepositoryEntry repositoryEntry) {
-		if (repositoryEntry instanceof RepositoryEntryImpl) {
-			return repositoryEntry;
-		}
-
-		RepositoryEntryImpl repositoryEntryImpl = new RepositoryEntryImpl();
-
-		repositoryEntryImpl.setNew(repositoryEntry.isNew());
-		repositoryEntryImpl.setPrimaryKey(repositoryEntry.getPrimaryKey());
-
-		repositoryEntryImpl.setMvccVersion(repositoryEntry.getMvccVersion());
-		repositoryEntryImpl.setUuid(repositoryEntry.getUuid());
-		repositoryEntryImpl.setRepositoryEntryId(repositoryEntry.getRepositoryEntryId());
-		repositoryEntryImpl.setGroupId(repositoryEntry.getGroupId());
-		repositoryEntryImpl.setCompanyId(repositoryEntry.getCompanyId());
-		repositoryEntryImpl.setUserId(repositoryEntry.getUserId());
-		repositoryEntryImpl.setUserName(repositoryEntry.getUserName());
-		repositoryEntryImpl.setCreateDate(repositoryEntry.getCreateDate());
-		repositoryEntryImpl.setModifiedDate(repositoryEntry.getModifiedDate());
-		repositoryEntryImpl.setRepositoryId(repositoryEntry.getRepositoryId());
-		repositoryEntryImpl.setMappedId(repositoryEntry.getMappedId());
-		repositoryEntryImpl.setManualCheckInRequired(repositoryEntry.isManualCheckInRequired());
-		repositoryEntryImpl.setLastPublishDate(repositoryEntry.getLastPublishDate());
-
-		return repositoryEntryImpl;
 	}
 
 	/**
@@ -2729,7 +2757,7 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 	 */
 	@Override
 	public RepositoryEntry fetchByPrimaryKey(Serializable primaryKey) {
-		Serializable serializable = entityCache.getResult(RepositoryEntryModelImpl.ENTITY_CACHE_ENABLED,
+		Serializable serializable = EntityCacheUtil.getResult(RepositoryEntryModelImpl.ENTITY_CACHE_ENABLED,
 				RepositoryEntryImpl.class, primaryKey);
 
 		if (serializable == nullModel) {
@@ -2751,12 +2779,12 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 					cacheResult(repositoryEntry);
 				}
 				else {
-					entityCache.putResult(RepositoryEntryModelImpl.ENTITY_CACHE_ENABLED,
+					EntityCacheUtil.putResult(RepositoryEntryModelImpl.ENTITY_CACHE_ENABLED,
 						RepositoryEntryImpl.class, primaryKey, nullModel);
 				}
 			}
 			catch (Exception e) {
-				entityCache.removeResult(RepositoryEntryModelImpl.ENTITY_CACHE_ENABLED,
+				EntityCacheUtil.removeResult(RepositoryEntryModelImpl.ENTITY_CACHE_ENABLED,
 					RepositoryEntryImpl.class, primaryKey);
 
 				throw processException(e);
@@ -2806,7 +2834,7 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 		Set<Serializable> uncachedPrimaryKeys = null;
 
 		for (Serializable primaryKey : primaryKeys) {
-			Serializable serializable = entityCache.getResult(RepositoryEntryModelImpl.ENTITY_CACHE_ENABLED,
+			Serializable serializable = EntityCacheUtil.getResult(RepositoryEntryModelImpl.ENTITY_CACHE_ENABLED,
 					RepositoryEntryImpl.class, primaryKey);
 
 			if (serializable != nullModel) {
@@ -2833,14 +2861,14 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 		query.append(_SQL_SELECT_REPOSITORYENTRY_WHERE_PKS_IN);
 
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
-			query.append(String.valueOf(primaryKey));
+			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 
@@ -2860,7 +2888,7 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 			}
 
 			for (Serializable primaryKey : uncachedPrimaryKeys) {
-				entityCache.putResult(RepositoryEntryModelImpl.ENTITY_CACHE_ENABLED,
+				EntityCacheUtil.putResult(RepositoryEntryModelImpl.ENTITY_CACHE_ENABLED,
 					RepositoryEntryImpl.class, primaryKey, nullModel);
 			}
 		}
@@ -2953,7 +2981,7 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 		List<RepositoryEntry> list = null;
 
 		if (retrieveFromCache) {
-			list = (List<RepositoryEntry>)finderCache.getResult(finderPath,
+			list = (List<RepositoryEntry>)FinderCacheUtil.getResult(finderPath,
 					finderArgs, this);
 		}
 
@@ -3002,10 +3030,10 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				FinderCacheUtil.putResult(finderPath, finderArgs, list);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -3035,7 +3063,7 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 	 */
 	@Override
 	public int countAll() {
-		Long count = (Long)finderCache.getResult(FINDER_PATH_COUNT_ALL,
+		Long count = (Long)FinderCacheUtil.getResult(FINDER_PATH_COUNT_ALL,
 				FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
@@ -3048,11 +3076,11 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 
 				count = (Long)q.uniqueResult();
 
-				finderCache.putResult(FINDER_PATH_COUNT_ALL, FINDER_ARGS_EMPTY,
-					count);
+				FinderCacheUtil.putResult(FINDER_PATH_COUNT_ALL,
+					FINDER_ARGS_EMPTY, count);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(FINDER_PATH_COUNT_ALL,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_ALL,
 					FINDER_ARGS_EMPTY);
 
 				throw processException(e);
@@ -3082,16 +3110,14 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 	}
 
 	public void destroy() {
-		entityCache.removeCache(RepositoryEntryImpl.class.getName());
-		finderCache.removeCache(FINDER_CLASS_NAME_ENTITY);
-		finderCache.removeCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.removeCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		EntityCacheUtil.removeCache(RepositoryEntryImpl.class.getName());
+		FinderCacheUtil.removeCache(FINDER_CLASS_NAME_ENTITY);
+		FinderCacheUtil.removeCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.removeCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 	}
 
 	@BeanReference(type = CompanyProviderWrapper.class)
 	protected CompanyProvider companyProvider;
-	protected EntityCache entityCache = EntityCacheUtil.getEntityCache();
-	protected FinderCache finderCache = FinderCacheUtil.getFinderCache();
 	private static final String _SQL_SELECT_REPOSITORYENTRY = "SELECT repositoryEntry FROM RepositoryEntry repositoryEntry";
 	private static final String _SQL_SELECT_REPOSITORYENTRY_WHERE_PKS_IN = "SELECT repositoryEntry FROM RepositoryEntry repositoryEntry WHERE repositoryEntryId IN (";
 	private static final String _SQL_SELECT_REPOSITORYENTRY_WHERE = "SELECT repositoryEntry FROM RepositoryEntry repositoryEntry WHERE ";

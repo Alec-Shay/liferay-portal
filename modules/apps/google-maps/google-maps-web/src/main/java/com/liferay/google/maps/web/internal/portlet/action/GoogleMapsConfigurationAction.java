@@ -18,7 +18,7 @@ import com.liferay.google.maps.web.internal.constants.GoogleMapsPortletKeys;
 import com.liferay.portal.kernel.portlet.ConfigurationAction;
 import com.liferay.portal.kernel.portlet.DefaultConfigurationAction;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Portal;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -26,6 +26,7 @@ import javax.portlet.PortletConfig;
 import javax.portlet.PortletSession;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Mark Wong
@@ -33,7 +34,7 @@ import org.osgi.service.component.annotations.Component;
  */
 @Component(
 	immediate = true,
-	property = {"javax.portlet.name=" + GoogleMapsPortletKeys.GOOGLE_MAPS},
+	property = "javax.portlet.name=" + GoogleMapsPortletKeys.GOOGLE_MAPS,
 	service = ConfigurationAction.class
 )
 public class GoogleMapsConfigurationAction extends DefaultConfigurationAction {
@@ -50,15 +51,18 @@ public class GoogleMapsConfigurationAction extends DefaultConfigurationAction {
 		PortletSession portletSession = actionRequest.getPortletSession();
 
 		portletSession.removeAttribute(
-			PortalUtil.getPortletNamespace(portletResource) + "mapAddress",
+			_portal.getPortletNamespace(portletResource) + "mapAddress",
 			PortletSession.APPLICATION_SCOPE);
 
 		portletSession.removeAttribute(
-			PortalUtil.getPortletNamespace(portletResource) +
+			_portal.getPortletNamespace(portletResource) +
 				"directionsAddress",
 			PortletSession.APPLICATION_SCOPE);
 
 		super.processAction(portletConfig, actionRequest, actionResponse);
 	}
+
+	@Reference
+	private Portal _portal;
 
 }

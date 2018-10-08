@@ -469,7 +469,7 @@ public class ChannelImpl extends BaseChannelImpl {
 			_getUnconfirmedNotificationEvents();
 
 		List<NotificationEvent> notificationEvents =
-			new ArrayList<NotificationEvent>(
+			new ArrayList<>(
 				notificationEventsSet.size() +
 					unconfirmedNotificationEvents.size());
 
@@ -625,9 +625,8 @@ public class ChannelImpl extends BaseChannelImpl {
 
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	private TreeSet<NotificationEvent> _getNotificationEvents() {

@@ -16,6 +16,7 @@ package com.liferay.portal.service.impl;
 
 import com.liferay.admin.kernel.util.PortalMyAccountApplicationType;
 import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.cache.thread.local.Lifecycle;
 import com.liferay.portal.kernel.cache.thread.local.ThreadLocalCachable;
 import com.liferay.portal.kernel.cache.thread.local.ThreadLocalCache;
@@ -35,10 +36,8 @@ import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.ResourceAction;
-import com.liferay.portal.kernel.model.ResourceBlockPermission;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.ResourcePermission;
-import com.liferay.portal.kernel.model.ResourceTypePermission;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.SystemEventConstants;
@@ -58,7 +57,6 @@ import com.liferay.portal.kernel.systemevent.SystemEvent;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -75,7 +73,6 @@ import com.liferay.portal.util.PropsValues;
 import com.liferay.users.admin.kernel.util.UsersAdminUtil;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -427,32 +424,12 @@ public class RoleLocalServiceImpl extends RoleLocalServiceBaseImpl {
 
 		// Resources
 
-		List<ResourceBlockPermission> resourceBlockPermissions =
-			resourceBlockPermissionPersistence.findByRoleId(role.getRoleId());
-
-		for (ResourceBlockPermission resourceBlockPermission :
-				resourceBlockPermissions) {
-
-			resourceBlockPermissionLocalService.deleteResourceBlockPermission(
-				resourceBlockPermission);
-		}
-
 		List<ResourcePermission> resourcePermissions =
 			resourcePermissionPersistence.findByRoleId(role.getRoleId());
 
 		for (ResourcePermission resourcePermission : resourcePermissions) {
 			resourcePermissionLocalService.deleteResourcePermission(
 				resourcePermission);
-		}
-
-		List<ResourceTypePermission> resourceTypePermissions =
-			resourceTypePermissionPersistence.findByRoleId(role.getRoleId());
-
-		for (ResourceTypePermission resourceTypePermission :
-				resourceTypePermissions) {
-
-			resourceTypePermissionLocalService.deleteResourceTypePermission(
-				resourceTypePermission);
 		}
 
 		String className = role.getClassName();
@@ -746,6 +723,10 @@ public class RoleLocalServiceImpl extends RoleLocalServiceBaseImpl {
 			teamGroupId);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	@Override
 	public List<Role> getResourceBlockRoles(
 		long resourceBlockId, String className, String actionId) {
@@ -954,6 +935,22 @@ public class RoleLocalServiceImpl extends RoleLocalServiceBaseImpl {
 	}
 
 	/**
+	 * Returns the team roles in the company.
+	 *
+	 * @param  companyId the primary key of the company
+	 * @param  teamIds the primary keys of the teams
+	 * @return the team roles in the company
+	 */
+	@Override
+	public List<Role> getTeamsRoles(long companyId, long[] teamIds)
+		throws PortalException {
+
+		long classNameId = classNameLocalService.getClassNameId(Team.class);
+
+		return rolePersistence.findByC_C_C(companyId, classNameId, teamIds);
+	}
+
+	/**
 	 * Returns all the roles of the type.
 	 *
 	 * @param  type the role's type (optionally <code>0</code>)
@@ -1075,6 +1072,11 @@ public class RoleLocalServiceImpl extends RoleLocalServiceBaseImpl {
 		return roleFinder.findByU_G(userId, groupIds);
 	}
 
+	@Override
+	public List<Role> getUserTeamRoles(long userId, long groupId) {
+		return roleFinder.findByTeamsUser(userId, groupId);
+	}
+
 	/**
 	 * Returns <code>true</code> if the user is associated with the named
 	 * regular role.
@@ -1109,9 +1111,8 @@ public class RoleLocalServiceImpl extends RoleLocalServiceBaseImpl {
 			if (name.equals(RoleConstants.GUEST)) {
 				return true;
 			}
-			else {
-				return false;
-			}
+
+			return false;
 		}
 
 		if (inherited) {
@@ -1151,9 +1152,8 @@ public class RoleLocalServiceImpl extends RoleLocalServiceBaseImpl {
 
 			return value;
 		}
-		else {
-			return userPersistence.containsRole(userId, role.getRoleId());
-		}
+
+		return userPersistence.containsRole(userId, role.getRoleId());
 	}
 
 	/**
@@ -1649,17 +1649,9 @@ public class RoleLocalServiceImpl extends RoleLocalServiceBaseImpl {
 			Role role, String name, String[] actionIds)
 		throws PortalException {
 
-		if (resourceBlockLocalService.isSupported(name)) {
-			resourceBlockLocalService.setCompanyScopePermissions(
-				role.getCompanyId(), name, role.getRoleId(),
-				Arrays.asList(actionIds));
-		}
-		else {
-			resourcePermissionLocalService.setResourcePermissions(
-				role.getCompanyId(), name, ResourceConstants.SCOPE_COMPANY,
-				String.valueOf(role.getCompanyId()), role.getRoleId(),
-				actionIds);
-		}
+		resourcePermissionLocalService.setResourcePermissions(
+			role.getCompanyId(), name, ResourceConstants.SCOPE_COMPANY,
+			String.valueOf(role.getCompanyId()), role.getRoleId(), actionIds);
 	}
 
 	protected void validate(

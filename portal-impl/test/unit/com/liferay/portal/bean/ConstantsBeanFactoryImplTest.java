@@ -14,14 +14,13 @@
 
 package com.liferay.portal.bean;
 
-import com.liferay.portal.kernel.memory.FinalizeManager;
-import com.liferay.portal.kernel.process.ClassPathUtil;
+import com.liferay.petra.process.ClassPathUtil;
+import com.liferay.portal.kernel.test.FinalizeManagerUtil;
 import com.liferay.portal.kernel.test.GCUtil;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
 import com.liferay.portal.kernel.test.rule.NewEnv;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.test.aspects.ReflectionUtilAdvice;
 import com.liferay.portal.test.rule.AdviseWith;
 import com.liferay.portal.test.rule.AspectJNewEnvTestRule;
@@ -51,18 +50,34 @@ public class ConstantsBeanFactoryImplTest {
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
 		new AggregateTestRule(
-			CodeCoverageAssertor.INSTANCE, AspectJNewEnvTestRule.INSTANCE);
+			AspectJNewEnvTestRule.INSTANCE, CodeCoverageAssertor.INSTANCE);
 
-	@AdviseWith(adviceClasses = {ReflectionUtilAdvice.class})
+	@AdviseWith(adviceClasses = ReflectionUtilAdvice.class)
+	@NewEnv(type = NewEnv.Type.CLASSLOADER)
+	@Test
+	public void testClassInitializationFailure() throws Exception {
+		Throwable throwable = new Throwable();
+
+		ReflectionUtilAdvice.setDeclaredMethodThrowable(throwable);
+
+		try {
+			Class.forName(ConstantsBeanFactoryImpl.class.getName());
+
+			Assert.fail();
+		}
+		catch (ExceptionInInitializerError eiie) {
+			Assert.assertSame(throwable, eiie.getCause());
+		}
+	}
+
 	@NewEnv(type = NewEnv.Type.CLASSLOADER)
 	@Test
 	public void testCreateConstantsBean() throws Exception {
 
 		// Exception on create
 
-		Throwable throwable = new Throwable();
-
-		ReflectionUtilAdvice.setDeclaredMethodThrowable(throwable);
+		Method defineClassMethod = ReflectionTestUtil.getAndSetFieldValue(
+			ConstantsBeanFactoryImpl.class, "_defineClassMethod", null);
 
 		try {
 			ConstantsBeanFactoryImpl.createConstantsBean(Constants.class);
@@ -70,7 +85,14 @@ public class ConstantsBeanFactoryImplTest {
 			Assert.fail();
 		}
 		catch (RuntimeException re) {
-			Assert.assertSame(throwable, re.getCause());
+			Throwable throwable = re.getCause();
+
+			Assert.assertSame(NullPointerException.class, throwable.getClass());
+		}
+		finally {
+			ReflectionTestUtil.setFieldValue(
+				ConstantsBeanFactoryImpl.class, "_defineClassMethod",
+				defineClassMethod);
 		}
 
 		// Normal create
@@ -89,7 +111,7 @@ public class ConstantsBeanFactoryImplTest {
 
 		Method[] methods = constantsBeanClass.getDeclaredMethods();
 
-		Assert.assertEquals(12, methods.length);
+		Assert.assertEquals(Arrays.toString(methods), 12, methods.length);
 
 		Arrays.sort(
 			methods,
@@ -115,7 +137,8 @@ public class ConstantsBeanFactoryImplTest {
 
 		Class<?>[] parameterTypes = method.getParameterTypes();
 
-		Assert.assertEquals(0, parameterTypes.length);
+		Assert.assertEquals(
+			Arrays.toString(parameterTypes), 0, parameterTypes.length);
 
 		// public byte getBYTE_VALUE();
 
@@ -127,7 +150,8 @@ public class ConstantsBeanFactoryImplTest {
 
 		parameterTypes = method.getParameterTypes();
 
-		Assert.assertEquals(0, parameterTypes.length);
+		Assert.assertEquals(
+			Arrays.toString(parameterTypes), 0, parameterTypes.length);
 
 		// public char getCHAR_VALUE();
 
@@ -139,7 +163,8 @@ public class ConstantsBeanFactoryImplTest {
 
 		parameterTypes = method.getParameterTypes();
 
-		Assert.assertEquals(0, parameterTypes.length);
+		Assert.assertEquals(
+			Arrays.toString(parameterTypes), 0, parameterTypes.length);
 
 		// public double getDOUBLE_VALUE();
 
@@ -151,7 +176,8 @@ public class ConstantsBeanFactoryImplTest {
 
 		parameterTypes = method.getParameterTypes();
 
-		Assert.assertEquals(0, parameterTypes.length);
+		Assert.assertEquals(
+			Arrays.toString(parameterTypes), 0, parameterTypes.length);
 
 		// public float getFLOAT_VALUE();
 
@@ -163,7 +189,8 @@ public class ConstantsBeanFactoryImplTest {
 
 		parameterTypes = method.getParameterTypes();
 
-		Assert.assertEquals(0, parameterTypes.length);
+		Assert.assertEquals(
+			Arrays.toString(parameterTypes), 0, parameterTypes.length);
 
 		// public int getINT_VALUE();
 
@@ -175,7 +202,8 @@ public class ConstantsBeanFactoryImplTest {
 
 		parameterTypes = method.getParameterTypes();
 
-		Assert.assertEquals(0, parameterTypes.length);
+		Assert.assertEquals(
+			Arrays.toString(parameterTypes), 0, parameterTypes.length);
 
 		// public long getLONG_VALUE();
 
@@ -187,7 +215,8 @@ public class ConstantsBeanFactoryImplTest {
 
 		parameterTypes = method.getParameterTypes();
 
-		Assert.assertEquals(0, parameterTypes.length);
+		Assert.assertEquals(
+			Arrays.toString(parameterTypes), 0, parameterTypes.length);
 
 		// public Object getOBJECT_VALUE();
 
@@ -199,7 +228,8 @@ public class ConstantsBeanFactoryImplTest {
 
 		parameterTypes = method.getParameterTypes();
 
-		Assert.assertEquals(0, parameterTypes.length);
+		Assert.assertEquals(
+			Arrays.toString(parameterTypes), 0, parameterTypes.length);
 
 		// public short getSHORT_VALUE();
 
@@ -211,7 +241,8 @@ public class ConstantsBeanFactoryImplTest {
 
 		parameterTypes = method.getParameterTypes();
 
-		Assert.assertEquals(0, parameterTypes.length);
+		Assert.assertEquals(
+			Arrays.toString(parameterTypes), 0, parameterTypes.length);
 
 		// public int get_Int(int)
 
@@ -224,7 +255,8 @@ public class ConstantsBeanFactoryImplTest {
 
 		parameterTypes = method.getParameterTypes();
 
-		Assert.assertEquals(1, parameterTypes.length);
+		Assert.assertEquals(
+			Arrays.toString(parameterTypes), 1, parameterTypes.length);
 		Assert.assertSame(int.class, parameterTypes[0]);
 
 		Assert.assertEquals(10, method.invoke(null, 10));
@@ -240,7 +272,8 @@ public class ConstantsBeanFactoryImplTest {
 
 		parameterTypes = method.getParameterTypes();
 
-		Assert.assertEquals(1, parameterTypes.length);
+		Assert.assertEquals(
+			Arrays.toString(parameterTypes), 1, parameterTypes.length);
 		Assert.assertSame(Object.class, parameterTypes[0]);
 
 		Object obj = new Object();
@@ -258,7 +291,8 @@ public class ConstantsBeanFactoryImplTest {
 
 		parameterTypes = method.getParameterTypes();
 
-		Assert.assertEquals(0, parameterTypes.length);
+		Assert.assertEquals(
+			Arrays.toString(parameterTypes), 0, parameterTypes.length);
 
 		// Ensure reuse of cached generated class
 
@@ -292,9 +326,6 @@ public class ConstantsBeanFactoryImplTest {
 
 	@Test
 	public void testToConstantsBean() throws Exception {
-		System.setProperty(
-			FinalizeManager.class.getName() + ".thread.enabled",
-			StringPool.FALSE);
 
 		// First create
 
@@ -327,14 +358,16 @@ public class ConstantsBeanFactoryImplTest {
 		Map<Class<?>, ?> constantsBeans =
 			ConstantsBeanFactoryImpl.constantsBeans;
 
-		Assert.assertEquals(1, constantsBeans.size());
+		Assert.assertEquals(
+			constantsBeans.toString(), 1, constantsBeans.size());
 
 		// Hit cache
 
 		Assert.assertSame(
 			constantsBean1,
 			constantsBeanImpl.getConstantsBean(constantsClass1));
-		Assert.assertEquals(1, constantsBeans.size());
+		Assert.assertEquals(
+			constantsBeans.toString(), 1, constantsBeans.size());
 
 		// Second create
 
@@ -349,14 +382,16 @@ public class ConstantsBeanFactoryImplTest {
 		Assert.assertNotSame(constantsBean1, constantsBean2);
 		Assert.assertNotSame(constantsBeanClass1, constantsBean2.getClass());
 
-		Assert.assertEquals(2, constantsBeans.size());
+		Assert.assertEquals(
+			constantsBeans.toString(), 2, constantsBeans.size());
 
 		// Hit cache
 
 		Assert.assertSame(
 			constantsBean2,
 			constantsBeanImpl.getConstantsBean(constantsClass2));
-		Assert.assertEquals(2, constantsBeans.size());
+		Assert.assertEquals(
+			constantsBeans.toString(), 2, constantsBeans.size());
 
 		// Weak reference release key
 
@@ -367,13 +402,13 @@ public class ConstantsBeanFactoryImplTest {
 
 		GCUtil.gc(true);
 
-		ReflectionTestUtil.invoke(
-			FinalizeManager.class, "_pollingCleanup", new Class<?>[0]);
+		FinalizeManagerUtil.drainPendingFinalizeActions();
 
 		Assert.assertSame(
 			constantsBean2,
 			constantsBeanImpl.getConstantsBean(constantsClass2));
-		Assert.assertEquals(1, constantsBeans.size());
+		Assert.assertEquals(
+			constantsBeans.toString(), 1, constantsBeans.size());
 
 		// Weak reference release value
 
@@ -381,10 +416,9 @@ public class ConstantsBeanFactoryImplTest {
 
 		GCUtil.gc(true);
 
-		ReflectionTestUtil.invoke(
-			FinalizeManager.class, "_pollingCleanup", new Class<?>[0]);
+		FinalizeManagerUtil.drainPendingFinalizeActions();
 
-		Assert.assertTrue(constantsBeans.isEmpty());
+		Assert.assertTrue(constantsBeans.toString(), constantsBeans.isEmpty());
 	}
 
 	public static class Constants {

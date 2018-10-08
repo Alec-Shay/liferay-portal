@@ -37,7 +37,6 @@ import com.liferay.registry.ServiceRegistrar;
 import java.net.URL;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -67,11 +66,25 @@ public class ServiceConfiguratorImpl implements ServiceConfigurator {
 			ClassLoader classLoader)
 		throws Exception {
 
-		initServiceComponent(serviceComponentConfiguration, classLoader);
+		_initServiceComponent(serviceComponentConfiguration, classLoader);
 
-		reconfigureCaches(classLoader);
+		Configuration configuration = null;
 
-		readResourceActions(classLoader);
+		try {
+			configuration = ConfigurationFactoryUtil.getConfiguration(
+				classLoader, "portlet");
+		}
+		catch (Exception e) {
+			if (_log.isDebugEnabled()) {
+				_log.debug("Unable to read portlet.properties");
+			}
+
+			return;
+		}
+
+		_reconfigureCaches(classLoader, configuration);
+
+		_readResourceActions(classLoader, configuration);
 	}
 
 	public void setResourceActionLocalService(
@@ -112,7 +125,7 @@ public class ServiceConfiguratorImpl implements ServiceConfigurator {
 		return classLoader.getResource(cacheConfigurationLocation);
 	}
 
-	protected void initServiceComponent(
+	private void _initServiceComponent(
 		ServiceComponentConfiguration serviceComponentConfiguration,
 		ClassLoader classLoader) {
 
@@ -142,14 +155,11 @@ public class ServiceConfiguratorImpl implements ServiceConfigurator {
 			properties.getProperty("build.number"));
 		long buildDate = GetterUtil.getLong(
 			properties.getProperty("build.date"));
-		boolean buildAutoUpgrade = GetterUtil.getBoolean(
-			properties.getProperty("build.auto.upgrade"), true);
 
 		if (_log.isDebugEnabled()) {
 			_log.debug("Build namespace " + buildNamespace);
 			_log.debug("Build number " + buildNumber);
 			_log.debug("Build date " + buildDate);
-			_log.debug("Build auto upgrade " + buildAutoUpgrade);
 		}
 
 		if (Validator.isNull(buildNamespace)) {
@@ -159,74 +169,48 @@ public class ServiceConfiguratorImpl implements ServiceConfigurator {
 		try {
 			_serviceComponentLocalService.initServiceComponent(
 				serviceComponentConfiguration, classLoader, buildNamespace,
-				buildNumber, buildDate, buildAutoUpgrade);
+				buildNumber, buildDate);
 		}
 		catch (PortalException pe) {
 			_log.error("Unable to initialize service component", pe);
 		}
 	}
 
-	protected void readResourceActions(ClassLoader classLoader) {
-		Configuration configuration = null;
+	private void _readResourceActions(
+		ClassLoader classLoader, Configuration configuration) {
 
 		try {
-			configuration = ConfigurationFactoryUtil.getConfiguration(
-				classLoader, "portlet");
+			String portlets = configuration.get(
+				"service.configurator.portlet.ids");
+
+			if (Validator.isNull(portlets)) {
+				_resourceActions.readAndCheck(
+					null, classLoader,
+					StringUtil.split(
+						configuration.get(PropsKeys.RESOURCE_ACTIONS_CONFIGS)));
+			}
+			else {
+				_resourceActions.read(
+					null, classLoader,
+					StringUtil.split(
+						configuration.get(PropsKeys.RESOURCE_ACTIONS_CONFIGS)));
+
+				for (String portletId : StringUtil.split(portlets)) {
+					_resourceActions.check(portletId);
+				}
+			}
 		}
 		catch (Exception e) {
-			if (_log.isDebugEnabled()) {
-				_log.debug("Unable to read portlet.properties");
-			}
-
-			return;
-		}
-
-		String[] resourceActionsConfigs = StringUtil.split(
-			configuration.get(PropsKeys.RESOURCE_ACTIONS_CONFIGS));
-
-		for (String resourceActionsConfig : resourceActionsConfigs) {
-			try {
-				_resourceActions.read(null, classLoader, resourceActionsConfig);
-			}
-			catch (Exception e) {
-				_log.error(
-					"Unable to read resource actions config in " +
-						resourceActionsConfig,
-					e);
-			}
-		}
-
-		String[] portletIds = StringUtil.split(
-			configuration.get("service.configurator.portlet.ids"));
-
-		for (String portletId : portletIds) {
-			List<String> modelNames = _resourceActions.getPortletModelResources(
-				portletId);
-
-			for (String modelName : modelNames) {
-				List<String> modelActions =
-					_resourceActions.getModelResourceActions(modelName);
-
-				_resourceActionLocalService.checkResourceActions(
-					modelName, modelActions);
-			}
+			_log.error(
+				"Unable to read resource actions config in " +
+					PropsKeys.RESOURCE_ACTIONS_CONFIGS,
+				e);
 		}
 	}
 
-	protected void reconfigureCaches(ClassLoader classLoader) throws Exception {
-		Configuration configuration = null;
-
-		try {
-			configuration = ConfigurationFactoryUtil.getConfiguration(
-				classLoader, "portlet");
-		}
-		catch (Exception e) {
-			if (_log.isDebugEnabled()) {
-				_log.debug("Unable to read portlet.properties");
-			}
-
-			return;
-		}
+	private void _reconfigureCaches(
+			ClassLoader classLoader, Configuration configuration)
+		throws Exception {
 
 		String singleVMConfigurationLocation = configuration.get(
 			PropsKeys.EHCACHE_SINGLE_VM_CONFIG_LOCATION);

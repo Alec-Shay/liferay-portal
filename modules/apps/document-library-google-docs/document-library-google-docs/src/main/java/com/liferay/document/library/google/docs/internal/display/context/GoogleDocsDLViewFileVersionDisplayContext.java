@@ -86,11 +86,20 @@ public class GoogleDocsDLViewFileVersionDisplayContext
 	public Menu getMenu() throws PortalException {
 		Menu menu = super.getMenu();
 
+		// See LPS-79987
+
+		if (Validator.isNull(
+				_googleDocsMetadataHelper.getFieldValue(
+					GoogleDocsConstants.DDM_FIELD_NAME_URL))) {
+
+			return menu;
+		}
+
 		List<MenuItem> menuItems = menu.getMenuItems();
 
 		menuItems.removeIf(
-			menuItem ->
-				Objects.equals(menuItem.getKey(), "#edit-with-image-editor"));
+			menuItem -> Objects.equals(
+				menuItem.getKey(), "#edit-with-image-editor"));
 
 		_googleDocsUIItemsProcessor.processMenuItems(menuItems);
 

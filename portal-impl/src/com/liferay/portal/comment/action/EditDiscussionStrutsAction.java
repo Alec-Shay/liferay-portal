@@ -18,12 +18,14 @@ import com.liferay.message.boards.kernel.exception.DiscussionMaxCommentsExceptio
 import com.liferay.message.boards.kernel.exception.MessageBodyException;
 import com.liferay.message.boards.kernel.exception.NoSuchMessageException;
 import com.liferay.message.boards.kernel.exception.RequiredMessageException;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.comment.Comment;
 import com.liferay.portal.kernel.comment.CommentManagerUtil;
 import com.liferay.portal.kernel.comment.DiscussionPermission;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.security.auth.AuthTokenUtil;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -39,7 +41,6 @@ import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.Function;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -51,8 +52,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * @author Adolfo Pérez
+ * @author     Adolfo Pérez
+ * @deprecated As of Judson (7.1.x), replaced by {@link
+ *             com.liferay.comment.taglib.internal.action.
+ *             EditDiscussionStrutsAction}
  */
+@Deprecated
 @OSGiBeanProperties(
 	property = "path=/portal/comment/edit_discussion",
 	service = StrutsAction.class
@@ -63,6 +68,9 @@ public class EditDiscussionStrutsAction extends BaseStrutsAction {
 	public String execute(
 			HttpServletRequest request, HttpServletResponse response)
 		throws Exception {
+
+		AuthTokenUtil.checkCSRFToken(
+			request, EditDiscussionStrutsAction.class.getName());
 
 		String namespace = ParamUtil.getString(request, "namespace");
 
@@ -76,8 +84,6 @@ public class EditDiscussionStrutsAction extends BaseStrutsAction {
 				ParamUtil.getString(request, "redirect"));
 
 			if (cmd.equals(Constants.ADD) || cmd.equals(Constants.UPDATE)) {
-				long commentId = updateComment(namespacedRequest);
-
 				boolean ajax = ParamUtil.getBoolean(request, "ajax", true);
 
 				if (ajax) {
@@ -86,7 +92,10 @@ public class EditDiscussionStrutsAction extends BaseStrutsAction {
 
 					JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
 
+					long commentId = updateComment(namespacedRequest);
+
 					jsonObject.put("commentId", commentId);
+
 					jsonObject.put("randomNamespace", randomNamespace);
 
 					writeJSON(namespacedRequest, response, jsonObject);
@@ -250,12 +259,12 @@ public class EditDiscussionStrutsAction extends BaseStrutsAction {
 
 	protected void writeJSON(
 			HttpServletRequest request, HttpServletResponse response,
-			Object json)
+			Object jsonObj)
 		throws IOException {
 
 		response.setContentType(ContentTypes.APPLICATION_JSON);
 
-		ServletResponseUtil.write(response, json.toString());
+		ServletResponseUtil.write(response, jsonObj.toString());
 
 		response.flushBuffer();
 	}

@@ -23,12 +23,15 @@ import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.PredicateFilter;
 import com.liferay.portal.kernel.util.SetUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.model.impl.PortletAppImpl;
 import com.liferay.portal.model.impl.PortletImpl;
 import com.liferay.portal.util.HtmlImpl;
 import com.liferay.portal.util.HttpImpl;
 import com.liferay.portal.util.PortalImpl;
 import com.liferay.portlet.PortletResourceAccessor;
+import com.liferay.registry.BasicRegistryImpl;
+import com.liferay.registry.RegistryUtil;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -50,6 +53,8 @@ public class ComboServletStaticURLGeneratorTest {
 
 	@Before
 	public void setUp() {
+		RegistryUtil.setRegistry(new BasicRegistryImpl());
+
 		HtmlUtil htmlUtil = new HtmlUtil();
 
 		htmlUtil.setHtml(new HtmlImpl());
@@ -198,7 +203,8 @@ public class ComboServletStaticURLGeneratorTest {
 
 		comboServletStaticURLGenerator.generate(_toList(portlet));
 
-		Assert.assertTrue(visitedURLs.contains("/css/main.css"));
+		Assert.assertTrue(
+			visitedURLs.toString(), visitedURLs.contains("/css/main.css"));
 	}
 
 	@Test
@@ -304,7 +310,7 @@ public class ComboServletStaticURLGeneratorTest {
 		List<String> urls = comboServletStaticURLGenerator.generate(
 			_toList(portlet));
 
-		Assert.assertTrue(urls.isEmpty());
+		Assert.assertTrue(urls.toString(), urls.isEmpty());
 	}
 
 	@Test
@@ -327,8 +333,9 @@ public class ComboServletStaticURLGeneratorTest {
 
 		assertURLs(
 			urls,
-			_URL_PREFIX + "&" + PortletKeys.PORTAL + ":%2Fcss%2Fmain.css&" +
-				PortletKeys.PORTAL + ":%2Fcss%2Fmore.css&t=0");
+			StringBundler.concat(
+				_URL_PREFIX, "&", PortletKeys.PORTAL, ":%2Fcss%2Fmain.css&",
+				PortletKeys.PORTAL, ":%2Fcss%2Fmore.css&t=0"));
 	}
 
 	@Test

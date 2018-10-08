@@ -17,8 +17,10 @@ package com.liferay.portal.kernel.security.permission;
 import java.util.Set;
 
 /**
- * @author László Csontos
+ * @author     László Csontos
+ * @deprecated As of Judson (7.1.x), with no direct replacement
  */
+@Deprecated
 public interface ResourceActionsBag {
 
 	public Set<String> getResourceActions();

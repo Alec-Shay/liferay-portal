@@ -120,8 +120,6 @@ else {
 
 						<%
 						KBFolder kbFolder = (KBFolder)kbObject;
-
-						kbFolder = kbFolder.toEscapedModel();
 						%>
 
 						<liferay-portlet:renderURL var="rowURL" windowState="<%= LiferayWindowState.POP_UP.toString() %>">
@@ -148,11 +146,11 @@ else {
 							<c:choose>
 								<c:when test="<%= Validator.isNotNull(rowURL) %>">
 									<aui:a href="<%= rowURL %>">
-										<%= kbFolder.getName() %>
+										<%= HtmlUtil.escape(kbFolder.getName()) %>
 									</aui:a>
 								</c:when>
 								<c:otherwise>
-									<%= kbFolder.getName() %>
+									<%= HtmlUtil.escape(kbFolder.getName()) %>
 								</c:otherwise>
 							</c:choose>
 						</liferay-ui:search-container-column-text>
@@ -182,20 +180,13 @@ else {
 							data.put("title", kbFolder.getName());
 							%>
 
-							<aui:button
-								cssClass="selector-button"
-								data="<%= data %>"
-								disabled="<%= (kbFolder.getKbFolderId() == resourcePrimKey) || (kbFolder.getKbFolderId() == originalParentResourcePrimKey) || !ArrayUtil.contains(selectableClassNameIds, kbFolderClassNameId) %>"
-								value="choose"
-							/>
+							<aui:button cssClass="selector-button" data="<%= data %>" disabled="<%= (kbFolder.getKbFolderId() == resourcePrimKey) || (kbFolder.getKbFolderId() == originalParentResourcePrimKey) || !ArrayUtil.contains(selectableClassNameIds, kbFolderClassNameId) %>" value="choose" />
 						</liferay-ui:search-container-column-text>
 					</c:when>
 					<c:otherwise>
 
 						<%
 						KBArticle kbArticle = (KBArticle)kbObject;
-
-						kbArticle = kbArticle.toEscapedModel();
 						%>
 
 						<liferay-portlet:renderURL var="rowURL" windowState="<%= LiferayWindowState.POP_UP.toString() %>">
@@ -223,11 +214,11 @@ else {
 							<c:choose>
 								<c:when test="<%= Validator.isNotNull(rowURL) %>">
 									<aui:a href="<%= rowURL %>">
-										<%= kbArticle.getTitle() %>
+										<%= HtmlUtil.escape(kbArticle.getTitle()) %>
 									</aui:a>
 								</c:when>
 								<c:otherwise>
-									<%= kbArticle.getTitle() %>
+									<%= HtmlUtil.escape(kbArticle.getTitle()) %>
 								</c:otherwise>
 							</c:choose>
 						</liferay-ui:search-container-column-text>
@@ -257,22 +248,20 @@ else {
 							data.put("title", kbArticle.getTitle());
 							%>
 
-							<aui:button
-								cssClass="selector-button"
-								data="<%= data %>"
-								disabled="<%= (kbArticle.getResourcePrimKey() == resourcePrimKey) || (kbArticle.getResourcePrimKey() == originalParentResourcePrimKey) || !ArrayUtil.contains(selectableClassNameIds, kbArticleClassNameId) %>"
-								value="choose"
-							/>
+							<aui:button cssClass="selector-button" data="<%= data %>" disabled="<%= (kbArticle.getResourcePrimKey() == resourcePrimKey) || (kbArticle.getResourcePrimKey() == originalParentResourcePrimKey) || !ArrayUtil.contains(selectableClassNameIds, kbArticleClassNameId) %>" value="choose" />
 						</liferay-ui:search-container-column-text>
 					</c:otherwise>
 				</c:choose>
 			</liferay-ui:search-container-row>
 
-			<liferay-ui:search-iterator markupView="lexicon" resultRowSplitter="<%= kbFolderView ? null : new KBResultRowSplitter() %>" />
+			<liferay-ui:search-iterator
+				markupView="lexicon"
+				resultRowSplitter="<%= kbFolderView ? null : new KBResultRowSplitter() %>"
+			/>
 		</liferay-ui:search-container>
 	</aui:form>
 </div>
 
-<aui:script use="aui-base">
+<aui:script>
 	Liferay.Util.selectEntityHandler('#<portlet:namespace />fm', '<%= HtmlUtil.escape(eventName) %>');
 </aui:script>

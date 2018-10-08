@@ -14,9 +14,9 @@
 
 package com.liferay.portal.kernel.servlet;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.Collections;
@@ -193,9 +193,8 @@ public class DynamicServletRequest extends HttpServletRequestWrapper {
 		if (ArrayUtil.isNotEmpty(values)) {
 			return values[0];
 		}
-		else {
-			return null;
-		}
+
+		return null;
 	}
 
 	@Override
@@ -213,17 +212,34 @@ public class DynamicServletRequest extends HttpServletRequestWrapper {
 
 	@Override
 	public Enumeration<String> getParameterNames() {
-		Set<String> names = new LinkedHashSet<>();
+		if (_params.isEmpty()) {
+			if (_inherit) {
+				return super.getParameterNames();
+			}
+
+			return Collections.emptyEnumeration();
+		}
+
+		Set<String> names = null;
 
 		if (_inherit) {
 			Enumeration<String> enu = super.getParameterNames();
 
 			while (enu.hasMoreElements()) {
+				if (names == null) {
+					names = new LinkedHashSet<>();
+				}
+
 				names.add(enu.nextElement());
 			}
 		}
 
-		names.addAll(_params.keySet());
+		if (names == null) {
+			names = _params.keySet();
+		}
+		else {
+			names.addAll(_params.keySet());
+		}
 
 		return Collections.enumeration(names);
 	}

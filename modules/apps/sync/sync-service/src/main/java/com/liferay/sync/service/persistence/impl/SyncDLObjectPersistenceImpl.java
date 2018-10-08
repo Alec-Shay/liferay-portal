@@ -16,6 +16,8 @@ package com.liferay.sync.service.persistence.impl;
 
 import aQute.bnd.annotation.ProviderType;
 
+import com.liferay.petra.string.StringBundler;
+
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
@@ -29,11 +31,9 @@ import com.liferay.portal.kernel.service.persistence.CompanyProvider;
 import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.spring.extender.service.ServiceReference;
 
@@ -44,6 +44,9 @@ import com.liferay.sync.model.impl.SyncDLObjectModelImpl;
 import com.liferay.sync.service.persistence.SyncDLObjectPersistence;
 
 import java.io.Serializable;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -186,9 +189,8 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 			if ((list != null) && !list.isEmpty()) {
 				for (SyncDLObject syncDLObject : list) {
 					if (!StringUtil.wildcardMatches(
-								syncDLObject.getTreePath(), treePath,
-								CharPool.UNDERLINE, CharPool.PERCENT,
-								CharPool.BACK_SLASH, true)) {
+								syncDLObject.getTreePath(), treePath, '_', '%',
+								'\\', true)) {
 						list = null;
 
 						break;
@@ -215,7 +217,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 			if (treePath == null) {
 				query.append(_FINDER_COLUMN_TREEPATH_TREEPATH_1);
 			}
-			else if (treePath.equals(StringPool.BLANK)) {
+			else if (treePath.equals("")) {
 				query.append(_FINDER_COLUMN_TREEPATH_TREEPATH_3);
 			}
 			else {
@@ -304,7 +306,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 		msg.append("treePath=");
 		msg.append(treePath);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchDLObjectException(msg.toString());
 	}
@@ -355,7 +357,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 		msg.append("treePath=");
 		msg.append(treePath);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchDLObjectException(msg.toString());
 	}
@@ -447,7 +449,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 		if (treePath == null) {
 			query.append(_FINDER_COLUMN_TREEPATH_TREEPATH_1);
 		}
-		else if (treePath.equals(StringPool.BLANK)) {
+		else if (treePath.equals("")) {
 			query.append(_FINDER_COLUMN_TREEPATH_TREEPATH_3);
 		}
 		else {
@@ -583,7 +585,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 			if (treePath == null) {
 				query.append(_FINDER_COLUMN_TREEPATH_TREEPATH_1);
 			}
-			else if (treePath.equals(StringPool.BLANK)) {
+			else if (treePath.equals("")) {
 				query.append(_FINDER_COLUMN_TREEPATH_TREEPATH_3);
 			}
 			else {
@@ -843,7 +845,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 		msg.append(", repositoryId=");
 		msg.append(repositoryId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchDLObjectException(msg.toString());
 	}
@@ -899,7 +901,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 		msg.append(", repositoryId=");
 		msg.append(repositoryId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchDLObjectException(msg.toString());
 	}
@@ -1386,7 +1388,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 		msg.append(", parentFolderId=");
 		msg.append(parentFolderId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchDLObjectException(msg.toString());
 	}
@@ -1442,7 +1444,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 		msg.append(", parentFolderId=");
 		msg.append(parentFolderId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchDLObjectException(msg.toString());
 	}
@@ -1833,7 +1835,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 			if (event == null) {
 				query.append(_FINDER_COLUMN_R_NOTE_EVENT_1);
 			}
-			else if (event.equals(StringPool.BLANK)) {
+			else if (event.equals("")) {
 				query.append(_FINDER_COLUMN_R_NOTE_EVENT_3);
 			}
 			else {
@@ -1928,7 +1930,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 		msg.append(", event=");
 		msg.append(event);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchDLObjectException(msg.toString());
 	}
@@ -1984,7 +1986,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 		msg.append(", event=");
 		msg.append(event);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchDLObjectException(msg.toString());
 	}
@@ -2081,7 +2083,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 		if (event == null) {
 			query.append(_FINDER_COLUMN_R_NOTE_EVENT_1);
 		}
-		else if (event.equals(StringPool.BLANK)) {
+		else if (event.equals("")) {
 			query.append(_FINDER_COLUMN_R_NOTE_EVENT_3);
 		}
 		else {
@@ -2223,7 +2225,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 			if (event == null) {
 				query.append(_FINDER_COLUMN_R_NOTE_EVENT_1);
 			}
-			else if (event.equals(StringPool.BLANK)) {
+			else if (event.equals("")) {
 				query.append(_FINDER_COLUMN_R_NOTE_EVENT_3);
 			}
 			else {
@@ -2419,7 +2421,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 			if (type == null) {
 				query.append(_FINDER_COLUMN_R_T_TYPE_1);
 			}
-			else if (type.equals(StringPool.BLANK)) {
+			else if (type.equals("")) {
 				query.append(_FINDER_COLUMN_R_T_TYPE_3);
 			}
 			else {
@@ -2514,7 +2516,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 		msg.append(", type=");
 		msg.append(type);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchDLObjectException(msg.toString());
 	}
@@ -2570,7 +2572,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 		msg.append(", type=");
 		msg.append(type);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchDLObjectException(msg.toString());
 	}
@@ -2667,7 +2669,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 		if (type == null) {
 			query.append(_FINDER_COLUMN_R_T_TYPE_1);
 		}
-		else if (type.equals(StringPool.BLANK)) {
+		else if (type.equals("")) {
 			query.append(_FINDER_COLUMN_R_T_TYPE_3);
 		}
 		else {
@@ -2809,7 +2811,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 			if (type == null) {
 				query.append(_FINDER_COLUMN_R_T_TYPE_1);
 			}
-			else if (type.equals(StringPool.BLANK)) {
+			else if (type.equals("")) {
 				query.append(_FINDER_COLUMN_R_T_TYPE_3);
 			}
 			else {
@@ -2957,9 +2959,8 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 			if ((list != null) && !list.isEmpty()) {
 				for (SyncDLObject syncDLObject : list) {
 					if (!StringUtil.wildcardMatches(
-								syncDLObject.getTreePath(), treePath,
-								CharPool.UNDERLINE, CharPool.PERCENT,
-								CharPool.BACK_SLASH, true) ||
+								syncDLObject.getTreePath(), treePath, '_', '%',
+								'\\', true) ||
 							Objects.equals(event, syncDLObject.getEvent())) {
 						list = null;
 
@@ -2987,7 +2988,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 			if (treePath == null) {
 				query.append(_FINDER_COLUMN_T_NOTE_TREEPATH_1);
 			}
-			else if (treePath.equals(StringPool.BLANK)) {
+			else if (treePath.equals("")) {
 				query.append(_FINDER_COLUMN_T_NOTE_TREEPATH_3);
 			}
 			else {
@@ -3001,7 +3002,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 			if (event == null) {
 				query.append(_FINDER_COLUMN_T_NOTE_EVENT_1);
 			}
-			else if (event.equals(StringPool.BLANK)) {
+			else if (event.equals("")) {
 				query.append(_FINDER_COLUMN_T_NOTE_EVENT_3);
 			}
 			else {
@@ -3098,7 +3099,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 		msg.append(", event=");
 		msg.append(event);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchDLObjectException(msg.toString());
 	}
@@ -3154,7 +3155,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 		msg.append(", event=");
 		msg.append(event);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchDLObjectException(msg.toString());
 	}
@@ -3249,7 +3250,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 		if (treePath == null) {
 			query.append(_FINDER_COLUMN_T_NOTE_TREEPATH_1);
 		}
-		else if (treePath.equals(StringPool.BLANK)) {
+		else if (treePath.equals("")) {
 			query.append(_FINDER_COLUMN_T_NOTE_TREEPATH_3);
 		}
 		else {
@@ -3263,7 +3264,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 		if (event == null) {
 			query.append(_FINDER_COLUMN_T_NOTE_EVENT_1);
 		}
-		else if (event.equals(StringPool.BLANK)) {
+		else if (event.equals("")) {
 			query.append(_FINDER_COLUMN_T_NOTE_EVENT_3);
 		}
 		else {
@@ -3405,7 +3406,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 			if (treePath == null) {
 				query.append(_FINDER_COLUMN_T_NOTE_TREEPATH_1);
 			}
-			else if (treePath.equals(StringPool.BLANK)) {
+			else if (treePath.equals("")) {
 				query.append(_FINDER_COLUMN_T_NOTE_TREEPATH_3);
 			}
 			else {
@@ -3419,7 +3420,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 			if (event == null) {
 				query.append(_FINDER_COLUMN_T_NOTE_EVENT_1);
 			}
-			else if (event.equals(StringPool.BLANK)) {
+			else if (event.equals("")) {
 				query.append(_FINDER_COLUMN_T_NOTE_EVENT_3);
 			}
 			else {
@@ -3618,7 +3619,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 			if (version == null) {
 				query.append(_FINDER_COLUMN_V_T_VERSION_1);
 			}
-			else if (version.equals(StringPool.BLANK)) {
+			else if (version.equals("")) {
 				query.append(_FINDER_COLUMN_V_T_VERSION_3);
 			}
 			else {
@@ -3632,7 +3633,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 			if (type == null) {
 				query.append(_FINDER_COLUMN_V_T_TYPE_1);
 			}
-			else if (type.equals(StringPool.BLANK)) {
+			else if (type.equals("")) {
 				query.append(_FINDER_COLUMN_V_T_TYPE_3);
 			}
 			else {
@@ -3729,7 +3730,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 		msg.append(", type=");
 		msg.append(type);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchDLObjectException(msg.toString());
 	}
@@ -3785,7 +3786,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 		msg.append(", type=");
 		msg.append(type);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchDLObjectException(msg.toString());
 	}
@@ -3880,7 +3881,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 		if (version == null) {
 			query.append(_FINDER_COLUMN_V_T_VERSION_1);
 		}
-		else if (version.equals(StringPool.BLANK)) {
+		else if (version.equals("")) {
 			query.append(_FINDER_COLUMN_V_T_VERSION_3);
 		}
 		else {
@@ -3894,7 +3895,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 		if (type == null) {
 			query.append(_FINDER_COLUMN_V_T_TYPE_1);
 		}
-		else if (type.equals(StringPool.BLANK)) {
+		else if (type.equals("")) {
 			query.append(_FINDER_COLUMN_V_T_TYPE_3);
 		}
 		else {
@@ -4036,7 +4037,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 			if (version == null) {
 				query.append(_FINDER_COLUMN_V_T_VERSION_1);
 			}
-			else if (version.equals(StringPool.BLANK)) {
+			else if (version.equals("")) {
 				query.append(_FINDER_COLUMN_V_T_VERSION_3);
 			}
 			else {
@@ -4050,7 +4051,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 			if (type == null) {
 				query.append(_FINDER_COLUMN_V_T_TYPE_1);
 			}
-			else if (type.equals(StringPool.BLANK)) {
+			else if (type.equals("")) {
 				query.append(_FINDER_COLUMN_V_T_TYPE_3);
 			}
 			else {
@@ -4136,7 +4137,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 			msg.append(", typePK=");
 			msg.append(typePK);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -4199,7 +4200,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 			if (type == null) {
 				query.append(_FINDER_COLUMN_T_T_TYPE_1);
 			}
-			else if (type.equals(StringPool.BLANK)) {
+			else if (type.equals("")) {
 				query.append(_FINDER_COLUMN_T_T_TYPE_3);
 			}
 			else {
@@ -4239,13 +4240,6 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 					result = syncDLObject;
 
 					cacheResult(syncDLObject);
-
-					if ((syncDLObject.getType() == null) ||
-							!syncDLObject.getType().equals(type) ||
-							(syncDLObject.getTypePK() != typePK)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_T_T,
-							finderArgs, syncDLObject);
-					}
 				}
 			}
 			catch (Exception e) {
@@ -4306,7 +4300,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 			if (type == null) {
 				query.append(_FINDER_COLUMN_T_T_TYPE_1);
 			}
-			else if (type.equals(StringPool.BLANK)) {
+			else if (type.equals("")) {
 				query.append(_FINDER_COLUMN_T_T_TYPE_3);
 			}
 			else {
@@ -4506,7 +4500,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 			if (event == null) {
 				query.append(_FINDER_COLUMN_M_R_NOTE_EVENT_1);
 			}
-			else if (event.equals(StringPool.BLANK)) {
+			else if (event.equals("")) {
 				query.append(_FINDER_COLUMN_M_R_NOTE_EVENT_3);
 			}
 			else {
@@ -4608,7 +4602,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 		msg.append(", event=");
 		msg.append(event);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchDLObjectException(msg.toString());
 	}
@@ -4671,7 +4665,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 		msg.append(", event=");
 		msg.append(event);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchDLObjectException(msg.toString());
 	}
@@ -4774,7 +4768,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 		if (event == null) {
 			query.append(_FINDER_COLUMN_M_R_NOTE_EVENT_1);
 		}
-		else if (event.equals(StringPool.BLANK)) {
+		else if (event.equals("")) {
 			query.append(_FINDER_COLUMN_M_R_NOTE_EVENT_3);
 		}
 		else {
@@ -5022,7 +5016,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 			query.append(_FINDER_COLUMN_M_R_NOTE_REPOSITORYID_2);
 
 			if (events.length > 0) {
-				query.append(StringPool.OPEN_PARENTHESIS);
+				query.append("(");
 
 				for (int i = 0; i < events.length; i++) {
 					String event = events[i];
@@ -5030,7 +5024,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 					if (event == null) {
 						query.append(_FINDER_COLUMN_M_R_NOTE_EVENT_1);
 					}
-					else if (event.equals(StringPool.BLANK)) {
+					else if (event.equals("")) {
 						query.append(_FINDER_COLUMN_M_R_NOTE_EVENT_3);
 					}
 					else {
@@ -5042,7 +5036,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 					}
 				}
 
-				query.append(StringPool.CLOSE_PARENTHESIS);
+				query.append(")");
 			}
 
 			query.setStringAt(removeConjunction(query.stringAt(query.index() -
@@ -5157,7 +5151,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 			if (event == null) {
 				query.append(_FINDER_COLUMN_M_R_NOTE_EVENT_1);
 			}
-			else if (event.equals(StringPool.BLANK)) {
+			else if (event.equals("")) {
 				query.append(_FINDER_COLUMN_M_R_NOTE_EVENT_3);
 			}
 			else {
@@ -5239,7 +5233,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 			query.append(_FINDER_COLUMN_M_R_NOTE_REPOSITORYID_2);
 
 			if (events.length > 0) {
-				query.append(StringPool.OPEN_PARENTHESIS);
+				query.append("(");
 
 				for (int i = 0; i < events.length; i++) {
 					String event = events[i];
@@ -5247,7 +5241,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 					if (event == null) {
 						query.append(_FINDER_COLUMN_M_R_NOTE_EVENT_1);
 					}
-					else if (event.equals(StringPool.BLANK)) {
+					else if (event.equals("")) {
 						query.append(_FINDER_COLUMN_M_R_NOTE_EVENT_3);
 					}
 					else {
@@ -5259,7 +5253,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 					}
 				}
 
-				query.append(StringPool.CLOSE_PARENTHESIS);
+				query.append(")");
 			}
 
 			query.setStringAt(removeConjunction(query.stringAt(query.index() -
@@ -5485,7 +5479,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 			if (type == null) {
 				query.append(_FINDER_COLUMN_R_P_T_TYPE_1);
 			}
-			else if (type.equals(StringPool.BLANK)) {
+			else if (type.equals("")) {
 				query.append(_FINDER_COLUMN_R_P_T_TYPE_3);
 			}
 			else {
@@ -5587,7 +5581,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 		msg.append(", type=");
 		msg.append(type);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchDLObjectException(msg.toString());
 	}
@@ -5650,7 +5644,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 		msg.append(", type=");
 		msg.append(type);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchDLObjectException(msg.toString());
 	}
@@ -5753,7 +5747,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 		if (type == null) {
 			query.append(_FINDER_COLUMN_R_P_T_TYPE_1);
 		}
-		else if (type.equals(StringPool.BLANK)) {
+		else if (type.equals("")) {
 			query.append(_FINDER_COLUMN_R_P_T_TYPE_3);
 		}
 		else {
@@ -6000,7 +5994,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 			query.append(_FINDER_COLUMN_R_P_T_PARENTFOLDERID_2);
 
 			if (types.length > 0) {
-				query.append(StringPool.OPEN_PARENTHESIS);
+				query.append("(");
 
 				for (int i = 0; i < types.length; i++) {
 					String type = types[i];
@@ -6008,7 +6002,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 					if (type == null) {
 						query.append(_FINDER_COLUMN_R_P_T_TYPE_1);
 					}
-					else if (type.equals(StringPool.BLANK)) {
+					else if (type.equals("")) {
 						query.append(_FINDER_COLUMN_R_P_T_TYPE_3);
 					}
 					else {
@@ -6020,7 +6014,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 					}
 				}
 
-				query.append(StringPool.CLOSE_PARENTHESIS);
+				query.append(")");
 			}
 
 			query.setStringAt(removeConjunction(query.stringAt(query.index() -
@@ -6134,7 +6128,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 			if (type == null) {
 				query.append(_FINDER_COLUMN_R_P_T_TYPE_1);
 			}
-			else if (type.equals(StringPool.BLANK)) {
+			else if (type.equals("")) {
 				query.append(_FINDER_COLUMN_R_P_T_TYPE_3);
 			}
 			else {
@@ -6216,7 +6210,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 			query.append(_FINDER_COLUMN_R_P_T_PARENTFOLDERID_2);
 
 			if (types.length > 0) {
-				query.append(StringPool.OPEN_PARENTHESIS);
+				query.append("(");
 
 				for (int i = 0; i < types.length; i++) {
 					String type = types[i];
@@ -6224,7 +6218,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 					if (type == null) {
 						query.append(_FINDER_COLUMN_R_P_T_TYPE_1);
 					}
-					else if (type.equals(StringPool.BLANK)) {
+					else if (type.equals("")) {
 						query.append(_FINDER_COLUMN_R_P_T_TYPE_3);
 					}
 					else {
@@ -6236,7 +6230,7 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 					}
 				}
 
-				query.append(StringPool.CLOSE_PARENTHESIS);
+				query.append(")");
 			}
 
 			query.setStringAt(removeConjunction(query.stringAt(query.index() -
@@ -6290,6 +6284,25 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 
 	public SyncDLObjectPersistenceImpl() {
 		setModelClass(SyncDLObject.class);
+
+		try {
+			Field field = BasePersistenceImpl.class.getDeclaredField(
+					"_dbColumnNames");
+
+			field.setAccessible(true);
+
+			Map<String, String> dbColumnNames = new HashMap<String, String>();
+
+			dbColumnNames.put("size", "size_");
+			dbColumnNames.put("type", "type_");
+
+			field.set(this, dbColumnNames);
+		}
+		catch (Exception e) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(e, e);
+			}
+		}
 	}
 
 	/**
@@ -6485,8 +6498,6 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 
 	@Override
 	protected SyncDLObject removeImpl(SyncDLObject syncDLObject) {
-		syncDLObject = toUnwrappedModel(syncDLObject);
-
 		Session session = null;
 
 		try {
@@ -6517,9 +6528,23 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 
 	@Override
 	public SyncDLObject updateImpl(SyncDLObject syncDLObject) {
-		syncDLObject = toUnwrappedModel(syncDLObject);
-
 		boolean isNew = syncDLObject.isNew();
+
+		if (!(syncDLObject instanceof SyncDLObjectModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(syncDLObject.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(syncDLObject);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in syncDLObject proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom SyncDLObject implementation " +
+				syncDLObject.getClass());
+		}
 
 		SyncDLObjectModelImpl syncDLObjectModelImpl = (SyncDLObjectModelImpl)syncDLObject;
 
@@ -6546,8 +6571,51 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 
 		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 
-		if (isNew || !SyncDLObjectModelImpl.COLUMN_BITMASK_ENABLED) {
+		if (!SyncDLObjectModelImpl.COLUMN_BITMASK_ENABLED) {
 			finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		}
+		else
+		 if (isNew) {
+			Object[] args = new Object[] {
+					syncDLObjectModelImpl.getRepositoryId(),
+					syncDLObjectModelImpl.getParentFolderId()
+				};
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_R_P, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_R_P,
+				args);
+
+			args = new Object[] {
+					syncDLObjectModelImpl.getRepositoryId(),
+					syncDLObjectModelImpl.getType()
+				};
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_R_T, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_R_T,
+				args);
+
+			args = new Object[] {
+					syncDLObjectModelImpl.getVersion(),
+					syncDLObjectModelImpl.getType()
+				};
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_V_T, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_V_T,
+				args);
+
+			args = new Object[] {
+					syncDLObjectModelImpl.getRepositoryId(),
+					syncDLObjectModelImpl.getParentFolderId(),
+					syncDLObjectModelImpl.getType()
+				};
+
+			finderCache.removeResult(FINDER_PATH_COUNT_BY_R_P_T, args);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_R_P_T,
+				args);
+
+			finderCache.removeResult(FINDER_PATH_COUNT_ALL, FINDER_ARGS_EMPTY);
+			finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_ALL,
+				FINDER_ARGS_EMPTY);
 		}
 
 		else {
@@ -6648,48 +6716,6 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 		syncDLObject.resetOriginalValues();
 
 		return syncDLObject;
-	}
-
-	protected SyncDLObject toUnwrappedModel(SyncDLObject syncDLObject) {
-		if (syncDLObject instanceof SyncDLObjectImpl) {
-			return syncDLObject;
-		}
-
-		SyncDLObjectImpl syncDLObjectImpl = new SyncDLObjectImpl();
-
-		syncDLObjectImpl.setNew(syncDLObject.isNew());
-		syncDLObjectImpl.setPrimaryKey(syncDLObject.getPrimaryKey());
-
-		syncDLObjectImpl.setSyncDLObjectId(syncDLObject.getSyncDLObjectId());
-		syncDLObjectImpl.setCompanyId(syncDLObject.getCompanyId());
-		syncDLObjectImpl.setUserId(syncDLObject.getUserId());
-		syncDLObjectImpl.setUserName(syncDLObject.getUserName());
-		syncDLObjectImpl.setCreateTime(syncDLObject.getCreateTime());
-		syncDLObjectImpl.setModifiedTime(syncDLObject.getModifiedTime());
-		syncDLObjectImpl.setRepositoryId(syncDLObject.getRepositoryId());
-		syncDLObjectImpl.setParentFolderId(syncDLObject.getParentFolderId());
-		syncDLObjectImpl.setTreePath(syncDLObject.getTreePath());
-		syncDLObjectImpl.setName(syncDLObject.getName());
-		syncDLObjectImpl.setExtension(syncDLObject.getExtension());
-		syncDLObjectImpl.setMimeType(syncDLObject.getMimeType());
-		syncDLObjectImpl.setDescription(syncDLObject.getDescription());
-		syncDLObjectImpl.setChangeLog(syncDLObject.getChangeLog());
-		syncDLObjectImpl.setExtraSettings(syncDLObject.getExtraSettings());
-		syncDLObjectImpl.setVersion(syncDLObject.getVersion());
-		syncDLObjectImpl.setVersionId(syncDLObject.getVersionId());
-		syncDLObjectImpl.setSize(syncDLObject.getSize());
-		syncDLObjectImpl.setChecksum(syncDLObject.getChecksum());
-		syncDLObjectImpl.setEvent(syncDLObject.getEvent());
-		syncDLObjectImpl.setLanTokenKey(syncDLObject.getLanTokenKey());
-		syncDLObjectImpl.setLastPermissionChangeDate(syncDLObject.getLastPermissionChangeDate());
-		syncDLObjectImpl.setLockExpirationDate(syncDLObject.getLockExpirationDate());
-		syncDLObjectImpl.setLockUserId(syncDLObject.getLockUserId());
-		syncDLObjectImpl.setLockUserName(syncDLObject.getLockUserName());
-		syncDLObjectImpl.setType(syncDLObject.getType());
-		syncDLObjectImpl.setTypePK(syncDLObject.getTypePK());
-		syncDLObjectImpl.setTypeUuid(syncDLObject.getTypeUuid());
-
-		return syncDLObjectImpl;
 	}
 
 	/**
@@ -6841,14 +6867,14 @@ public class SyncDLObjectPersistenceImpl extends BasePersistenceImpl<SyncDLObjec
 		query.append(_SQL_SELECT_SYNCDLOBJECT_WHERE_PKS_IN);
 
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
-			query.append(String.valueOf(primaryKey));
+			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 

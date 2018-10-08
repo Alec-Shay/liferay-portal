@@ -14,16 +14,26 @@
 
 package com.liferay.expando.kernel.util;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.expando.kernel.model.ExpandoBridge;
 import com.liferay.portal.kernel.search.Document;
 
 /**
  * @author Raymond Augé
  */
+@ProviderType
 public interface ExpandoBridgeIndexer {
 
 	public void addAttributes(Document document, ExpandoBridge expandoBridge);
 
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             #encodeFieldName(String, int)}
+	 */
+	@Deprecated
 	public String encodeFieldName(String columnName);
+
+	public String encodeFieldName(String columnName, int indexType);
 
 }

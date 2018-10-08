@@ -14,6 +14,7 @@
 
 package com.liferay.portal.action;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.security.auth.AuthTokenUtil;
@@ -22,7 +23,6 @@ import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.SessionClicks;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.util.Enumeration;
 
@@ -76,7 +76,14 @@ public class SessionClickAction extends Action {
 			String value = getValue(request);
 
 			if (value != null) {
-				response.setContentType(ContentTypes.APPLICATION_JSON);
+				String cmd = ParamUtil.getString(request, Constants.CMD);
+
+				if (cmd.equals("get")) {
+					response.setContentType(ContentTypes.TEXT_PLAIN);
+				}
+				else {
+					response.setContentType(ContentTypes.APPLICATION_JSON);
+				}
 
 				ServletOutputStream servletOutputStream =
 					response.getOutputStream();

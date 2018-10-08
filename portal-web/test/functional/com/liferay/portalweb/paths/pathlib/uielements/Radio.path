@@ -14,23 +14,23 @@
 	<td></td>
 </tr>
 <tr>
+	<td>AUTOMATIC_URL</td>
+	<td>//label[contains(.,'Automatic')]/input[@type='radio']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CUSTOM_URL</td>
+	<td>//label[contains(.,'Custom')]/input[@type='radio']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>BASIC</td>
 	<td>//input[contains(@id,'basic') and @type='radio']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>CHOOSE_CONTENT_DATE_RANGE_CHANGE</td>
-	<td>//input[contains(@id,'rangeDateRange')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONTENT_ALL_CONTENT</td>
-	<td>//input[contains(@id,'allContent')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>CONTENT_CHOOSE_CONTENT</td>
-	<td>//input[contains(@id,'chooseContent')]</td>
+	<td>//input[contains(@id,'rangeDateRange')]//following-sibling::span</td>
 	<td></td>
 </tr>
 <tr>
@@ -60,7 +60,7 @@
 </tr>
 <tr>
 	<td>MINOR_VERSION</td>
-	<td>//input[contains(@id,'MajorVersion_3')]</td>
+	<td>//label[contains(.,'Minor Version')]/input</td>
 	<td></td>
 </tr>
 <tr>
@@ -91,6 +91,21 @@
 <tr>
 	<td>REMOTE_LIVE</td>
 	<td>//label[contains(.,'Remote Live')]/input[@type='radio']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SAME_LOOK</td>
+	<td>//input[contains(@id,'InheritLookAndFeel')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SPECIFIC_LOOK</td>
+	<td>//input[contains(@id,'UniqueLookAndFeel')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SOCIAL_BOOKMARKS_DISPLAY_STYLE</td>
+	<td>//label[contains(.,'${key_displayStyle}')]/input[@type='radio']</td>
 	<td></td>
 </tr>
 </tbody>

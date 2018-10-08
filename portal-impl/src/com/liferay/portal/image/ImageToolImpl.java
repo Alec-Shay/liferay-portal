@@ -14,6 +14,7 @@
 
 package com.liferay.portal.image;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.concurrent.FutureConverter;
 import com.liferay.portal.kernel.exception.ImageResolutionException;
 import com.liferay.portal.kernel.image.ImageBag;
@@ -23,9 +24,7 @@ import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Image;
-import com.liferay.portal.kernel.security.pacl.DoPrivileged;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.StringBundler;
@@ -47,6 +46,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.IndexColorModel;
+import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
@@ -83,7 +83,6 @@ import org.monte.media.jpeg.CMYKJPEGImageReaderSpi;
  * @author Alexander Chow
  * @author Shuyang Zhou
  */
-@DoPrivileged
 public class ImageToolImpl implements ImageTool {
 
 	public static ImageTool getInstance() {
@@ -287,11 +286,11 @@ public class ImageToolImpl implements ImageTool {
 		BufferedImage targetImage = new BufferedImage(
 			sourceImage.getWidth(), sourceImage.getHeight(), type);
 
-		Graphics2D graphics = targetImage.createGraphics();
+		Graphics2D graphics2D = targetImage.createGraphics();
 
-		graphics.drawRenderedImage(sourceImage, null);
+		graphics2D.drawRenderedImage(sourceImage, null);
 
-		graphics.dispose();
+		graphics2D.dispose();
 
 		return targetImage;
 	}
@@ -363,7 +362,9 @@ public class ImageToolImpl implements ImageTool {
 			os.write(toMultiByte(bufferedImage.getWidth()));
 			os.write(toMultiByte(bufferedImage.getHeight()));
 
-			DataBuffer dataBuffer = bufferedImage.getData().getDataBuffer();
+			Raster data = bufferedImage.getData();
+
+			DataBuffer dataBuffer = data.getDataBuffer();
 
 			int size = dataBuffer.getSize();
 
@@ -537,9 +538,8 @@ public class ImageToolImpl implements ImageTool {
 
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	@Override
@@ -682,11 +682,11 @@ public class ImageToolImpl implements ImageTool {
 		affineTransform.rotate(radians);
 		affineTransform.translate(imageWidth / (-2), imageHeight / (-2));
 
-		Graphics2D graphics = rotatedBufferedImage.createGraphics();
+		Graphics2D graphics2D = rotatedBufferedImage.createGraphics();
 
-		graphics.drawImage(bufferedImage, affineTransform, null);
+		graphics2D.drawImage(bufferedImage, affineTransform, null);
 
-		graphics.dispose();
+		graphics2D.dispose();
 
 		return rotatedBufferedImage;
 	}
@@ -698,6 +698,7 @@ public class ImageToolImpl implements ImageTool {
 		}
 
 		int imageHeight = renderedImage.getHeight();
+
 		int imageWidth = renderedImage.getWidth();
 
 		double factor = (double)width / imageWidth;

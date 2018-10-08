@@ -21,13 +21,13 @@
 
 	<command name="gotoAddCurrentSiteCalendars">
 		<execute macro="TestCase#getSiteName">
-			<return from="siteName" name="siteName" />
+			<return name="siteName" />
 			<var name="siteName" value="${siteName}" />
 		</execute>
 
-		<var name="key_siteName" value="${siteName}" />
-
-		<execute function="Click" locator1="Calendar#CURRENT_SITE_CALENDARS_MENULIST_ARROW" />
+		<execute function="Click" locator1="Calendar#CURRENT_SITE_CALENDARS_MENULIST_ARROW">
+			<var name="key_siteName" value="${siteName}" />
+		</execute>
 
 		<execute function="AssertClick" locator1="Calendar#CURRENT_SITE_CALENDARS_MENULIST_ADD_CALENDAR" value1="Add Calendar" />
 
@@ -46,39 +46,18 @@
 		<execute macro="CalendarEvent#_viewNewEventIframe" />
 	</command>
 
-	<command name="gotoAddEventOnSpecifcDayOfWeekViaWeekView">
-		<execute macro="CalendarNavigator#gotoView">
-			<var name="viewType" value="Week" />
-		</execute>
-
-		<var name="key_dayOfWeek" value="${dayOfWeek}" />
-
-		<execute function="Click" locator1="Calendar#SCHEDULER_SPECIFIC_DAY" />
-
-		<execute function="AssertTextEquals" locator1="Calendar#SCHEDULER_EVENT_DIALOG_BOX_EVENT_TITLE" value1="e.g., Dinner at Brian's" />
-		<execute function="AssertElementNotPresent" locator1="Calendar#SCHEDULER_EVENT_DIALOG_BOX_EVENT_TITLE_GUEST" />
-		<execute function="AssertElementNotPresent" locator1="Calendar#SCHEDULER_EVENT_DIALOG_BOX_ATTEND_ACTIVE" />
-		<execute function="AssertElementNotPresent" locator1="Calendar#SCHEDULER_EVENT_DIALOG_BOX_ATTEND_INACTIVE" />
-		<execute function="AssertElementPresent" locator1="Calendar#SCHEDULER_EVENT_DIALOG_BOX_CALENDAR" />
-		<execute function="AssertElementPresent" locator1="Calendar#SCHEDULER_EVENT_DIALOG_BOX_SAVE_BUTTON" />
-		<execute function="AssertElementNotPresent" locator1="Calendar#SCHEDULER_EVENT_DIALOG_BOX_VIEW_DETAILS_BUTTON" />
-		<execute function="AssertElementNotPresent" locator1="Calendar#SCHEDULER_EVENT_DIALOG_BOX_DELETE_BUTTON" />
-
-		<execute function="AssertClick#assertTextClickAt" locator1="Calendar#SCHEDULER_EVENT_DIALOG_BOX_EDIT_BUTTON" value1="Edit" />
-
-		<execute macro="CalendarEvent#selectEventIframe" />
-	</command>
-
 	<command name="gotoAddEventToday">
 		<var method="StringUtil#upperCase('${viewType}')" name="viewTypeUppercase" />
 
 		<execute function="Click" locator1="Calendar#SCHEDULER_VIEW_${viewTypeUppercase}_CURRENT_DAY" />
 	</command>
 
-	<command name="gotoAddEventViaAssetPublisher">
-		<execute function="Click#makeVisibleClickAt" locator1="AP#ADD_ASSET_PLUS_ICON" />
+	<command name="gotoAddEventViaMyCalendars">
+		<execute function="Click" locator1="Calendar#MY_CALENDARS_CALENDAR_PRIMARY_MENULIST_ARROW">
+			<var name="key_user" value="${user}" />
+		</execute>
 
-		<execute function="AssertClick" locator1="MenuItem#CALENDAR_EVENT" value1="Calendar Event" />
+		<execute function="AssertClick" locator1="Calendar#OTHER_CALENDARS_CALENDAR_MENULIST_ADD_EVENT" value1="Add Event" />
 
 		<execute macro="CalendarEvent#selectEventIframe" />
 
@@ -96,17 +75,9 @@
 	<command name="gotoAddResource">
 		<execute macro="CalendarNavigator#gotoResources" />
 
-		<execute function="AssertClick" locator1="CalendarResources#ADD_RESOURCE_BUTTON" value1="Add Resource" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<execute function="AssertTextEquals" locator1="CalendarEditResource#HEADER_TITLE" value1="New Resource" />
-	</command>
-
-	<command name="gotoBusyDayViaSmallCalendar">
-		<execute function="AssertElementPresent" locator1="Calendar#SMALL_CALENDAR_BUSY_DAY" />
-
-		<execute function="Click" locator1="Calendar#SMALL_CALENDAR_BUSY_DAY" />
-
-		<execute function="Pause" locator1="5000" />
 	</command>
 
 	<command name="gotoConfiguration">
@@ -121,13 +92,13 @@
 
 	<command name="gotoCurrentSiteCalendarsManage">
 		<execute macro="TestCase#getSiteName">
-			<return from="siteName" name="siteName" />
+			<return name="siteName" />
 			<var name="siteName" value="${siteName}" />
 		</execute>
 
-		<var name="key_siteName" value="${siteName}" />
-
-		<execute function="Click" locator1="Calendar#CURRENT_SITE_CALENDARS_MENULIST_ARROW" />
+		<execute function="Click" locator1="Calendar#CURRENT_SITE_CALENDARS_MENULIST_ARROW">
+			<var name="key_siteName" value="${siteName}" />
+		</execute>
 
 		<execute function="AssertClick" locator1="Calendar#CURRENT_SITE_CALENDARS_MENULIST_MANAGE_CALENDAR" value1="Manage Calendars" />
 	</command>
@@ -146,6 +117,19 @@
 		</execute>
 
 		<execute macro="CalendarScheduler#gotoEditViaDialogBox" />
+	</command>
+
+	<command name="gotoEditResourceCalendar">
+		<var name="key_calendarResourceName" value="${calendarResourceName}" />
+
+		<execute function="AssertTextEquals" locator1="CalendarResources#RESOURCE_TABLE_NAME" value1="${calendarResourceName}" />
+
+		<execute macro="LexiconEntry#gotoEntryMenuItem">
+			<var name="menuItem" value="Edit" />
+			<var name="rowEntry" value="${calendarResourceName}" />
+		</execute>
+
+		<execute function="AssertTextEquals" locator1="CalendarEditResource#HEADER_TITLE" value1="${calendarResourceName}" />
 	</command>
 
 	<command name="gotoEventDetails">
@@ -168,14 +152,14 @@
 		it reaches ${dateMonth}.
 		-->
 
-		<while>
+		<while max-iterations="100">
 			<condition function="IsTextNotEqual" locator1="Calendar#SMALL_CALENDAR_DATE" value1="February 2016" />
 			<then>
 				<execute function="Click" locator1="Calendar#SMALL_CALENDAR_PREVIOUS" />
 			</then>
 		</while>
 
-		<while>
+		<while max-iterations="100">
 			<condition function="IsTextNotEqual" locator1="Calendar#SMALL_CALENDAR_DATE" value1="${dateMonth}" />
 			<then>
 				<execute function="Click" locator1="Calendar#SMALL_CALENDAR_NEXT" />
@@ -208,11 +192,10 @@
 	<command name="gotoResourceCalendars">
 		<execute macro="CalendarNavigator#gotoResources" />
 
-		<var name="key_calendarResourceName" value="${calendarResourceName}" />
-
-		<execute function="Click" locator1="CalendarResources#RESOURCE_TABLE_ACTIONS" />
-
-		<execute function="AssertClick" locator1="CalendarResources#RESOURCE_MENULIST_VIEW_CALENDARS" value1="View Calendars" />
+		<execute macro="LexiconEntry#gotoEntryMenuItem">
+			<var name="menuItem" value="View Calendars" />
+			<var name="rowEntry" value="${calendarResourceName}" />
+		</execute>
 	</command>
 
 	<command name="gotoResources">
@@ -225,16 +208,6 @@
 		<execute function="AssertElementPresent" locator1="Calendar#SMALL_CALENDAR_SPECIFIC_BUSY_DAY" />
 
 		<execute function="Click" locator1="Calendar#SMALL_CALENDAR_SPECIFIC_BUSY_DAY" />
-	</command>
-
-	<command name="gotoSpecificDayViaSmallCalendar">
-		<var name="key_dateNumber" value="${dateNumber}" />
-
-		<execute function="Click" locator1="Calendar#SMALL_CALENDAR_SPECIFIC_DAY" />
-
-		<execute macro="CalendarNavigator#gotoView">
-			<var name="viewType" value="Day" />
-		</execute>
 	</command>
 
 	<command name="gotoToday">

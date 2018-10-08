@@ -14,19 +14,17 @@
 
 package com.liferay.portal.security.auth;
 
-import com.liferay.portal.kernel.concurrent.ConcurrentHashSet;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Portlet;
-import com.liferay.portal.kernel.model.PortletConstants;
 import com.liferay.portal.kernel.portlet.LiferayPortletURL;
+import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCResourceCommand;
 import com.liferay.portal.kernel.security.auth.BaseAuthTokenWhitelist;
-import com.liferay.portal.kernel.security.pacl.DoPrivileged;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -39,9 +37,11 @@ import com.liferay.registry.util.StringPlus;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.PortletRequest;
@@ -51,7 +51,6 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * @author Tomas Polesovsky
  */
-@DoPrivileged
 public class MVCPortletAuthTokenWhitelist extends BaseAuthTokenWhitelist {
 
 	public MVCPortletAuthTokenWhitelist() {
@@ -99,27 +98,25 @@ public class MVCPortletAuthTokenWhitelist extends BaseAuthTokenWhitelist {
 				portletId, _portletInvocationWhitelistAction,
 				mvcActionCommandNames);
 		}
-
 		else if (themeDisplay.isLifecycleRender()) {
 			String namespace = PortalUtil.getPortletNamespace(portletId);
 
-			String mvcRenderCommandName = ParamUtil.getString(
-				request, namespace + "mvcRenderCommandName");
+			String mvcRenderCommandName = request.getParameter(
+				namespace.concat("mvcRenderCommandName"));
 
 			return _contains(
 				portletId, _portletInvocationWhitelistRender,
 				mvcRenderCommandName);
 		}
-
 		else if (themeDisplay.isLifecycleResource()) {
-			String ppid = ParamUtil.getString(request, "p_p_id");
+			String ppid = request.getParameter("p_p_id");
 
 			if (!portletId.equals(ppid)) {
 				return false;
 			}
 
-			String mvcResourceCommandName = ParamUtil.getString(
-				request, "p_p_resource_id");
+			String mvcResourceCommandName = request.getParameter(
+				"p_p_resource_id");
 
 			return _contains(
 				portletId, _portletInvocationWhitelistResource,
@@ -157,7 +154,6 @@ public class MVCPortletAuthTokenWhitelist extends BaseAuthTokenWhitelist {
 				portletId, _portletInvocationWhitelistAction,
 				mvcActionCommandNames);
 		}
-
 		else if (lifecycle.equals(PortletRequest.RENDER_PHASE)) {
 			String mvcRenderCommandName = liferayPortletURL.getParameter(
 				"mvcRenderCommandName");
@@ -166,7 +162,6 @@ public class MVCPortletAuthTokenWhitelist extends BaseAuthTokenWhitelist {
 				portletId, _portletInvocationWhitelistRender,
 				mvcRenderCommandName);
 		}
-
 		else if (lifecycle.equals(PortletRequest.RESOURCE_PHASE)) {
 			String mvcResourceCommandName = liferayPortletURL.getResourceID();
 
@@ -183,8 +178,8 @@ public class MVCPortletAuthTokenWhitelist extends BaseAuthTokenWhitelist {
 
 		String namespace = PortalUtil.getPortletNamespace(portletId);
 
-		String[] actionNames = ParamUtil.getParameterValues(
-			request, namespace + ActionRequest.ACTION_NAME);
+		String[] actionNames = request.getParameterValues(
+			namespace.concat(ActionRequest.ACTION_NAME));
 
 		String actions = StringUtil.merge(actionNames);
 
@@ -207,7 +202,7 @@ public class MVCPortletAuthTokenWhitelist extends BaseAuthTokenWhitelist {
 	protected String getWhitelistValue(
 		String portletName, String whitelistAction) {
 
-		return portletName + StringPool.POUND + whitelistAction;
+		return portletName.concat(StringPool.POUND).concat(whitelistAction);
 	}
 
 	protected void trackWhitelistServices(
@@ -217,8 +212,9 @@ public class MVCPortletAuthTokenWhitelist extends BaseAuthTokenWhitelist {
 
 		ServiceTracker<Object, Object> serviceTracker = registry.trackServices(
 			registry.getFilter(
-				"(&(&(" + whitelistName + "=*)(javax.portlet.name=*))" +
-					"(objectClass=" + serviceClass.getName() + "))"),
+				StringBundler.concat(
+					"(&(&(", whitelistName, "=*)(javax.portlet.name=*))",
+					"(objectClass=", serviceClass.getName(), "))")),
 			new TokenWhitelistTrackerCustomizer(whiteList));
 
 		serviceTracker.open();
@@ -233,7 +229,7 @@ public class MVCPortletAuthTokenWhitelist extends BaseAuthTokenWhitelist {
 			return false;
 		}
 
-		String rootPortletId = PortletConstants.getRootPortletId(portletId);
+		String rootPortletId = PortletIdCodec.decodePortletName(portletId);
 
 		return whitelist.contains(getWhitelistValue(rootPortletId, item));
 	}
@@ -245,7 +241,7 @@ public class MVCPortletAuthTokenWhitelist extends BaseAuthTokenWhitelist {
 			return false;
 		}
 
-		String rootPortletId = PortletConstants.getRootPortletId(portletId);
+		String rootPortletId = PortletIdCodec.decodePortletName(portletId);
 
 		for (String action : items) {
 			if (!whitelist.contains(getWhitelistValue(rootPortletId, action))) {
@@ -256,13 +252,14 @@ public class MVCPortletAuthTokenWhitelist extends BaseAuthTokenWhitelist {
 		return true;
 	}
 
-	private final Set<String> _portletCSRFWhitelist = new ConcurrentHashSet<>();
+	private final Set<String> _portletCSRFWhitelist = Collections.newSetFromMap(
+		new ConcurrentHashMap<>());
 	private final Set<String> _portletInvocationWhitelistAction =
-		new ConcurrentHashSet<>();
+		Collections.newSetFromMap(new ConcurrentHashMap<>());
 	private final Set<String> _portletInvocationWhitelistRender =
-		new ConcurrentHashSet<>();
+		Collections.newSetFromMap(new ConcurrentHashMap<>());
 	private final Set<String> _portletInvocationWhitelistResource =
-		new ConcurrentHashSet<>();
+		Collections.newSetFromMap(new ConcurrentHashMap<>());
 
 	private class TokenWhitelistTrackerCustomizer
 		implements ServiceTrackerCustomizer<Object, Object> {

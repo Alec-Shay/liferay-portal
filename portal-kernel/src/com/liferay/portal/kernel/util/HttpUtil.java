@@ -14,9 +14,6 @@
 
 package com.liferay.portal.kernel.util;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-import com.liferay.portal.kernel.security.pacl.permission.PortalSocketPermission;
-
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -68,7 +65,8 @@ public class HttpUtil {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #decodeURL(String)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #decodeURL(String)}
 	 */
 	@Deprecated
 	public static String decodeURL(String url, boolean unescapeSpaces) {
@@ -83,10 +81,20 @@ public class HttpUtil {
 		return getHttp().encodePath(path);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             URLCodec#encodeURL(String)}
+	 */
+	@Deprecated
 	public static String encodeURL(String url) {
 		return getHttp().encodeURL(url);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link
+	 *             URLCodec#encodeURL(String, boolean)}
+	 */
+	@Deprecated
 	public static String encodeURL(String url, boolean escapeSpaces) {
 		return getHttp().encodeURL(url, escapeSpaces);
 	}
@@ -114,8 +122,6 @@ public class HttpUtil {
 	}
 
 	public static Http getHttp() {
-		PortalRuntimePermission.checkGetBeanProperty(HttpUtil.class);
-
 		return _http;
 	}
 
@@ -279,6 +285,14 @@ public class HttpUtil {
 		return getHttp().setParameter(url, name, value);
 	}
 
+	public static String shortenURL(String url) {
+		return getHttp().shortenURL(url);
+	}
+
+	/**
+	 * @deprecated As of Judson (7.1.x), replaced by {@link #shortenURL(String)}
+	 */
+	@Deprecated
 	public static String shortenURL(String url, int count) {
 		return getHttp().shortenURL(url, count);
 	}
@@ -286,21 +300,15 @@ public class HttpUtil {
 	public static byte[] URLtoByteArray(Http.Options options)
 		throws IOException {
 
-		PortalSocketPermission.checkConnect(options);
-
 		return getHttp().URLtoByteArray(options);
 	}
 
 	public static byte[] URLtoByteArray(String location) throws IOException {
-		PortalSocketPermission.checkConnect(location);
-
 		return getHttp().URLtoByteArray(location);
 	}
 
 	public static byte[] URLtoByteArray(String location, boolean post)
 		throws IOException {
-
-		PortalSocketPermission.checkConnect(location);
 
 		return getHttp().URLtoByteArray(location, post);
 	}
@@ -308,15 +316,11 @@ public class HttpUtil {
 	public static InputStream URLtoInputStream(Http.Options options)
 		throws IOException {
 
-		PortalSocketPermission.checkConnect(options);
-
 		return getHttp().URLtoInputStream(options);
 	}
 
 	public static InputStream URLtoInputStream(String location)
 		throws IOException {
-
-		PortalSocketPermission.checkConnect(location);
 
 		return getHttp().URLtoInputStream(location);
 	}
@@ -324,27 +328,19 @@ public class HttpUtil {
 	public static InputStream URLtoInputStream(String location, boolean post)
 		throws IOException {
 
-		PortalSocketPermission.checkConnect(location);
-
 		return getHttp().URLtoInputStream(location, post);
 	}
 
 	public static String URLtoString(Http.Options options) throws IOException {
-		PortalSocketPermission.checkConnect(options);
-
 		return getHttp().URLtoString(options);
 	}
 
 	public static String URLtoString(String location) throws IOException {
-		PortalSocketPermission.checkConnect(location);
-
 		return getHttp().URLtoString(location);
 	}
 
 	public static String URLtoString(String location, boolean post)
 		throws IOException {
-
-		PortalSocketPermission.checkConnect(location);
 
 		return getHttp().URLtoString(location, post);
 	}
@@ -361,14 +357,10 @@ public class HttpUtil {
 	 * @throws IOException if an IO Exception occurred
 	 */
 	public static String URLtoString(URL url) throws IOException {
-		PortalSocketPermission.checkConnect(url);
-
 		return getHttp().URLtoString(url);
 	}
 
 	public void setHttp(Http http) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_http = http;
 	}
 

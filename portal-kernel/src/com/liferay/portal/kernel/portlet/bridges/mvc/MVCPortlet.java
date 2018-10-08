@@ -14,14 +14,17 @@
 
 package com.liferay.portal.kernel.portlet.bridges.mvc;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortlet;
+import com.liferay.portal.kernel.portlet.LiferayPortletConfig;
 import com.liferay.portal.kernel.servlet.SessionMessages;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -197,24 +200,32 @@ public class MVCPortlet extends LiferayPortlet {
 		copyRequestParameters = GetterUtil.getBoolean(
 			getInitParameter("copy-request-parameters"), true);
 
-		_actionMVCCommandCache = new MVCCommandCache(
+		LiferayPortletConfig liferayPortletConfig =
+			(LiferayPortletConfig)getPortletConfig();
+
+		String portletId = liferayPortletConfig.getPortletId();
+
+		_actionMVCCommandCache = new MVCCommandCache<>(
 			MVCActionCommand.EMPTY,
 			getInitParameter("mvc-action-command-package-prefix"),
-			getPortletName(), MVCActionCommand.class, "ActionCommand");
-		_renderMVCCommandCache = new MVCCommandCache(
+			getPortletName(), portletId, MVCActionCommand.class,
+			"ActionCommand");
+		_renderMVCCommandCache = new MVCCommandCache<>(
 			MVCRenderCommand.EMPTY,
 			getInitParameter("mvc-render-command-package-prefix"),
-			getPortletName(), MVCRenderCommand.class, "RenderCommand");
-		_resourceMVCCommandCache = new MVCCommandCache(
+			getPortletName(), portletId, MVCRenderCommand.class,
+			"RenderCommand");
+		_resourceMVCCommandCache = new MVCCommandCache<>(
 			MVCResourceCommand.EMPTY,
 			getInitParameter("mvc-resource-command-package-prefix"),
-			getPortletName(), MVCResourceCommand.class, "ResourceCommand");
+			getPortletName(), portletId, MVCResourceCommand.class,
+			"ResourceCommand");
 
 		initValidPaths(templatePath, ".jsp");
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
 	 */
 	@Deprecated
 	public void invokeTaglibDiscussion(
@@ -228,7 +239,7 @@ public class MVCPortlet extends LiferayPortlet {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Wilberforce (7.0.x), with no direct replacement
 	 */
 	@Deprecated
 	public void invokeTaglibDiscussionPagination(
@@ -267,8 +278,7 @@ public class MVCPortlet extends LiferayPortlet {
 
 		if (!mvcRenderCommandName.equals("/") || Validator.isNull(mvcPath)) {
 			MVCRenderCommand mvcRenderCommand =
-				(MVCRenderCommand)_renderMVCCommandCache.getMVCCommand(
-					mvcRenderCommandName);
+				_renderMVCCommandCache.getMVCCommand(mvcRenderCommandName);
 
 			mvcPath = null;
 
@@ -283,9 +293,24 @@ public class MVCPortlet extends LiferayPortlet {
 				return;
 			}
 
-			renderRequest.setAttribute(
-				getMVCPathAttributeName(renderResponse.getNamespace()),
-				mvcPath);
+			if (Validator.isNotNull(mvcPath)) {
+				renderRequest.setAttribute(
+					getMVCPathAttributeName(renderResponse.getNamespace()),
+					mvcPath);
+			}
+			else if (!mvcRenderCommandName.equals("/")) {
+				if (_log.isWarnEnabled()) {
+					StringBundler sb = new StringBundler(5);
+
+					sb.append("No render mappings found for MVC render ");
+					sb.append("command name \"");
+					sb.append(HtmlUtil.escape(mvcRenderCommandName));
+					sb.append("\" for portlet ");
+					sb.append(renderRequest.getAttribute(WebKeys.PORTLET_ID));
+
+					_log.warn(sb.toString());
+				}
+			}
 		}
 
 		super.render(renderRequest, renderResponse);
@@ -336,8 +361,7 @@ public class MVCPortlet extends LiferayPortlet {
 
 		if (!actionName.contains(StringPool.COMMA)) {
 			MVCActionCommand mvcActionCommand =
-				(MVCActionCommand)_actionMVCCommandCache.getMVCCommand(
-					actionName);
+				_actionMVCCommandCache.getMVCCommand(actionName);
 
 			if (mvcActionCommand != MVCActionCommand.EMPTY) {
 				if (mvcActionCommand instanceof FormMVCActionCommand) {
@@ -357,8 +381,7 @@ public class MVCPortlet extends LiferayPortlet {
 		}
 		else {
 			List<MVCActionCommand> mvcActionCommands =
-				(List<MVCActionCommand>)_actionMVCCommandCache.getMVCCommands(
-					actionName);
+				_actionMVCCommandCache.getMVCCommands(actionName);
 
 			if (!mvcActionCommands.isEmpty()) {
 				boolean valid = true;
@@ -409,8 +432,7 @@ public class MVCPortlet extends LiferayPortlet {
 
 		if (!resourceID.contains(StringPool.COMMA)) {
 			MVCResourceCommand mvcResourceCommand =
-				(MVCResourceCommand)_resourceMVCCommandCache.getMVCCommand(
-					resourceID);
+				_resourceMVCCommandCache.getMVCCommand(resourceID);
 
 			if (mvcResourceCommand != MVCResourceCommand.EMPTY) {
 				return mvcResourceCommand.serveResource(
@@ -419,8 +441,7 @@ public class MVCPortlet extends LiferayPortlet {
 		}
 		else {
 			List<MVCResourceCommand> mvcResourceCommands =
-				(List<MVCResourceCommand>)
-					_resourceMVCCommandCache.getMVCCommands(resourceID);
+				_resourceMVCCommandCache.getMVCCommands(resourceID);
 
 			if (!mvcResourceCommands.isEmpty()) {
 				for (MVCResourceCommand mvcResourceCommand :
@@ -472,7 +493,7 @@ public class MVCPortlet extends LiferayPortlet {
 		}
 	}
 
-	protected MVCCommandCache getActionMVCCommandCache() {
+	protected MVCCommandCache<MVCActionCommand> getActionMVCCommandCache() {
 		return _actionMVCCommandCache;
 	}
 
@@ -500,11 +521,11 @@ public class MVCPortlet extends LiferayPortlet {
 		return mvcPath;
 	}
 
-	protected MVCCommandCache getRenderMVCCommandCache() {
+	protected MVCCommandCache<MVCRenderCommand> getRenderMVCCommandCache() {
 		return _renderMVCCommandCache;
 	}
 
-	protected MVCCommandCache getResourceMVCCommandCache() {
+	protected MVCCommandCache<MVCResourceCommand> getResourceMVCCommandCache() {
 		return _resourceMVCCommandCache;
 	}
 
@@ -642,8 +663,8 @@ public class MVCPortlet extends LiferayPortlet {
 
 	private static final Log _log = LogFactoryUtil.getLog(MVCPortlet.class);
 
-	private MVCCommandCache _actionMVCCommandCache;
-	private MVCCommandCache _renderMVCCommandCache;
-	private MVCCommandCache _resourceMVCCommandCache;
+	private MVCCommandCache<MVCActionCommand> _actionMVCCommandCache;
+	private MVCCommandCache<MVCRenderCommand> _renderMVCCommandCache;
+	private MVCCommandCache<MVCResourceCommand> _resourceMVCCommandCache;
 
 }

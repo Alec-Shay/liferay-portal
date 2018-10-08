@@ -15,18 +15,15 @@
 package com.liferay.source.formatter.checkstyle.checks;
 
 import com.liferay.portal.kernel.util.NaturalOrderStringComparator;
+import com.liferay.source.formatter.checkstyle.util.DetailASTUtil;
 
-import com.puppycrawl.tools.checkstyle.api.AbstractCheck;
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
-import com.puppycrawl.tools.checkstyle.api.FullIdent;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 
 /**
  * @author Hugo Huijser
  */
-public class InstanceofOrderCheck extends AbstractCheck {
-
-	public static final String MSG_ORDER_INSTANCEOF = "instanceof.order";
+public class InstanceofOrderCheck extends BaseCheck {
 
 	@Override
 	public int[] getDefaultTokens() {
@@ -34,7 +31,7 @@ public class InstanceofOrderCheck extends AbstractCheck {
 	}
 
 	@Override
-	public void visitToken(DetailAST detailAST) {
+	protected void doVisitToken(DetailAST detailAST) {
 		DetailAST parentAST = detailAST.getParent();
 
 		if ((parentAST.getType() != TokenTypes.LAND) &&
@@ -61,35 +58,24 @@ public class InstanceofOrderCheck extends AbstractCheck {
 		NaturalOrderStringComparator comparator =
 			new NaturalOrderStringComparator();
 
-		String typeName1 = _getTypeName(detailAST);
-		String typeName2 = _getTypeName(nextConditionAST);
+		String typeName1 = DetailASTUtil.getTypeName(detailAST, false);
+		String typeName2 = DetailASTUtil.getTypeName(nextConditionAST, false);
 
 		if (comparator.compare(typeName1, typeName2) > 0) {
-			log(
-				nextConditionAST.getLineNo(), MSG_ORDER_INSTANCEOF, typeName2,
-				typeName1);
+			log(nextConditionAST, _MSG_ORDER_INSTANCEOF, typeName2, typeName1);
 		}
 	}
 
 	private DetailAST _getNextConditionAST(DetailAST detailAST) {
-		DetailAST nextSibling = detailAST.getNextSibling();
+		DetailAST nextSiblingAST = detailAST.getNextSibling();
 
-		if (nextSibling != null) {
-			return nextSibling;
+		if (nextSiblingAST != null) {
+			return nextSiblingAST;
 		}
 
 		DetailAST parentAST = detailAST.getParent();
 
 		return parentAST.getNextSibling();
-	}
-
-	private String _getTypeName(DetailAST literalInstanceOfAST) {
-		DetailAST typeAST = literalInstanceOfAST.findFirstToken(
-			TokenTypes.TYPE);
-
-		FullIdent typeIdent = FullIdent.createFullIdentBelow(typeAST);
-
-		return typeIdent.getText();
 	}
 
 	private String _getVariableName(DetailAST literalInstanceOfAST) {
@@ -102,5 +88,7 @@ public class InstanceofOrderCheck extends AbstractCheck {
 
 		return nameAST.getText();
 	}
+
+	private static final String _MSG_ORDER_INSTANCEOF = "instanceof.order";
 
 }

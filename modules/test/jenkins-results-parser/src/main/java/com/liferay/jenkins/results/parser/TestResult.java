@@ -14,90 +14,35 @@
 
 package com.liferay.jenkins.results.parser;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
+import org.dom4j.Element;
 
 /**
- * @author Leslie Wong
+ * @author Kenji Heigel
  */
-public class TestResult {
+public interface TestResult {
 
-	public static List<TestResult> getTestResults(
-		AxisBuild axisBuild, JSONArray suitesJSONArray, String testStatus) {
+	public Build getBuild();
 
-		List<TestResult> testResults = new ArrayList<>();
+	public String getClassName();
 
-		for (int i = 0; i < suitesJSONArray.length(); i++) {
-			JSONObject suiteJSONObject = suitesJSONArray.getJSONObject(i);
+	public String getDisplayName();
 
-			JSONArray casesJSONArray = suiteJSONObject.getJSONArray("cases");
+	public long getDuration();
 
-			for (int j = 0; j < casesJSONArray.length(); j++) {
-				TestResult testResult = new TestResult(
-					axisBuild, casesJSONArray.getJSONObject(j));
+	public String getErrorDetails();
 
-				if ((testStatus == null) ||
-					testStatus.equals(testResult.getStatus())) {
+	public String getErrorStackTrace();
 
-					testResults.add(testResult);
-				}
-			}
-		}
+	public Element getGitHubElement();
 
-		return testResults;
-	}
+	public String getPackageName();
 
-	public TestResult(AxisBuild axisBuild, JSONObject caseJSONObject) {
-		if (axisBuild == null) {
-			throw new IllegalArgumentException("Axis build may not be null");
-		}
+	public String getSimpleClassName();
 
-		this.axisBuild = axisBuild;
+	public String getStatus();
 
-		className = caseJSONObject.getString("className");
+	public String getTestName();
 
-		duration = (long)(caseJSONObject.getDouble("duration") * 1000d);
-
-		int x = className.lastIndexOf(".");
-
-		simpleClassName = className.substring(x + 1);
-
-		packageName = className.substring(0, x);
-
-		testName = caseJSONObject.getString("name");
-
-		status = caseJSONObject.getString("status");
-	}
-
-	public AxisBuild getAxisBuild() {
-		return axisBuild;
-	}
-
-	public String getClassName() {
-		return className;
-	}
-
-	public long getDuration() {
-		return duration;
-	}
-
-	public String getStatus() {
-		return status;
-	}
-
-	public String getTestName() {
-		return testName;
-	}
-
-	protected AxisBuild axisBuild;
-	protected String className;
-	protected long duration;
-	protected String packageName;
-	protected String simpleClassName;
-	protected String status;
-	protected String testName;
+	public String getTestReportURL();
 
 }

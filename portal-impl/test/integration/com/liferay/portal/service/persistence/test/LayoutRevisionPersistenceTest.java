@@ -200,14 +200,14 @@ public class LayoutRevisionPersistenceTest {
 			newLayoutRevision.getLayoutBranchId());
 		Assert.assertEquals(existingLayoutRevision.getParentLayoutRevisionId(),
 			newLayoutRevision.getParentLayoutRevisionId());
-		Assert.assertEquals(existingLayoutRevision.getHead(),
-			newLayoutRevision.getHead());
-		Assert.assertEquals(existingLayoutRevision.getMajor(),
-			newLayoutRevision.getMajor());
+		Assert.assertEquals(existingLayoutRevision.isHead(),
+			newLayoutRevision.isHead());
+		Assert.assertEquals(existingLayoutRevision.isMajor(),
+			newLayoutRevision.isMajor());
 		Assert.assertEquals(existingLayoutRevision.getPlid(),
 			newLayoutRevision.getPlid());
-		Assert.assertEquals(existingLayoutRevision.getPrivateLayout(),
-			newLayoutRevision.getPrivateLayout());
+		Assert.assertEquals(existingLayoutRevision.isPrivateLayout(),
+			newLayoutRevision.isPrivateLayout());
 		Assert.assertEquals(existingLayoutRevision.getName(),
 			newLayoutRevision.getName());
 		Assert.assertEquals(existingLayoutRevision.getTitle(),
@@ -251,6 +251,13 @@ public class LayoutRevisionPersistenceTest {
 		_persistence.countByPlid(RandomTestUtil.nextLong());
 
 		_persistence.countByPlid(0L);
+	}
+
+	@Test
+	public void testCountByStatus() throws Exception {
+		_persistence.countByStatus(RandomTestUtil.nextInt());
+
+		_persistence.countByStatus(0);
 	}
 
 	@Test
@@ -318,11 +325,37 @@ public class LayoutRevisionPersistenceTest {
 	}
 
 	@Test
+	public void testCountByL_H_P_Collection() throws Exception {
+		_persistence.countByL_H_P_Collection(RandomTestUtil.nextLong(),
+			RandomTestUtil.randomBoolean(), RandomTestUtil.nextLong());
+
+		_persistence.countByL_H_P_Collection(0L,
+			RandomTestUtil.randomBoolean(), 0L);
+	}
+
+	@Test
+	public void testCountByL_H_S() throws Exception {
+		_persistence.countByL_H_S(RandomTestUtil.nextLong(),
+			RandomTestUtil.randomBoolean(), RandomTestUtil.nextInt());
+
+		_persistence.countByL_H_S(0L, RandomTestUtil.randomBoolean(), 0);
+	}
+
+	@Test
 	public void testCountByL_P_S() throws Exception {
 		_persistence.countByL_P_S(RandomTestUtil.nextLong(),
 			RandomTestUtil.nextLong(), RandomTestUtil.nextInt());
 
 		_persistence.countByL_P_S(0L, 0L, 0);
+	}
+
+	@Test
+	public void testCountByL_L_H_P() throws Exception {
+		_persistence.countByL_L_H_P(RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong(), RandomTestUtil.randomBoolean(),
+			RandomTestUtil.nextLong());
+
+		_persistence.countByL_L_H_P(0L, 0L, RandomTestUtil.randomBoolean(), 0L);
 	}
 
 	@Test
@@ -566,6 +599,21 @@ public class LayoutRevisionPersistenceTest {
 				existingLayoutRevision.getLayoutSetBranchId()),
 			ReflectionTestUtil.<Long>invoke(existingLayoutRevision,
 				"getOriginalLayoutSetBranchId", new Class<?>[0]));
+		Assert.assertEquals(Boolean.valueOf(existingLayoutRevision.getHead()),
+			ReflectionTestUtil.<Boolean>invoke(existingLayoutRevision,
+				"getOriginalHead", new Class<?>[0]));
+		Assert.assertEquals(Long.valueOf(existingLayoutRevision.getPlid()),
+			ReflectionTestUtil.<Long>invoke(existingLayoutRevision,
+				"getOriginalPlid", new Class<?>[0]));
+
+		Assert.assertEquals(Long.valueOf(
+				existingLayoutRevision.getLayoutSetBranchId()),
+			ReflectionTestUtil.<Long>invoke(existingLayoutRevision,
+				"getOriginalLayoutSetBranchId", new Class<?>[0]));
+		Assert.assertEquals(Long.valueOf(
+				existingLayoutRevision.getLayoutBranchId()),
+			ReflectionTestUtil.<Long>invoke(existingLayoutRevision,
+				"getOriginalLayoutBranchId", new Class<?>[0]));
 		Assert.assertEquals(Boolean.valueOf(existingLayoutRevision.getHead()),
 			ReflectionTestUtil.<Boolean>invoke(existingLayoutRevision,
 				"getOriginalHead", new Class<?>[0]));

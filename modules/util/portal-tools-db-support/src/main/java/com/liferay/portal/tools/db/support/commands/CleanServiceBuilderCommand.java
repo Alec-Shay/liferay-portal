@@ -26,7 +26,9 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -115,6 +117,10 @@ public class CleanServiceBuilderCommand extends BaseCommand {
 			}
 
 			_dropTable(connection, tableName);
+
+			if (_hasLocalizationTable(entityElement)) {
+				_dropTable(connection, tableName + "Localization");
+			}
 		}
 
 		_deleteReleaseRows(connection);
@@ -151,34 +157,67 @@ public class CleanServiceBuilderCommand extends BaseCommand {
 	private void _dropTable(Connection connection, String tableName)
 		throws SQLException {
 
-		try (Statement statement = connection.createStatement()) {
-			statement.executeUpdate("DROP TABLE " + tableName);
-		}
-	}
+		DatabaseMetaData databaseMetaData = connection.getMetaData();
 
-	private static final Set<String> _badTableNames = new HashSet<>();
+		try (Statement statement = connection.createStatement();
+			ResultSet rs1 = databaseMetaData.getTables(
+				null, null, tableName, new String[] {"TABLE"})) {
 
-	static {
-		ClassLoader classLoader =
-			CleanServiceBuilderCommand.class.getClassLoader();
+			if (rs1.next()) {
+				statement.executeUpdate("DROP TABLE " + tableName);
+			}
+			else {
+				try (ResultSet rs2 = databaseMetaData.getTables(
+						null, null, tableName.toUpperCase(),
+						new String[] {"TABLE"})) {
 
-		try (BufferedReader bufferedReader = new BufferedReader(
-				new InputStreamReader(
-					classLoader.getResourceAsStream(
-						"com/liferay/portal/tools/service/builder" +
-							"/dependencies/bad_table_names.txt"),
-						StandardCharsets.UTF_8))) {
-
-			String line = null;
-
-			while ((line = bufferedReader.readLine()) != null) {
-				_badTableNames.add(line);
+					if (rs2.next()) {
+						statement.executeUpdate("DROP TABLE " + tableName);
+					}
+				}
 			}
 		}
-		catch (IOException ioe) {
-			throw new ExceptionInInitializerError(ioe);
-		}
 	}
+
+	private boolean _hasLocalizationTable(Element entityElement) {
+		NodeList columnNodeList = entityElement.getElementsByTagName("column");
+
+		for (int i = 0; i < columnNodeList.getLength(); i++) {
+			Element columnElement = (Element)columnNodeList.item(i);
+
+			String localized = columnElement.getAttribute("localized");
+
+			if ("extra-table".equals(localized)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private static final Set<String> _badTableNames = new HashSet<String>() {
+		{
+			ClassLoader classLoader =
+				CleanServiceBuilderCommand.class.getClassLoader();
+
+			try (BufferedReader bufferedReader = new BufferedReader(
+					new InputStreamReader(
+						classLoader.getResourceAsStream(
+							"com/liferay/portal/tools/service/builder" +
+								"/dependencies/bad_table_names.txt"),
+						StandardCharsets.UTF_8))) {
+
+				String line = null;
+
+				while ((line = bufferedReader.readLine()) != null) {
+					add(line);
+				}
+			}
+			catch (IOException ioe) {
+				throw new ExceptionInInitializerError(ioe);
+			}
+		}
+	};
 
 	@Parameter(
 		converter = FileConverter.class, description = "The service.xml file.",

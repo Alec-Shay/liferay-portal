@@ -41,11 +41,11 @@ if (kbArticle != null) {
 
 				<div class="col-md-4">
 					<liferay-frontend:horizontal-card
-						text="<%= HtmlUtil.escape(fileEntry.getTitle()) %>"
+						text="<%= fileEntry.getTitle() %>"
 						url="<%= rowURL %>"
 					>
 						<liferay-frontend:horizontal-card-col>
-							<span class="icon-monospaced sticker-lg <%= (dlMimeTypeDisplayContext != null) ? dlMimeTypeDisplayContext.getCssClassFileMimeType(fileEntry.getMimeType()) : "file-icon-color-0" %>"><%= StringUtil.shorten(StringUtil.upperCase(fileEntry.getExtension()), 3, StringPool.BLANK) %></span>
+							<span class="icon-monospaced sticker <%= (dlMimeTypeDisplayContext != null) ? dlMimeTypeDisplayContext.getCssClassFileMimeType(fileEntry.getMimeType()) : "file-icon-color-0" %>"><%= StringUtil.shorten(StringUtil.upperCase(fileEntry.getExtension()), 3, StringPool.BLANK) %></span>
 						</liferay-frontend:horizontal-card-col>
 					</liferay-frontend:horizontal-card>
 				</div>

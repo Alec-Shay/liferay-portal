@@ -14,6 +14,8 @@
 
 package com.liferay.portal.osgi.web.servlet.jsp.compiler.internal;
 
+import com.liferay.portal.kernel.exception.PortalException;
+
 import java.io.IOException;
 
 import java.net.URL;
@@ -30,7 +32,7 @@ import org.osgi.framework.Bundle;
 public class JspBundleClassloader extends URLClassLoader {
 
 	public JspBundleClassloader(Bundle... bundles) {
-		super(new URL[0]);
+		super(new URL[0], PortalException.class.getClassLoader());
 
 		if (bundles.length == 0) {
 			throw new IllegalArgumentException(
@@ -85,24 +87,24 @@ public class JspBundleClassloader extends URLClassLoader {
 	}
 
 	@Override
-	protected Class<?> findClass(String name) throws ClassNotFoundException {
-		for (Bundle bundle : _bundles) {
-			try {
-				return bundle.loadClass(name);
-			}
-			catch (ClassNotFoundException cnfe) {
-				continue;
-			}
-		}
-
-		throw new ClassNotFoundException(name);
-	}
-
-	@Override
 	protected Class<?> loadClass(String name, boolean resolve)
 		throws ClassNotFoundException {
 
-		Class<?> clazz = findClass(name);
+		Class<?> clazz = null;
+
+		for (Bundle bundle : _bundles) {
+			try {
+				clazz = bundle.loadClass(name);
+
+				break;
+			}
+			catch (ClassNotFoundException cnfe) {
+			}
+		}
+
+		if (clazz == null) {
+			return super.loadClass(name, resolve);
+		}
 
 		if (resolve) {
 			resolveClass(clazz);

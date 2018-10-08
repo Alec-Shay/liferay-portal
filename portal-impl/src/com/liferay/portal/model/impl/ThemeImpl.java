@@ -14,6 +14,7 @@
 
 package com.liferay.portal.model.impl;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.ColorScheme;
@@ -26,12 +27,13 @@ import com.liferay.portal.kernel.servlet.PortalWebResourceConstants;
 import com.liferay.portal.kernel.servlet.PortalWebResourcesUtil;
 import com.liferay.portal.kernel.servlet.ServletContextPool;
 import com.liferay.portal.kernel.template.TemplateConstants;
+import com.liferay.portal.kernel.theme.PortletDecoratorFactoryUtil;
 import com.liferay.portal.kernel.theme.ThemeCompanyId;
 import com.liferay.portal.kernel.theme.ThemeCompanyLimit;
 import com.liferay.portal.kernel.theme.ThemeGroupLimit;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.ThemeHelper;
 import com.liferay.portal.kernel.util.Validator;
@@ -99,9 +101,8 @@ public class ThemeImpl extends PluginBaseImpl implements Theme {
 		if (getThemeId().equals(themeId)) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	@Override
@@ -162,6 +163,29 @@ public class ThemeImpl extends PluginBaseImpl implements Theme {
 		return _cssPath;
 	}
 
+	public PortletDecorator getDefaultPortletDecorator() {
+		if (_defaultPortletDecorator == null) {
+			List<PortletDecorator> portletDecorators = getPortletDecorators();
+
+			for (int i = portletDecorators.size() - 1; i >= 0; i--) {
+				PortletDecorator portletDecorator = portletDecorators.get(i);
+
+				if (portletDecorator.isDefaultPortletDecorator()) {
+					_defaultPortletDecorator = portletDecorator;
+
+					break;
+				}
+			}
+
+			if (_defaultPortletDecorator == null) {
+				_defaultPortletDecorator =
+					PortletDecoratorFactoryUtil.getDefaultPortletDecorator();
+			}
+		}
+
+		return _defaultPortletDecorator;
+	}
+
 	@Override
 	public String getDevice() {
 		return "regular";
@@ -172,9 +196,8 @@ public class ThemeImpl extends PluginBaseImpl implements Theme {
 		if (_loadFromServletContext) {
 			return TemplateConstants.SERVLET_SEPARATOR;
 		}
-		else {
-			return TemplateConstants.THEME_LOADER_SEPARATOR;
-		}
+
+		return TemplateConstants.THEME_LOADER_SEPARATOR;
 	}
 
 	@Override
@@ -379,9 +402,8 @@ public class ThemeImpl extends PluginBaseImpl implements Theme {
 		if (_loadFromServletContext) {
 			return TemplateConstants.SERVLET_SEPARATOR;
 		}
-		else {
-			return TemplateConstants.THEME_LOADER_SEPARATOR;
-		}
+
+		return TemplateConstants.THEME_LOADER_SEPARATOR;
 	}
 
 	@Override
@@ -399,9 +421,8 @@ public class ThemeImpl extends PluginBaseImpl implements Theme {
 		if (!_colorSchemesMap.isEmpty()) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	@Override
@@ -543,6 +564,7 @@ public class ThemeImpl extends PluginBaseImpl implements Theme {
 
 		for (Map.Entry<Object, Object> entry : spriteProperties.entrySet()) {
 			String key = (String)entry.getKey();
+
 			String value = (String)entry.getValue();
 
 			int[] values = StringUtil.split(value, 0);
@@ -597,7 +619,9 @@ public class ThemeImpl extends PluginBaseImpl implements Theme {
 
 		if (_log.isDebugEnabled()) {
 			_log.debug(
-				"Check if theme " + getThemeId() + " is available for " + id);
+				StringBundler.concat(
+					"Check if theme ", getThemeId(), " is available for ",
+					String.valueOf(id)));
 		}
 
 		if (limit != null) {
@@ -656,8 +680,10 @@ public class ThemeImpl extends PluginBaseImpl implements Theme {
 
 		if (_log.isDebugEnabled()) {
 			_log.debug(
-				"Theme " + getThemeId() + " is " + (!available ? "NOT " : "") +
-					"available for " + id);
+				StringBundler.concat(
+					"Theme ", getThemeId(), " is ",
+					String.valueOf(!available ? "NOT " : ""), "available for ",
+					String.valueOf(id)));
 		}
 
 		return available;
@@ -668,6 +694,7 @@ public class ThemeImpl extends PluginBaseImpl implements Theme {
 	private final Map<String, ColorScheme> _colorSchemesMap = new HashMap<>();
 	private boolean _controlPanelTheme;
 	private String _cssPath = "${root-path}/css";
+	private PortletDecorator _defaultPortletDecorator;
 	private String _imagesPath = "${root-path}/images";
 	private String _javaScriptPath = "${root-path}/js";
 	private boolean _loadFromServletContext;

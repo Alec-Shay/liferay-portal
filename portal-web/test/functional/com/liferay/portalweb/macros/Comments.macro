@@ -1,0 +1,22 @@
+<definition>
+	<command name="addComment">
+		<execute function="Click" locator1="AlloyEditor#EDITOR">
+			<var name="key_editor" value="postReply" />
+		</execute>
+
+		<execute macro="AlloyEditor#typeEditor">
+			<var name="content" value="${entryComment}" />
+			<var name="editor" value="postReply" />
+		</execute>
+
+		<execute function="AssertClick" locator1="Button#REPLY" value1="Reply" />
+
+		<execute macro="Alert#viewSuccessMessage" />
+	</command>
+
+	<command name="subscribePG">
+		<execute function="AssertClick" locator1="Button#SUBSCRIBE" value1="Subscribe" />
+
+		<execute macro="Alert#viewSuccessMessage" />
+	</command>
+</definition>

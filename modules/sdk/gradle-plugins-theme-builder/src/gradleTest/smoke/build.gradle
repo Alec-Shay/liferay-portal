@@ -5,10 +5,8 @@ apply plugin: "com.liferay.portal.tools.theme.builder"
 task runGradleTest
 
 repositories {
-	mavenLocal()
-
 	maven {
-		url "https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/public"
+		url "https://repository-cdn.liferay.com/nexus/content/groups/public"
 	}
 }
 
@@ -20,8 +18,8 @@ runGradleTest {
 
 		String[] expectedFileNames = [
 			"WEB-INF/liferay-look-and-feel.xml",
-			"css/aui.css",
-			"css/aui_rtl.css",
+			"css/clay.css",
+			"css/clay_rtl.css",
 			"css/main.css",
 			"css/main_rtl.css",
 			"fonts/opensans-regular-webfont.woff",

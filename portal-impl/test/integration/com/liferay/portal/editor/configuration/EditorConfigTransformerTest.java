@@ -14,6 +14,7 @@
 
 package com.liferay.portal.editor.configuration;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.editor.configuration.EditorConfigContributor;
 import com.liferay.portal.kernel.editor.configuration.EditorConfigTransformer;
 import com.liferay.portal.kernel.editor.configuration.EditorConfiguration;
@@ -24,7 +25,6 @@ import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactory;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.registry.Registry;
@@ -173,8 +173,7 @@ public class EditorConfigTransformerTest {
 	}
 
 	@Test
-	public void
-			testEditorConfigTransformedWhenEditorConfigTransformerIsRegistered()
+	public void testEditorConfigTransformedWhenEditorConfigTransformerIsRegistered()
 		throws Exception {
 
 		Registry registry = RegistryUtil.getRegistry();
@@ -224,8 +223,7 @@ public class EditorConfigTransformerTest {
 	}
 
 	@Test
-	public void
-			testEditorConfigTransformedWithMultipleEditorOptionsContributors()
+	public void testEditorConfigTransformedWithMultipleEditorOptionsContributors()
 		throws Exception {
 
 		Registry registry = RegistryUtil.getRegistry();

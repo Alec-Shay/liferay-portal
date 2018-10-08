@@ -26,11 +26,23 @@ import java.io.Serializable;
 @ProviderType
 public class ExportImportLifecycleEventFactoryUtil {
 
+	/**
+	 * @deprecated As of Judson (7.1.x)
+	 */
+	@Deprecated
 	public static ExportImportLifecycleEvent create(
 		int code, int processFlag, Serializable... attributes) {
 
 		return _exportImportLifecycleEventFactory.create(
 			code, processFlag, attributes);
+	}
+
+	public static ExportImportLifecycleEvent create(
+		int code, int processFlag, String processId,
+		Serializable... attributes) {
+
+		return _exportImportLifecycleEventFactory.create(
+			code, processFlag, processId, attributes);
 	}
 
 	private static volatile ExportImportLifecycleEventFactory

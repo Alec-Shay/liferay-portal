@@ -10,7 +10,7 @@
 	</set-up>
 
 	<tear-down>
-		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+		<var method="PropsUtil#get('test.portal.instance')" name="testPortalInstance" />
 
 		<if>
 			<equals arg1="${testPortalInstance}" arg2="true" />
@@ -40,77 +40,62 @@
 
 				<execute macro="DMDocument#tearDownCP" />
 
-				<execute macro="Page#tearDownPG" />
+				<execute macro="Page#tearDownCP" />
 			</else>
 		</if>
 	</tear-down>
 
 	<command name="EditTeamPermissions" priority="4">
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
+		<execute macro="Permissions#definePermissionViaJSONAPI">
+			<var name="resourceAction" value="VIEW_CONTROL_PANEL" />
+			<var name="resourceName" value="90" />
+			<var name="roleTitle" value="User" />
 		</execute>
 
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="CONTROL_PANEL_GENERAL_PERMISSIONS_GO_TO_CONTROL_PANEL_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="View Control Panel Menu" />
-			<var name="roleTitle" value="Authenticated" />
-			<var name="roleUser" value="User" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#addCP">
+		<execute macro="JSONRole#addSiteRole">
+			<var name="roleKey" value="Roles Siterole Name" />
 			<var name="roleTitle" value="Roles Siterole Name" />
-			<var name="roleType" value="Site" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
+		<for list="ACCESS_IN_CONTROL_PANEL,ADD_TO_PAGE,CONFIGURATION,PERMISSIONS,PREFERENCES,VIEW" param="resourceActionIndex">
+			<execute macro="Permissions#definePermissionViaJSONAPI">
+				<var name="resourceAction" value="${resourceActionIndex}" />
+				<var name="resourceName" value="com_liferay_site_memberships_web_portlet_SiteMembershipsPortlet" />
+				<var name="roleTitle" value="Roles Siterole Name" />
+				<var name="roleType" value="site" />
+			</execute>
+		</for>
 
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="SITE_ADMIN_PAGES_SITE_PAGES_RESOURCE_PERMISSIONS_SITE_ACTION_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="Action" />
-			<var name="roleTitle" value="Roles Siterole Name" />
-			<var name="roleType" value="Site" />
-		</execute>
+		<for list="ADD_COMMUNITY,ADD_LAYOUT,ADD_LAYOUT_BRANCH,ADD_LAYOUT_SET_BRANCH,ASSIGN_MEMBERS,ASSIGN_USER_ROLES,CONFIGURE_PORTLETS,DELETE,EXPORT_IMPORT_LAYOUTS,EXPORT_IMPORT_PORTLET_INFO,MANAGE_ANNOUNCEMENTS,MANAGE_ARCHIVED_SETUPS,MANAGE_LAYOUTS,MANAGE_STAGING,MANAGE_SUBGROUPS,MANAGE_TEAMS,PERMISSIONS,PREVIEW_IN_DEVICE,PUBLISH_PORTLET_INFO,PUBLISH_STAGING,UPDATE,VIEW,VIEW_MEMBERS,VIEW_SITE_ADMINISTRATION,VIEW_STAGING" param="resourceActionIndex">
+			<execute macro="Permissions#definePermissionViaJSONAPI">
+				<var name="resourceAction" value="${resourceActionIndex}" />
+				<var name="resourceName" value="com.liferay.portal.kernel.model.Group" />
+				<var name="roleTitle" value="Roles Siterole Name" />
+				<var name="roleType" value="site" />
+			</execute>
+		</for>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
+		<for list="ASSIGN_MEMBERS,DELETE,PERMISSIONS,UPDATE,VIEW" param="resourceActionIndex">
+			<execute macro="Permissions#definePermissionViaJSONAPI">
+				<var name="resourceAction" value="${resourceActionIndex}" />
+				<var name="resourceName" value="com.liferay.portal.kernel.model.Team" />
+				<var name="roleTitle" value="Roles Siterole Name" />
+				<var name="roleType" value="site" />
+			</execute>
+		</for>
 
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="SITE_ADMIN_MEMBERS_SITE_TEAMS_RESOURCE_PERMISSIONS_TEAM_ACTION_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="Action" />
-			<var name="roleTitle" value="Roles Siterole Name" />
-			<var name="roleType" value="Site" />
-		</execute>
+		<for list="ADD_TO_PAGE,CONFIGURATION,PERMISSIONS,PREFERENCES,VIEW" param="resourceActionIndex">
+			<execute macro="Permissions#definePermissionViaJSONAPI">
+				<var name="resourceAction" value="${resourceActionIndex}" />
+				<var name="resourceName" value="com_liferay_journal_content_web_portlet_JournalContentPortlet" />
+				<var name="roleTitle" value="Roles Siterole Name" />
+				<var name="roleType" value="site" />
+			</execute>
+		</for>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="SITE_ADMIN_MEMBERS_SITE_MEMBERSHIPS_GENERAL_PERMISSIONS_ACTION_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="Action" />
-			<var name="roleTitle" value="Roles Siterole Name" />
-			<var name="roleType" value="Site" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="SITE_ADMIN_APPLICATIONS_WEB_CONTENT_DISPLAY_APPLICATIONS_PERMISSIONS_ACTION_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="Action" />
-			<var name="roleTitle" value="Roles Siterole Name" />
-			<var name="roleType" value="Site" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelSites">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Sites" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Sites" />
 		</execute>
 
@@ -118,16 +103,19 @@
 			<var name="siteName" value="Site Name" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelSites">
-			<var name="portlet" value="Sites" />
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Site Page Name" />
-			<var name="siteName" value="Site Name" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -138,7 +126,9 @@
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -147,7 +137,9 @@
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -156,7 +148,9 @@
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -176,7 +170,9 @@
 			<var name="site" value="Site Name" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoSitesMembers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Members" />
+			<var name="panel" value="Site Administration" />
 			<var name="portlet" value="Site Teams" />
 		</execute>
 
@@ -196,7 +192,6 @@
 
 		<execute macro="PermissionsInline#gotoConfigurationPG">
 			<var name="portletName" value="Web Content Display" />
-			<var name="portletOption" value="Configuration" />
 		</execute>
 
 		<var name="key_teamName" value="Site Team Name" />
@@ -216,7 +211,6 @@
 
 		<execute macro="PermissionsInline#gotoConfigurationPG">
 			<var name="portletName" value="Web Content Display" />
-			<var name="portletOption" value="Configuration" />
 		</execute>
 
 		<var name="key_teamName" value="Site Team Name" />
@@ -249,7 +243,9 @@
 			<var name="site" value="Site Name" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoSitesMembers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Members" />
+			<var name="panel" value="Site Administration" />
 			<var name="portlet" value="Site Teams" />
 		</execute>
 
@@ -266,20 +262,27 @@
 	</command>
 
 	<command name="GroupScopePermissionCheck" priority="4">
+		<property name="osgi.app.includes" value="bookmarks" />
+		<property name="test.name.skip.portal.instance" value="RolesandpermissionsUsecase#GroupScopePermissionCheck" />
+
 		<execute macro="TestCase#getSiteName">
-			<return from="siteName" name="siteName" />
+			<return name="siteName" />
 			<var name="siteName" value="${siteName}" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Roles" />
 		</execute>
 
-		<execute macro="Role#addCP">
+		<execute macro="Role#add">
 			<var name="roleTitle" value="Group Scope Role Name" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Roles" />
 		</execute>
 
@@ -290,7 +293,13 @@
 			<var name="siteNameScope" value="Liferay" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Bookmarks Page" />
 		</execute>
 
@@ -316,7 +325,9 @@
 			<var name="pageName" value="Bookmarks Page" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelSites">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Sites" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Sites" />
 		</execute>
 
@@ -325,13 +336,14 @@
 			<var name="siteType" value="Blank" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelSites">
-			<var name="portlet" value="Sites" />
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Bookmarks Page" />
-			<var name="siteName" value="google.com Name" />
 		</execute>
 
 		<execute macro="Navigator#gotoSitePage">
@@ -359,7 +371,9 @@
 			<var name="siteName" value="google.com Name" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -370,7 +384,9 @@
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -379,7 +395,9 @@
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -388,7 +406,9 @@
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -397,7 +417,9 @@
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -446,7 +468,11 @@
 	</command>
 
 	<command name="NoGuestRolePermissionsFromPrivateLayout" priority="3">
-		<execute macro="ProductMenu#gotoControlPanelSites">
+		<property name="custom.properties" value="permissions.check.guest.enabled=false" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Sites" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Sites" />
 		</execute>
 
@@ -454,25 +480,24 @@
 			<var name="siteName" value="Site Name" />
 		</execute>
 
-		<execute macro="Page#add">
-			<var name="pageName" value="Private Blogs Page" />
-			<var name="siteName" value="Site Name" />
-			<var name="sitePagePrivacy" value="Private" />
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
-		<execute macro="ProductMenuHelper#expandCategory">
-			<var name="category" value="Navigation" />
+		<execute macro="SitePages#addPrivatePage">
+			<var name="pageName" value="Private Blogs Page" />
 		</execute>
 
 		<execute macro="PermissionsInline#gotoSitepageCP">
-			<var name="page" value="Private Pages" />
 			<var name="pageName" value="Private Blogs Page" />
-			<var name="siteName" value="Site Name" />
+			<var name="privacy" value="Private Pages" />
 		</execute>
 
-		<var name="key_roleTitle" value="Guest" />
-
-		<execute function="AssertTextNotPresent" locator1="Permissions#CONTENT_PERMISSIONS_ROLE_NAME" value1="Guest" />
+		<execute function="AssertElementNotPresent" locator1="Permissions#CONTENT_PERMISSIONS_ROLE_NAME">
+			<var name="key_roleTitle" value="Guest" />
+		</execute>
 
 		<execute macro="Navigator#openPrivateSitePageURL">
 			<var name="pageName" value="Private Blogs Page" />
@@ -483,26 +508,36 @@
 			<var name="portletName" value="Blogs" />
 		</execute>
 
-		<execute macro="PermissionsInline#gotoConfigurationPG" >
+		<execute macro="PermissionsInline#gotoConfigurationPG">
 			<var name="portletName" value="Blogs" />
 		</execute>
 
-		<var name="key_roleTitle" value="Guest" />
-
-		<execute function="AssertTextNotPresent" locator1="Permissions#CONTENT_PERMISSIONS_ROLE_NAME" value1="Guest" />
+		<execute function="AssertElementNotPresent" locator1="Permissions#CONTENT_PERMISSIONS_ROLE_NAME">
+			<var name="key_roleTitle" value="Guest" />
+		</execute>
 	</command>
 
 	<command name="RolesOrganizationSearch" priority="4">
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<property name="osgi.module.configuration.file.names" value="com.liferay.portal.search.web.internal.configuration.SearchWebConfiguration.config" />
+		<property name="osgi.module.configurations" value="classicSearchPortletInFrontPage=&quot;true&quot;" />
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Roles" />
 		</execute>
 
-		<execute macro="Role#addCP">
-			<var name="roleTitle" value="Roles Orgrole Name" />
+		<execute macro="RoleNavigator#gotoRoleType">
 			<var name="roleType" value="Organization" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="Role#add">
+			<var name="roleTitle" value="Roles Orgrole Name" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Roles" />
 		</execute>
 
@@ -513,7 +548,9 @@
 			<var name="roleType" value="Organization" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -522,7 +559,9 @@
 			<var name="orgType" value="Organization" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -533,7 +572,9 @@
 			<var name="orgName" value="Organization Name" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -544,7 +585,9 @@
 			<var name="userScreenName" value="usersn1" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -553,7 +596,9 @@
 			<var name="userScreenName" value="usersn1" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -562,7 +607,9 @@
 			<var name="userScreenName" value="usersn1" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -573,7 +620,9 @@
 			<var name="userScreenName" value="usersn2" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -582,7 +631,9 @@
 			<var name="userScreenName" value="usersn2" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -591,7 +642,9 @@
 			<var name="userScreenName" value="usersn2" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -604,9 +657,18 @@
 			<var name="siteName" value="Organization Name" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoSite">
+			<var name="site" value="Organization Name" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Documents and Media Page" />
-			<var name="siteName" value="Organization Name" />
 		</execute>
 
 		<execute macro="Navigator#gotoSitePage">
@@ -629,11 +691,13 @@
 			<var name="dmDocumentTitle" value="Test Document" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoSitesContent">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Content" />
+			<var name="panel" value="Site Administration" />
 			<var name="portlet" value="Documents and Media" />
 		</execute>
 
-		<execute macro="PermissionsInline#gotoDMDocumentCP">
+		<execute macro="DMNavigator#gotoDocumentPermissionsCP">
 			<var name="dmDocumentTitle" value="Test Document" />
 		</execute>
 
@@ -647,11 +711,11 @@
 			<var name="siteName" value="Organization Name" />
 		</execute>
 
-		<execute macro="Search#searchPG">
+		<execute macro="ClassicSearch#search">
 			<var name="searchTerm" value="Test Document" />
 		</execute>
 
-		<execute macro="Search#viewSearchResultPG">
+		<execute macro="ClassicSearch#viewSearchResultPG">
 			<var name="searchAssetTitle" value="Test Document" />
 			<var name="searchAssetType" value="Document" />
 		</execute>
@@ -680,11 +744,11 @@
 
 		<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="There are no documents or media files in this folder." />
 
-		<execute macro="Search#searchPG">
+		<execute macro="ClassicSearch#search">
 			<var name="searchTerm" value="Test Document" />
 		</execute>
 
-		<execute macro="Search#viewSearchNoPG">
+		<execute macro="ClassicSearch#viewSearchNoPG">
 			<var name="searchAssetTitle" value="Test Document" />
 			<var name="searchNoResults" value="true" />
 			<var name="searchTerm" value="Test Document" />
@@ -707,11 +771,11 @@
 			<var name="dmDocumentTitle" value="Test Document" />
 		</execute>
 
-		<execute macro="Search#searchPG">
+		<execute macro="ClassicSearch#search">
 			<var name="searchTerm" value="Test Document" />
 		</execute>
 
-		<execute macro="Search#viewSearchResultPG">
+		<execute macro="ClassicSearch#viewSearchResultPG">
 			<var name="searchAssetTitle" value="Test Document" />
 			<var name="searchAssetType" value="Document" />
 		</execute>
@@ -736,73 +800,51 @@
 
 	<command name="RolesPermissionsDynamicDataLists" priority="4">
 		<execute macro="TestCase#getSiteName">
-			<return from="siteName" name="siteName" />
+			<return name="siteName" />
 			<var name="siteName" value="${siteName}" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#addCP">
+		<execute macro="JSONRole#addSiteRole">
+			<var name="roleKey" value="Data Recorder Name" />
 			<var name="roleTitle" value="Data Recorder Name" />
-			<var name="roleType" value="Site" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="SITE_ADMIN_CONTENT_DYNAMIC_DATA_LISTS_RESOURCE_PERMISSIONS_DYNAMIC_DATA_LISTS_RECORD_SET_ADD_RECORD_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="Add Record" />
+		<execute macro="Permissions#definePermissionViaJSONAPI">
+			<var name="resourceAction" value="ADD_RECORD" />
+			<var name="resourceName" value="com.liferay.dynamic.data.lists.model.DDLRecordSet" />
 			<var name="roleTitle" value="Data Recorder Name" />
-			<var name="roleType" value="Site" />
+			<var name="roleType" value="site" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
+		<execute macro="Permissions#definePermissionViaJSONAPI">
+			<var name="resourceAction" value="View" />
+			<var name="resourceName" value="com.liferay.dynamic.data.lists.model.DDLRecordSet" />
+			<var name="roleTitle" value="Data REcorder Name" />
+			<var name="roleType" value="site" />
 		</execute>
 
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="SITE_ADMIN_CONTENT_DYNAMIC_DATA_LISTS_RESOURCE_PERMISSIONS_DYNAMIC_DATA_LISTS_RECORD_SET_VIEW_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="View" />
-			<var name="roleTitle" value="Data Recorder Name" />
-			<var name="roleType" value="Site" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#addCP">
+		<execute macro="JSONRole#addSiteRole">
+			<var name="roleKey" value="Records Manager Name" />
 			<var name="roleTitle" value="Records Manager Name" />
-			<var name="roleType" value="Site" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="SITE_ADMIN_CONTENT_DYNAMIC_DATA_LISTS_RESOURCE_PERMISSIONS_DYNAMIC_DATA_LISTS_RECORD_SET_UPDATE_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="Update" />
+		<execute macro="Permissions#definePermissionViaJSONAPI">
+			<var name="resourceAction" value="UPDATE" />
+			<var name="resourceName" value="com.liferay.dynamic.data.lists.model.DDLRecordSet" />
 			<var name="roleTitle" value="Records Manager Name" />
-			<var name="roleType" value="Site" />
+			<var name="roleType" value="site" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="SITE_ADMIN_CONTENT_DYNAMIC_DATA_LISTS_RESOURCE_PERMISSIONS_DYNAMIC_DATA_LISTS_RECORD_SET_VIEW_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="View" />
+		<execute macro="Permissions#definePermissionViaJSONAPI">
+			<var name="resourceAction" value="VIEW" />
+			<var name="resourceName" value="com.liferay.dynamic.data.lists.model.DDLRecordSet" />
 			<var name="roleTitle" value="Records Manager Name" />
-			<var name="roleType" value="Site" />
+			<var name="roleType" value="site" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -813,7 +855,9 @@
 			<var name="userScreenName" value="usersn1" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -822,7 +866,9 @@
 			<var name="userScreenName" value="usersn1" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -831,7 +877,9 @@
 			<var name="userScreenName" value="usersn1" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -840,7 +888,9 @@
 			<var name="userScreenName" value="usersn1" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -851,7 +901,9 @@
 			<var name="userScreenName" value="usersn2" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -860,7 +912,9 @@
 			<var name="userScreenName" value="usersn2" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -869,7 +923,9 @@
 			<var name="userScreenName" value="usersn2" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -878,7 +934,13 @@
 			<var name="userScreenName" value="usersn2" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Dynamic Data Lists Page" />
 		</execute>
 
@@ -1073,7 +1135,7 @@
 
 		<var name="key_ddlDataDefinitionName" value="Employee Profile Data Definition" />
 
-		<execute function="AssertTextEquals" locator1="DDL#TOOLBAR_ADD" value1="Add Employee Profile Data Definition" />
+		<execute function="AssertElementPresent" locator1="DDL#TOOLBAR_ADD" />
 		<execute function="AssertElementPresent" locator1="DDL#RECORD_TABLE_ELLIPSIS_1" />
 
 		<execute macro="User#logoutPG" />
@@ -1087,7 +1149,7 @@
 			<var name="pageName" value="Dynamic Data Lists Page" />
 		</execute>
 
-		<execute function="AssertElementNotPresent" locator1="DDL#TOOLBAR_ADD" value1="Add Employee Profile Data Definition" />
+		<execute function="AssertElementNotPresent" locator1="DDL#TOOLBAR_ADD" />
 		<execute function="AssertElementPresent" locator1="DDL#RECORD_TABLE_ELLIPSIS_1" />
 
 		<execute macro="User#logoutPG" />
@@ -1100,20 +1162,27 @@
 
 	<command name="RolesSiteSearch" priority="4">
 		<execute macro="TestCase#getSiteName">
-			<return from="siteName" name="siteName" />
+			<return name="siteName" />
 			<var name="siteName" value="${siteName}" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Roles" />
 		</execute>
 
-		<execute macro="Role#addCP">
-			<var name="roleTitle" value="Roles Siterole Name" />
+		<execute macro="RoleNavigator#gotoRoleType">
 			<var name="roleType" value="Site" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="Role#add">
+			<var name="roleTitle" value="Roles Siterole Name" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Roles" />
 		</execute>
 
@@ -1124,7 +1193,9 @@
 			<var name="roleType" value="Site" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -1135,7 +1206,9 @@
 			<var name="userScreenName" value="usersn1" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -1144,7 +1217,9 @@
 			<var name="userScreenName" value="usersn1" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -1153,7 +1228,9 @@
 			<var name="userScreenName" value="usersn1" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -1164,7 +1241,9 @@
 			<var name="userScreenName" value="usersn2" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -1173,7 +1252,9 @@
 			<var name="userScreenName" value="usersn2" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -1182,7 +1263,9 @@
 			<var name="userScreenName" value="usersn2" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -1191,7 +1274,13 @@
 			<var name="userScreenName" value="usersn2" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Documents and Media Page" />
 		</execute>
 
@@ -1213,11 +1302,13 @@
 			<var name="dmDocumentTitle" value="Test Document" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoSitesContent">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Content" />
+			<var name="panel" value="Site Administration" />
 			<var name="portlet" value="Documents and Media" />
 		</execute>
 
-		<execute macro="PermissionsInline#gotoDMDocumentCP">
+		<execute macro="DMNavigator#gotoDocumentPermissionsCP">
 			<var name="dmDocumentTitle" value="Test Document" />
 		</execute>
 
@@ -1230,11 +1321,11 @@
 			<var name="pageName" value="Documents and Media Page" />
 		</execute>
 
-		<execute macro="Search#searchPG">
+		<execute macro="SearchPortlets#searchEmbedded">
 			<var name="searchTerm" value="Test Document" />
 		</execute>
 
-		<execute macro="Search#viewSearchResultPG">
+		<execute macro="SearchResultPortlet#viewSearchResults">
 			<var name="searchAssetTitle" value="Test Document" />
 			<var name="searchAssetType" value="Document" />
 		</execute>
@@ -1262,13 +1353,11 @@
 
 		<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="There are no documents or media files in this folder." />
 
-		<execute macro="Search#searchPG">
+		<execute macro="SearchPortlets#searchEmbedded">
 			<var name="searchTerm" value="Test Document" />
 		</execute>
 
-		<execute macro="Search#viewSearchNoPG">
-			<var name="searchAssetTitle" value="Test Document" />
-			<var name="searchNoResults" value="true" />
+		<execute macro="SearchResultPortlet#viewNoSearchResults">
 			<var name="searchTerm" value="Test Document" />
 		</execute>
 
@@ -1288,11 +1377,11 @@
 			<var name="dmDocumentTitle" value="Test Document" />
 		</execute>
 
-		<execute macro="Search#searchPG">
+		<execute macro="SearchPortlets#searchEmbedded">
 			<var name="searchTerm" value="Test Document" />
 		</execute>
 
-		<execute macro="Search#viewSearchResultPG">
+		<execute macro="SearchResultPortlet#viewSearchResults">
 			<var name="searchAssetTitle" value="Test Document" />
 			<var name="searchAssetType" value="Document" />
 		</execute>
@@ -1316,7 +1405,9 @@
 	</command>
 
 	<command name="RolesSitesPermissionsInheritance" priority="4">
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -1327,7 +1418,9 @@
 			<var name="userScreenName" value="usersn1" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -1336,7 +1429,9 @@
 			<var name="userScreenName" value="usersn1" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -1347,7 +1442,9 @@
 			<var name="userScreenName" value="usersn2" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -1356,7 +1453,9 @@
 			<var name="userScreenName" value="usersn2" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -1367,7 +1466,9 @@
 			<var name="userScreenName" value="usersn3" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -1376,7 +1477,9 @@
 			<var name="userScreenName" value="usersn3" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -1385,7 +1488,9 @@
 			<var name="orgType" value="Organization" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -1394,7 +1499,9 @@
 			<var name="orgType" value="Organization" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -1405,7 +1512,9 @@
 			<var name="orgName" value="Organization Name 2" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -1414,7 +1523,9 @@
 			<var name="orgType" value="Organization" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -1428,7 +1539,9 @@
 			<var name="userScreenName" value="usersn1" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -1442,7 +1555,9 @@
 			<var name="userScreenName" value="usersn2" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -1456,7 +1571,9 @@
 			<var name="userScreenName" value="usersn2" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -1470,7 +1587,9 @@
 			<var name="userScreenName" value="usersn3" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="User Groups" />
 		</execute>
 
@@ -1486,7 +1605,9 @@
 			<var name="userGroupName" value="UG UserGroup3 Name" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="User Groups" />
 		</execute>
 
@@ -1495,7 +1616,9 @@
 			<var name="userScreenName" value="usersn1" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="User Groups" />
 		</execute>
 
@@ -1504,7 +1627,9 @@
 			<var name="userScreenName" value="usersn2" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="User Groups" />
 		</execute>
 
@@ -1513,7 +1638,9 @@
 			<var name="userScreenName" value="usersn3" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelSites">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Sites" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Sites" />
 		</execute>
 
@@ -1521,223 +1648,154 @@
 			<var name="siteName" value="Site Name" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelSites">
-			<var name="portlet" value="Sites" />
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Asset Publisher Page" />
-			<var name="siteName" value="Site Name" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#addCP">
+		<execute macro="JSONRole#addSiteRole">
+			<var name="roleKey" value="Movie Blogger Name" />
 			<var name="roleTitle" value="Movie Blogger Name" />
-			<var name="roleType" value="Site" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="SITE_ADMIN_CONTENT_BLOGS_RESOURCE_PERMISSIONS_BLOGS_ENTRIES_ADD_ENTRY_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="Add Entry" />
+		<execute macro="Permissions#definePermissionViaJSONAPI">
+			<var name="resourceAction" value="ADD_ENTRY" />
+			<var name="resourceName" value="com.liferay.blogs" />
 			<var name="roleTitle" value="Movie Blogger Name" />
-			<var name="roleType" value="Site" />
+			<var name="roleType" value="site" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="SITE_ADMIN_CONTENT_BLOGS_RESOURCE_PERMISSIONS_BLOGS_ENTRY_VIEW_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="View" />
+		<execute macro="Permissions#definePermissionViaJSONAPI">
+			<var name="resourceAction" value="VIEW" />
+			<var name="resourceName" value="com.liferay.blogs.model.BlogsEntry" />
 			<var name="roleTitle" value="Movie Blogger Name" />
-			<var name="roleType" value="Site" />
+			<var name="roleType" value="site" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="SITE_ADMIN_APPLICATIONS_ASSET_PUBLISHER_APPLICATION_PERIMISSIONS_ADD_TO_PAGE_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="Add to Page" />
+		<execute macro="Permissions#definePermissionViaJSONAPI">
+			<var name="resourceAction" value="ADD_TO_PAGE" />
+			<var name="resourceName" value="com_liferay_asset_publisher_web_portlet_AssetPublisherPortlet" />
 			<var name="roleTitle" value="Movie Blogger Name" />
-			<var name="roleType" value="Site" />
+			<var name="roleType" value="site" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="SITE_ADMIN_APPLICATIONS_ASSET_PUBLISHER_APPLICATION_PERIMISSIONS_VIEW_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="View" />
+		<execute macro="Permissions#definePermissionViaJSONAPI">
+			<var name="resourceAction" value="VIEW" />
+			<var name="resourceName" value="com_liferay_asset_publisher_web_portlet_AssetPublisherPortlet" />
 			<var name="roleTitle" value="Movie Blogger Name" />
-			<var name="roleType" value="Site" />
+			<var name="roleType" value="site" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#addCP">
+		<execute macro="JSONRole#addSiteRole">
+			<var name="roleKey" value="Music Fan Name" />
 			<var name="roleTitle" value="Music Fan Name" />
-			<var name="roleType" value="Site" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="SITE_ADMIN_CONTENT_MESSAGE_BOARDS_RESOURCE_PERMISSIONS_MESSAGES_ADD_CATEGORY_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="Add Category" />
+		<execute macro="Permissions#definePermissionViaJSONAPI">
+			<var name="resourceAction" value="VIEW" />
+			<var name="resourceName" value="com.liferay.message.boards" />
 			<var name="roleTitle" value="Music Fan Name" />
-			<var name="roleType" value="Site" />
+			<var name="roleType" value="site" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="SITE_ADMIN_CONTENT_MESSAGE_BOARDS_RESOURCE_PERMISSIONS_MESSAGES_ADD_MESSAGE_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="Add Message" />
+		<execute macro="Permissions#definePermissionViaJSONAPI">
+			<var name="resourceAction" value="ADD_CATEGORY" />
+			<var name="resourceName" value="com.liferay.message.boards" />
 			<var name="roleTitle" value="Music Fan Name" />
-			<var name="roleType" value="Site" />
+			<var name="roleType" value="site" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="SITE_ADMIN_CONTENT_MESSAGE_BOARDS_RESOURCE_PERMISSIONS_MESSAGES_VIEW_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="View" />
+		<execute macro="Permissions#definePermissionViaJSONAPI">
+			<var name="resourceAction" value="ADD_MESSAGE" />
+			<var name="resourceName" value="com.liferay.message.boards" />
 			<var name="roleTitle" value="Music Fan Name" />
-			<var name="roleType" value="Site" />
+			<var name="roleType" value="site" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="SITE_ADMIN_CONTENT_MESSAGE_BOARDS_RESOURCE_PERMISSIONS_MESSAGE_BOARDS_CATEGORY_ADD_MESSAGE_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="Add Message" />
+		<execute macro="Permissions#definePermissionViaJSONAPI">
+			<var name="resourceAction" value="VIEW" />
+			<var name="resourceName" value="com.liferay.message.boards.kernel.model.MBCategory" />
 			<var name="roleTitle" value="Music Fan Name" />
-			<var name="roleType" value="Site" />
+			<var name="roleType" value="site" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="SITE_ADMIN_CONTENT_MESSAGE_BOARDS_RESOURCE_PERMISSIONS_MESSAGE_BOARDS_CATEGORY_VIEW_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="View" />
+		<execute macro="Permissions#definePermissionViaJSONAPI">
+			<var name="resourceAction" value="ADD_MESSAGE" />
+			<var name="resourceName" value="com.liferay.message.boards.kernel.model.MBCategory" />
 			<var name="roleTitle" value="Music Fan Name" />
-			<var name="roleType" value="Site" />
+			<var name="roleType" value="site" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="SITE_ADMIN_CONTENT_MESSAGE_BOARDS_RESOURCE_PERMISSIONS_MESSAGE_BOARDS_MESSAGE_VIEW_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="View" />
+		<execute macro="Permissions#definePermissionViaJSONAPI">
+			<var name="resourceAction" value="VIEW" />
+			<var name="resourceName" value="com.liferay.message.boards.kernel.model.MBMessage" />
 			<var name="roleTitle" value="Music Fan Name" />
-			<var name="roleType" value="Site" />
+			<var name="roleType" value="site" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="SITE_ADMIN_APPLICATIONS_ASSET_PUBLISHER_APPLICATION_PERIMISSIONS_ADD_TO_PAGE_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="Add to Page" />
+		<execute macro="Permissions#definePermissionViaJSONAPI">
+			<var name="resourceAction" value="VIEW" />
+			<var name="resourceName" value="com_liferay_asset_publisher_web_portlet_AssetPublisherPortlet" />
 			<var name="roleTitle" value="Music Fan Name" />
-			<var name="roleType" value="Site" />
+			<var name="roleType" value="site" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="SITE_ADMIN_APPLICATIONS_ASSET_PUBLISHER_APPLICATION_PERIMISSIONS_VIEW_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="View" />
+		<execute macro="Permissions#definePermissionViaJSONAPI">
+			<var name="resourceAction" value="ADD_TO_PAGE" />
+			<var name="resourceName" value="com_liferay_asset_publisher_web_portlet_AssetPublisherPortlet" />
 			<var name="roleTitle" value="Music Fan Name" />
-			<var name="roleType" value="Site" />
+			<var name="roleType" value="site" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#addCP">
+		<execute macro="JSONRole#addSiteRole">
+			<var name="roleKey" value="Sports Journalist Name" />
 			<var name="roleTitle" value="Sports Journalist Name" />
-			<var name="roleType" value="Site" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
+		<for list="ADD_DISCUSSION,DELETE,DELETE_DISCUSSION,EXPIRE,PERMISSIONS,SUBSCRIBE,UPDATE,UPDATE_DISCUSSION,VIEW" param="resourceActionIndex">
+			<execute macro="Permissions#definePermissionViaJSONAPI">
+				<var name="resourceAction" value="${resourceActionIndex}" />
+				<var name="resourceName" value="com.liferay.journal.model.JournalArticle" />
+				<var name="roleTitle" value="Sports Journalist Name" />
+				<var name="roleType" value="site" />
+			</execute>
+		</for>
 
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="SITE_ADMIN_CONTENT_WEB_CONTENT_RESOURCE_PERMISSIONS_WEB_CONTENT_ARTICLE_ACTION_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="Action" />
+		<for list="ADD_ARTICLE,ADD_FEED,ADD_FOLDER,ADD_STRUCTURE,ADD_TEMPLATE,PERMISSIONS,SUBSCRIBE,UPDATE,VIEW" param="resourceActionIndex">
+			<execute macro="Permissions#definePermissionViaJSONAPI">
+				<var name="resourceAction" value="${resourceActionIndex}" />
+				<var name="resourceName" value="com.liferay.journal" />
+				<var name="roleTitle" value="Sports Journalist Name" />
+				<var name="roleType" value="site" />
+			</execute>
+		</for>
+
+		<execute macro="Permissions#definePermissionViaJSONAPI">
+			<var name="resourceAction" value="VIEW" />
+			<var name="resourceName" value="com_liferay_asset_publisher_web_portlet_AssetPublisherPortlet" />
 			<var name="roleTitle" value="Sports Journalist Name" />
-			<var name="roleType" value="Site" />
+			<var name="roleType" value="site" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="SITE_ADMIN_CONTENT_WEB_CONTENT_RESOURCE_PERMISSIONS_WEB_CONTENT_ACTION_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="Action" />
+		<execute macro="Permissions#definePermissionViaJSONAPI">
+			<var name="resourceAction" value="ADD_TO_PAGE" />
+			<var name="resourceName" value="com_liferay_asset_publisher_web_portlet_AssetPublisherPortlet" />
 			<var name="roleTitle" value="Sports Journalist Name" />
-			<var name="roleType" value="Site" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="SITE_ADMIN_APPLICATIONS_ASSET_PUBLISHER_APPLICATION_PERIMISSIONS_ADD_TO_PAGE_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="Add to Page" />
-			<var name="roleTitle" value="Sports Journalist Name" />
-			<var name="roleType" value="Site" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="SITE_ADMIN_APPLICATIONS_ASSET_PUBLISHER_APPLICATION_PERIMISSIONS_VIEW_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="View" />
-			<var name="roleTitle" value="Sports Journalist Name" />
-			<var name="roleType" value="Site" />
+			<var name="roleType" value="site" />
 		</execute>
 
 		<execute macro="ProductMenu#gotoSite">
 			<var name="site" value="Site Name" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoSitesMembers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Members" />
+			<var name="panel" value="Site Administration" />
 			<var name="portlet" value="Site Memberships" />
 		</execute>
 
@@ -1751,7 +1809,9 @@
 			<var name="site" value="Site Name" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoSitesMembers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Members" />
+			<var name="panel" value="Site Administration" />
 			<var name="portlet" value="Site Memberships" />
 		</execute>
 
@@ -1763,7 +1823,9 @@
 			<var name="site" value="Site Name" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoSitesMembers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Members" />
+			<var name="panel" value="Site Administration" />
 			<var name="portlet" value="Site Memberships" />
 		</execute>
 
@@ -1775,7 +1837,9 @@
 			<var name="site" value="Site Name" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoSitesMembers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Members" />
+			<var name="panel" value="Site Administration" />
 			<var name="portlet" value="Site Memberships" />
 		</execute>
 
@@ -1788,7 +1852,9 @@
 			<var name="site" value="Site Name" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoSitesMembers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Members" />
+			<var name="panel" value="Site Administration" />
 			<var name="portlet" value="Site Memberships" />
 		</execute>
 
@@ -1801,7 +1867,9 @@
 			<var name="site" value="Site Name" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoSitesMembers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Members" />
+			<var name="panel" value="Site Administration" />
 			<var name="portlet" value="Site Memberships" />
 		</execute>
 
@@ -1844,11 +1912,11 @@
 
 		<var name="key_portletTitleName" value="Message Boards" />
 
-		<execute function="AssertTextEquals" locator1="Portlet#SPECIFIC_TITLE" value1="Message Boards" />
+		<execute function="AssertTextEquals#assertTextCaseInsensitive" locator1="Portlet#SPECIFIC_TITLE" value1="Message Boards" />
 
 		<var name="key_portletTitleName" value="Asset Publisher" />
 
-		<execute function="AssertTextEquals" locator1="Portlet#SPECIFIC_TITLE" value1="Asset Publisher" />
+		<execute function="AssertTextEquals#assertTextCaseInsensitive" locator1="Portlet#SPECIFIC_TITLE" value1="Asset Publisher" />
 
 		<execute macro="MessageboardsThread#addPG">
 			<var name="threadBody" value="This is a thread by usersn1" />
@@ -1869,11 +1937,11 @@
 
 		<var name="key_portletTitleName" value="Message Boards" />
 
-		<execute function="AssertTextEquals" locator1="Portlet#SPECIFIC_TITLE" value1="Message Boards" />
+		<execute function="AssertTextEquals#assertTextCaseInsensitive" locator1="Portlet#SPECIFIC_TITLE" value1="Message Boards" />
 
 		<var name="key_portletTitleName" value="Asset Publisher" />
 
-		<execute function="AssertTextEquals" locator1="Portlet#SPECIFIC_TITLE" value1="Asset Publisher" />
+		<execute function="AssertTextEquals#assertTextCaseInsensitive" locator1="Portlet#SPECIFIC_TITLE" value1="Asset Publisher" />
 
 		<execute function="AssertElementNotPresent" locator1="MessageBoards#ADD_CATEGORY_BUTTON" />
 		<execute function="AssertElementNotPresent" locator1="Button#PERMISSIONS" />
@@ -1889,11 +1957,10 @@
 
 		<var name="key_portletTitleName" value="Message Boards" />
 
-		<execute function="AssertTextEquals" locator1="Portlet#SPECIFIC_TITLE" value1="Message Boards" />
+		<execute function="AssertTextEquals#assertTextCaseInsensitive" locator1="Portlet#SPECIFIC_TITLE" value1="Message Boards" />
 
 		<execute function="AssertTextEquals" locator1="Button#ADD_CATEGORY" value1="Add Category" />
-		<execute function="AssertTextEquals" locator1="Button#POST_NEW_THREAD" value1="Post New Thread" />
-		<execute function="AssertTextEquals" locator1="Button#PERMISSIONS" value1="Permissions" />
+		<execute function="AssertTextEquals" locator1="Button#NEW_THREAD" value1="New Thread" />
 
 		<execute macro="User#logoutPG" />
 
@@ -1909,11 +1976,11 @@
 
 		<var name="key_portletTitleName" value="Message Boards" />
 
-		<execute function="AssertTextEquals" locator1="Portlet#SPECIFIC_TITLE" value1="Message Boards" />
+		<execute function="AssertTextEquals#assertTextCaseInsensitive" locator1="Portlet#SPECIFIC_TITLE" value1="Message Boards" />
 
 		<var name="key_portletTitleName" value="Asset Publisher" />
 
-		<execute function="AssertTextEquals" locator1="Portlet#SPECIFIC_TITLE" value1="Asset Publisher" />
+		<execute function="AssertTextEquals#assertTextCaseInsensitive" locator1="Portlet#SPECIFIC_TITLE" value1="Asset Publisher" />
 
 		<execute function="AssertElementNotPresent" locator1="Button#ADD_CATEGORY" />
 
@@ -1930,99 +1997,31 @@
 		</execute>
 	</command>
 
-	<command name="RolesXSS" priority="4">
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#addCP">
-			<var name="roleDescription" value="This is the role description field" />
-			<var name="roleTitle"><![CDATA[<script>alert("xss")</script>]]></var>
-			<var name="roleKey" value="Role 1" />
-		</execute>
-
-		<execute macro="Role#viewNoXSSCP">
-			<var name="roleDescription" value="This is the role description field" />
-			<var name="roleTitle" value="Role 1" />
-		</execute>
-
-		<execute macro="Role#addCP">
-			<var name="roleDescription" value="This is the role description field" />
-			<var name="roleTitle" value="Role 2" />
-			<var name="roleKey"><![CDATA[<script>alert("xss")</script>]]></var>
-		</execute>
-
-		<execute macro="Role#viewNoXSSCP">
-			<var name="roleDescription" value="This is the role description field" />
-			<var name="roleTitle"><![CDATA[<script>alert("xss")</script>]]></var>
-		</execute>
-
-		<execute macro="Role#addCP">
-			<var name="roleDescription"><![CDATA[<script>alert("xss")</script>]]></var>
-			<var name="roleKey" value="Role 3" />
-			<var name="roleTitle" value="Test Role" />
-		</execute>
-
-		<execute macro="Role#viewNoXSSCP">
-			<var name="roleDescription"><![CDATA[<script>alert("xss")</script>]]></var>
-			<var name="roleTitle" value="Role 3" />
-		</execute>
-
-		<execute macro="Role#addCP">
-			<var name="roleDescription"><![CDATA[<script>alert("xss")</script>]]></var>
-			<var name="roleKey" value="Role 4" />
-			<var name="roleTitle" value="Site Role" />
-			<var name="roleType" value="Site" />
-		</execute>
-
-		<execute macro="Role#viewNoXSSCP">
-			<var name="roleDescription"><![CDATA[<script>alert("xss")</script>]]></var>
-			<var name="roleTitle" value="Role 4" />
-			<var name="roleType" value="Site" />
-		</execute>
-
-		<execute macro="Role#addCP">
-			<var name="roleDescription"><![CDATA[<script>alert("xss")</script>]]></var>
-			<var name="roleKey" value="Role 5" />
-			<var name="roleTitle" value="Organization Role" />
-			<var name="roleType" value="Organization" />
-		</execute>
-
-		<execute macro="Role#viewNoXSSCP">
-			<var name="roleDescription"><![CDATA[<script>alert("xss")</script>]]></var>
-			<var name="roleTitle" value="Role 5" />
-			<var name="roleType" value="Organization" />
-		</execute>
-
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="Sign In" />
-		</execute>
-
-		<execute macro="PermissionsInline#gotoConfigurationPG">
-			<var name="portletName" value="Sign In" />
-		</execute>
-
-		<execute function="AssertAlertNotPresent" />
-	</command>
-
 	<command name="SiteRoleBookmarksInlinePermissions" priority="4">
+		<property name="osgi.app.includes" value="bookmarks" />
+
 		<execute macro="TestCase#getSiteName">
-			<return from="siteName" name="siteName" />
+			<return name="siteName" />
 			<var name="siteName" value="${siteName}" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Roles" />
 		</execute>
 
-		<execute macro="Role#addCP">
-			<var name="roleTitle" value="Roles Siterole Name" />
+		<execute macro="RoleNavigator#gotoRoleType">
 			<var name="roleType" value="Site" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="Role#add">
+			<var name="roleTitle" value="Roles Siterole Name" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Roles" />
 		</execute>
 
@@ -2033,7 +2032,13 @@
 			<var name="roleType" value="Site" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Bookmarks Page" />
 		</execute>
 
@@ -2059,7 +2064,9 @@
 			<var name="pageName" value="Bookmarks Page" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -2070,7 +2077,9 @@
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -2079,7 +2088,9 @@
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -2107,7 +2118,9 @@
 			<var name="userEmailAddress" value="test@liferay.com" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -2145,7 +2158,9 @@
 	</command>
 
 	<command name="TeamPermissionsSite" priority="4">
-		<execute macro="ProductMenu#gotoControlPanelSites">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Sites" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Sites" />
 		</execute>
 
@@ -2154,7 +2169,9 @@
 		</execute>
 
 		<for list="1,2" param="userNumber">
-			<execute macro="ProductMenu#gotoControlPanelUsers">
+			<execute macro="ProductMenu#gotoPortlet">
+				<var name="category" value="Users" />
+				<var name="panel" value="Control Panel" />
 				<var name="portlet" value="Users and Organizations" />
 			</execute>
 
@@ -2165,7 +2182,9 @@
 				<var name="userScreenName" value="usersn${userNumber}" />
 			</execute>
 
-			<execute macro="ProductMenu#gotoControlPanelUsers">
+			<execute macro="ProductMenu#gotoPortlet">
+				<var name="category" value="Users" />
+				<var name="panel" value="Control Panel" />
 				<var name="portlet" value="Users and Organizations" />
 			</execute>
 
@@ -2174,7 +2193,9 @@
 				<var name="userScreenName" value="usersn${userNumber}" />
 			</execute>
 
-			<execute macro="ProductMenu#gotoControlPanelUsers">
+			<execute macro="ProductMenu#gotoPortlet">
+				<var name="category" value="Users" />
+				<var name="panel" value="Control Panel" />
 				<var name="portlet" value="Users and Organizations" />
 			</execute>
 
@@ -2190,13 +2211,19 @@
 			<var name="site" value="Site Name" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoSitesMembers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Members" />
+			<var name="panel" value="Site Administration" />
 			<var name="portlet" value="Site Teams" />
 		</execute>
 
-		<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="There are no site teams. You can add a site team by clicking the plus button on the bottom right corner." />
+		<execute macro="PortletEntry#viewEmptyMessage">
+			<var name="entity" value="Site Teams" />
+		</execute>
 
-		<execute macro="ProductMenu#gotoSitesMembers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Members" />
+			<var name="panel" value="Site Administration" />
 			<var name="portlet" value="Site Teams" />
 		</execute>
 
@@ -2214,14 +2241,15 @@
 			<var name="site" value="Site Name" />
 		</execute>
 
-		<execute macro="Page#add">
-			<var name="pageName" value="USA Ice Hockey Team Blog" />
-			<var name="pageTemplateName" value="Blog" />
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
-		<execute macro="Navigator#gotoSitePage">
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="USA Ice Hockey Team Blog" />
-			<var name="siteName" value="Site Name" />
+			<var name="pageTemplateName" value="Blog" />
 		</execute>
 
 		<execute macro="PermissionsInline#gotoPagePG">
@@ -2265,7 +2293,7 @@
 		<for list="Blogs,Tag Cloud,Recent Bloggers" param="portletTitleName">
 			<var name="key_portletTitleName" value="${portletTitleName}" />
 
-			<execute function="AssertTextEquals" locator1="Portlet#SPECIFIC_TITLE" value1="${portletTitleName}" />
+			<execute function="AssertTextEquals#assertTextCaseInsensitive" locator1="Portlet#SPECIFIC_TITLE" value1="${portletTitleName}" />
 		</for>
 
 		<execute macro="User#logoutPG" />
@@ -2275,9 +2303,9 @@
 			<var name="userEmailAddress" value="userea2@liferay.com" />
 		</execute>
 
-		<var name="key_pageName" value="USA Ice Hockey Team Blog" />
-
-		<execute function="AssertTextNotPresent" locator1="Home#PAGE" value1="USA Ice Hockey Team Blog" />
+		<execute function="AssertElementNotPresent" locator1="Home#PAGE">
+			<var name="key_pageName" value="USA Ice Hockey Team Blog" />
+		</execute>
 
 		<execute macro="User#logoutPG" />
 
@@ -2288,15 +2316,19 @@
 	</command>
 
 	<command name="ViewAutomaticAssignedRoles" priority="4">
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Roles" />
 		</execute>
 
-		<execute macro="Role#addCP">
+		<execute macro="Role#add">
 			<var name="roleTitle" value="Roles Regrole Name" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Roles" />
 		</execute>
 
@@ -2311,7 +2343,9 @@
 			<var name="permissionNavigationValue" value="Portal" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Roles" />
 		</execute>
 
@@ -2328,7 +2362,9 @@
 	</command>
 
 	<command name="ViewDocumentsAndMediaAddRepositoryPermissionSiteMemberRole" priority="4">
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Roles" />
 		</execute>
 
@@ -2341,7 +2377,9 @@
 
 		<execute function="AssertTextNotPresent" value1="action.ADD_REPOSITORY" />
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Roles" />
 		</execute>
 
@@ -2357,11 +2395,13 @@
 		<property name="osgi.app.includes" value="currency-converter" />
 
 		<execute macro="TestCase#getSiteName">
-			<return from="siteName" name="siteName" />
+			<return name="siteName" />
 			<var name="siteName" value="${siteName}" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -2372,7 +2412,9 @@
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -2381,7 +2423,9 @@
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -2396,7 +2440,6 @@
 
 		<execute macro="PermissionsInline#gotoConfigurationPG">
 			<var name="portletName" value="Currency Converter" />
-			<var name="portletOption" value="Configuration" />
 		</execute>
 
 		<execute macro="Role#definePermissionPG">
@@ -2421,12 +2464,12 @@
 			<var name="portletOption" value="Preferences" />
 		</execute>
 
-		<var name="key_pageName" value="Welcome" />
+		<execute function="AssertElementPresent" locator1="Home#PAGE">
+			<var name="key_pageName" value="Welcome" />
+		</execute>
 
-		<execute function="AssertElementPresent" locator1="Home#PAGE" value1="Welcome" />
-
-		<execute function="AssertTextEquals#assertText" locator1="HelloWorld#PORTLET_TITLE" value1="Hello World" />
-		<execute function="AssertElementPresent" locator1="HelloWorld#PORTLET_CONTENT" value1="Welcome to Liferay Portal" />
+		<execute function="AssertTextEquals#assertTextCaseInsensitive" locator1="HelloWorld#PORTLET_TITLE" value1="Hello World" />
+		<execute function="AssertElementPresent" locator1="HelloWorld#PORTLET_CONTENT" />
 
 		<execute macro="User#logoutPG" />
 
@@ -2437,7 +2480,9 @@
 	</command>
 
 	<command name="ViewPrivatePageSiteMemberRole" priority="4">
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -2448,7 +2493,9 @@
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -2457,7 +2504,9 @@
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="User Groups" />
 		</execute>
 
@@ -2465,7 +2514,9 @@
 			<var name="userGroupName" value="UG UserGroup Name" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="User Groups" />
 		</execute>
 
@@ -2474,7 +2525,9 @@
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoSitesMembers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Members" />
+			<var name="panel" value="Site Administration" />
 			<var name="portlet" value="Site Memberships" />
 		</execute>
 
@@ -2482,9 +2535,14 @@
 			<var name="userGroupName" value="UG UserGroup Name" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
+		</execute>
+
+		<execute macro="SitePages#addPrivatePage">
 			<var name="pageName" value="Private Page" />
-			<var name="sitePagePrivacy" value="Private" />
 		</execute>
 
 		<execute macro="User#logoutPG" />
@@ -2504,55 +2562,44 @@
 	</command>
 
 	<command name="ViewRegRolePermissionsDefaultView" priority="4">
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#addCP">
+		<execute macro="JSONRole#addRegularRole">
+			<var name="roleKey" value="Roles Regrole Name" />
 			<var name="roleTitle" value="Roles Regrole Name" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="SITE_ADMIN_CONTENT_WEB_CONTENT_GENERAL_PERMISSIONS_ACCESS_IN_SITE_ADMINISTRATION_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="Access in Site Administration" />
+		<execute macro="Permissions#definePermissionViaJSONAPI">
+			<var name="resourceAction" value="ACCESS_IN_CONTROL_PANEL" />
+			<var name="resourceName" value="com_liferay_journal_web_portlet_JournalPortlet" />
 			<var name="roleTitle" value="Roles Regrole Name" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="SITE_ADMIN_CONTENT_WEB_CONTENT_GENERAL_PERMISSIONS_VIEW_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="View" />
+		<execute macro="Permissions#definePermissionViaJSONAPI">
+			<var name="resourceAction" value="VIEW" />
+			<var name="resourceName" value="com_liferay_journal_web_portlet_JournalPortlet" />
 			<var name="roleTitle" value="Roles Regrole Name" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="SITE_ADMIN_CONTENT_WEB_CONTENT_RESOURCE_PERMISSIONS_WEB_CONTENT_ADD_WEB_CONTENT_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="Add Web Content" />
+		<execute macro="Permissions#definePermissionViaJSONAPI">
+			<var name="resourceAction" value="VIEW_SITE_ADMINISTRATION" />
+			<var name="resourceName" value="com.liferay.portal.kernel.model.Group" />
 			<var name="roleTitle" value="Roles Regrole Name" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="SITE_ADMIN_CONTENT_WEB_CONTENT_RESOURCE_PERMISSIONS_WEB_CONTENT_VIEW_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="View" />
+		<execute macro="Permissions#definePermissionViaJSONAPI">
+			<var name="resourceAction" value="ADD_ARTICLE" />
+			<var name="resourceName" value="com.liferay.journal" />
 			<var name="roleTitle" value="Roles Regrole Name" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelSites">
+		<execute macro="Permissions#definePermissionViaJSONAPI">
+			<var name="resourceAction" value="VIEW" />
+			<var name="resourceName" value="com.liferay.journal" />
+			<var name="roleTitle" value="Roles Regrole Name" />
+		</execute>
+
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Sites" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Sites" />
 		</execute>
 
@@ -2560,26 +2607,23 @@
 			<var name="siteName" value="Site Name" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelSites">
-			<var name="portlet" value="Sites" />
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Build" />
+			<var name="panel" value="Site Administration" />
+			<var name="portlet" value="Pages" />
 		</execute>
 
-		<execute macro="Page#add">
+		<execute macro="SitePages#addPublicPage">
 			<var name="pageName" value="Site Page Name" />
-			<var name="siteName" value="Site Name" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelSites">
-			<var name="portlet" value="Sites" />
-		</execute>
-
-		<execute macro="Page#add">
+		<execute macro="SitePages#addPrivatePage">
 			<var name="pageName" value="Site Page Name" />
-			<var name="siteName" value="Site Name" />
-			<var name="sitePagePrivacy" value="Private" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -2590,7 +2634,9 @@
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -2599,7 +2645,9 @@
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -2608,7 +2656,9 @@
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -2617,7 +2667,9 @@
 			<var name="userScreenName" value="usersn" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Users" />
+			<var name="panel" value="Control Panel" />
 			<var name="portlet" value="Users and Organizations" />
 		</execute>
 
@@ -2632,7 +2684,9 @@
 			<var name="siteName" value="Site Name" />
 		</execute>
 
-		<execute macro="ProductMenu#gotoSitesContent">
+		<execute macro="ProductMenu#gotoPortlet">
+			<var name="category" value="Content" />
+			<var name="panel" value="Site Administration" />
 			<var name="portlet" value="Web Content" />
 		</execute>
 
@@ -2640,7 +2694,7 @@
 
 		<execute function="Pause" locator1="3000" />
 
-		<execute function="Click" locator1="Button#PLUS" />
+		<execute macro="LexiconEntry#gotoAdd" />
 
 		<execute function="Pause" locator1="3000" />
 

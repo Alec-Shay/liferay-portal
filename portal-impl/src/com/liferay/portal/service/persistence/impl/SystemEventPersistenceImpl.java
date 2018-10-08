@@ -16,10 +16,10 @@ package com.liferay.portal.service.persistence.impl;
 
 import aQute.bnd.annotation.ProviderType;
 
+import com.liferay.petra.string.StringBundler;
+
 import com.liferay.portal.kernel.bean.BeanReference;
-import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
-import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
 import com.liferay.portal.kernel.dao.orm.Query;
@@ -35,13 +35,15 @@ import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.kernel.service.persistence.SystemEventPersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.model.impl.SystemEventImpl;
 import com.liferay.portal.model.impl.SystemEventModelImpl;
 
 import java.io.Serializable;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -189,7 +191,7 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 		List<SystemEvent> list = null;
 
 		if (retrieveFromCache) {
-			list = (List<SystemEvent>)finderCache.getResult(finderPath,
+			list = (List<SystemEvent>)FinderCacheUtil.getResult(finderPath,
 					finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
@@ -255,10 +257,10 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				FinderCacheUtil.putResult(finderPath, finderArgs, list);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -296,7 +298,7 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 		msg.append("groupId=");
 		msg.append(groupId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchSystemEventException(msg.toString());
 	}
@@ -345,7 +347,7 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 		msg.append("groupId=");
 		msg.append(groupId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchSystemEventException(msg.toString());
 	}
@@ -547,7 +549,8 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 
 		Object[] finderArgs = new Object[] { groupId };
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs,
+				this);
 
 		if (count == null) {
 			StringBundler query = new StringBundler(2);
@@ -571,10 +574,10 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 
 				count = (Long)q.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -702,7 +705,7 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 		List<SystemEvent> list = null;
 
 		if (retrieveFromCache) {
-			list = (List<SystemEvent>)finderCache.getResult(finderPath,
+			list = (List<SystemEvent>)FinderCacheUtil.getResult(finderPath,
 					finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
@@ -773,10 +776,10 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				FinderCacheUtil.putResult(finderPath, finderArgs, list);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -818,7 +821,7 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 		msg.append(", systemEventSetKey=");
 		msg.append(systemEventSetKey);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchSystemEventException(msg.toString());
 	}
@@ -874,7 +877,7 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 		msg.append(", systemEventSetKey=");
 		msg.append(systemEventSetKey);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchSystemEventException(msg.toString());
 	}
@@ -1085,7 +1088,8 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 
 		Object[] finderArgs = new Object[] { groupId, systemEventSetKey };
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs,
+				this);
 
 		if (count == null) {
 			StringBundler query = new StringBundler(3);
@@ -1113,10 +1117,10 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 
 				count = (Long)q.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -1257,7 +1261,7 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 		List<SystemEvent> list = null;
 
 		if (retrieveFromCache) {
-			list = (List<SystemEvent>)finderCache.getResult(finderPath,
+			list = (List<SystemEvent>)FinderCacheUtil.getResult(finderPath,
 					finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
@@ -1333,10 +1337,10 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				FinderCacheUtil.putResult(finderPath, finderArgs, list);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -1382,7 +1386,7 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 		msg.append(", classPK=");
 		msg.append(classPK);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchSystemEventException(msg.toString());
 	}
@@ -1443,7 +1447,7 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 		msg.append(", classPK=");
 		msg.append(classPK);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchSystemEventException(msg.toString());
 	}
@@ -1662,7 +1666,8 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 
 		Object[] finderArgs = new Object[] { groupId, classNameId, classPK };
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs,
+				this);
 
 		if (count == null) {
 			StringBundler query = new StringBundler(4);
@@ -1694,10 +1699,10 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 
 				count = (Long)q.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -1849,7 +1854,7 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 		List<SystemEvent> list = null;
 
 		if (retrieveFromCache) {
-			list = (List<SystemEvent>)finderCache.getResult(finderPath,
+			list = (List<SystemEvent>)FinderCacheUtil.getResult(finderPath,
 					finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
@@ -1930,10 +1935,10 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				FinderCacheUtil.putResult(finderPath, finderArgs, list);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -1983,7 +1988,7 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 		msg.append(", type=");
 		msg.append(type);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchSystemEventException(msg.toString());
 	}
@@ -2049,7 +2054,7 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 		msg.append(", type=");
 		msg.append(type);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchSystemEventException(msg.toString());
 	}
@@ -2279,7 +2284,8 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 
 		Object[] finderArgs = new Object[] { groupId, classNameId, classPK, type };
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs,
+				this);
 
 		if (count == null) {
 			StringBundler query = new StringBundler(5);
@@ -2315,10 +2321,10 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 
 				count = (Long)q.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -2337,6 +2343,24 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 
 	public SystemEventPersistenceImpl() {
 		setModelClass(SystemEvent.class);
+
+		try {
+			Field field = BasePersistenceImpl.class.getDeclaredField(
+					"_dbColumnNames");
+
+			field.setAccessible(true);
+
+			Map<String, String> dbColumnNames = new HashMap<String, String>();
+
+			dbColumnNames.put("type", "type_");
+
+			field.set(this, dbColumnNames);
+		}
+		catch (Exception e) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(e, e);
+			}
+		}
 	}
 
 	/**
@@ -2346,7 +2370,7 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 */
 	@Override
 	public void cacheResult(SystemEvent systemEvent) {
-		entityCache.putResult(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
+		EntityCacheUtil.putResult(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
 			SystemEventImpl.class, systemEvent.getPrimaryKey(), systemEvent);
 
 		systemEvent.resetOriginalValues();
@@ -2360,7 +2384,7 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	@Override
 	public void cacheResult(List<SystemEvent> systemEvents) {
 		for (SystemEvent systemEvent : systemEvents) {
-			if (entityCache.getResult(
+			if (EntityCacheUtil.getResult(
 						SystemEventModelImpl.ENTITY_CACHE_ENABLED,
 						SystemEventImpl.class, systemEvent.getPrimaryKey()) == null) {
 				cacheResult(systemEvent);
@@ -2375,41 +2399,41 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 * Clears the cache for all system events.
 	 *
 	 * <p>
-	 * The {@link EntityCache} and {@link FinderCache} are both cleared by this method.
+	 * The {@link com.liferay.portal.kernel.dao.orm.EntityCache} and {@link com.liferay.portal.kernel.dao.orm.FinderCache} are both cleared by this method.
 	 * </p>
 	 */
 	@Override
 	public void clearCache() {
-		entityCache.clearCache(SystemEventImpl.class);
+		EntityCacheUtil.clearCache(SystemEventImpl.class);
 
-		finderCache.clearCache(FINDER_CLASS_NAME_ENTITY);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_ENTITY);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 	}
 
 	/**
 	 * Clears the cache for the system event.
 	 *
 	 * <p>
-	 * The {@link EntityCache} and {@link FinderCache} are both cleared by this method.
+	 * The {@link com.liferay.portal.kernel.dao.orm.EntityCache} and {@link com.liferay.portal.kernel.dao.orm.FinderCache} are both cleared by this method.
 	 * </p>
 	 */
 	@Override
 	public void clearCache(SystemEvent systemEvent) {
-		entityCache.removeResult(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
+		EntityCacheUtil.removeResult(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
 			SystemEventImpl.class, systemEvent.getPrimaryKey());
 
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 	}
 
 	@Override
 	public void clearCache(List<SystemEvent> systemEvents) {
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 
 		for (SystemEvent systemEvent : systemEvents) {
-			entityCache.removeResult(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
+			EntityCacheUtil.removeResult(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
 				SystemEventImpl.class, systemEvent.getPrimaryKey());
 		}
 	}
@@ -2487,8 +2511,6 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 
 	@Override
 	protected SystemEvent removeImpl(SystemEvent systemEvent) {
-		systemEvent = toUnwrappedModel(systemEvent);
-
 		Session session = null;
 
 		try {
@@ -2519,9 +2541,23 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 
 	@Override
 	public SystemEvent updateImpl(SystemEvent systemEvent) {
-		systemEvent = toUnwrappedModel(systemEvent);
-
 		boolean isNew = systemEvent.isNew();
+
+		if (!(systemEvent instanceof SystemEventModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(systemEvent.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(systemEvent);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in systemEvent proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom SystemEvent implementation " +
+				systemEvent.getClass());
+		}
 
 		SystemEventModelImpl systemEventModelImpl = (SystemEventModelImpl)systemEvent;
 
@@ -2546,10 +2582,53 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 			closeSession(session);
 		}
 
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 
-		if (isNew || !SystemEventModelImpl.COLUMN_BITMASK_ENABLED) {
-			finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		if (!SystemEventModelImpl.COLUMN_BITMASK_ENABLED) {
+			FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		}
+		else
+		 if (isNew) {
+			Object[] args = new Object[] { systemEventModelImpl.getGroupId() };
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_GROUPID, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_GROUPID,
+				args);
+
+			args = new Object[] {
+					systemEventModelImpl.getGroupId(),
+					systemEventModelImpl.getSystemEventSetKey()
+				};
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_G_S, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_S,
+				args);
+
+			args = new Object[] {
+					systemEventModelImpl.getGroupId(),
+					systemEventModelImpl.getClassNameId(),
+					systemEventModelImpl.getClassPK()
+				};
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_G_C_C, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_C,
+				args);
+
+			args = new Object[] {
+					systemEventModelImpl.getGroupId(),
+					systemEventModelImpl.getClassNameId(),
+					systemEventModelImpl.getClassPK(),
+					systemEventModelImpl.getType()
+				};
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_G_C_C_T, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_C_T,
+				args);
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_ALL,
+				FINDER_ARGS_EMPTY);
+			FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_ALL,
+				FINDER_ARGS_EMPTY);
 		}
 
 		else {
@@ -2559,14 +2638,14 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 						systemEventModelImpl.getOriginalGroupId()
 					};
 
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_GROUPID, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_GROUPID,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_GROUPID, args);
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_GROUPID,
 					args);
 
 				args = new Object[] { systemEventModelImpl.getGroupId() };
 
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_GROUPID, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_GROUPID,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_GROUPID, args);
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_GROUPID,
 					args);
 			}
 
@@ -2577,8 +2656,8 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 						systemEventModelImpl.getOriginalSystemEventSetKey()
 					};
 
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_G_S, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_S,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_G_S, args);
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_S,
 					args);
 
 				args = new Object[] {
@@ -2586,8 +2665,8 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 						systemEventModelImpl.getSystemEventSetKey()
 					};
 
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_G_S, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_S,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_G_S, args);
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_S,
 					args);
 			}
 
@@ -2599,8 +2678,8 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 						systemEventModelImpl.getOriginalClassPK()
 					};
 
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_G_C_C, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_C,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_G_C_C, args);
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_C,
 					args);
 
 				args = new Object[] {
@@ -2609,8 +2688,8 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 						systemEventModelImpl.getClassPK()
 					};
 
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_G_C_C, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_C,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_G_C_C, args);
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_C,
 					args);
 			}
 
@@ -2623,8 +2702,8 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 						systemEventModelImpl.getOriginalType()
 					};
 
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_G_C_C_T, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_C_T,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_G_C_C_T, args);
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_C_T,
 					args);
 
 				args = new Object[] {
@@ -2634,48 +2713,19 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 						systemEventModelImpl.getType()
 					};
 
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_G_C_C_T, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_C_T,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_G_C_C_T, args);
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_C_T,
 					args);
 			}
 		}
 
-		entityCache.putResult(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
+		EntityCacheUtil.putResult(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
 			SystemEventImpl.class, systemEvent.getPrimaryKey(), systemEvent,
 			false);
 
 		systemEvent.resetOriginalValues();
 
 		return systemEvent;
-	}
-
-	protected SystemEvent toUnwrappedModel(SystemEvent systemEvent) {
-		if (systemEvent instanceof SystemEventImpl) {
-			return systemEvent;
-		}
-
-		SystemEventImpl systemEventImpl = new SystemEventImpl();
-
-		systemEventImpl.setNew(systemEvent.isNew());
-		systemEventImpl.setPrimaryKey(systemEvent.getPrimaryKey());
-
-		systemEventImpl.setMvccVersion(systemEvent.getMvccVersion());
-		systemEventImpl.setSystemEventId(systemEvent.getSystemEventId());
-		systemEventImpl.setGroupId(systemEvent.getGroupId());
-		systemEventImpl.setCompanyId(systemEvent.getCompanyId());
-		systemEventImpl.setUserId(systemEvent.getUserId());
-		systemEventImpl.setUserName(systemEvent.getUserName());
-		systemEventImpl.setCreateDate(systemEvent.getCreateDate());
-		systemEventImpl.setClassNameId(systemEvent.getClassNameId());
-		systemEventImpl.setClassPK(systemEvent.getClassPK());
-		systemEventImpl.setClassUuid(systemEvent.getClassUuid());
-		systemEventImpl.setReferrerClassNameId(systemEvent.getReferrerClassNameId());
-		systemEventImpl.setParentSystemEventId(systemEvent.getParentSystemEventId());
-		systemEventImpl.setSystemEventSetKey(systemEvent.getSystemEventSetKey());
-		systemEventImpl.setType(systemEvent.getType());
-		systemEventImpl.setExtraData(systemEvent.getExtraData());
-
-		return systemEventImpl;
 	}
 
 	/**
@@ -2723,7 +2773,7 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 */
 	@Override
 	public SystemEvent fetchByPrimaryKey(Serializable primaryKey) {
-		Serializable serializable = entityCache.getResult(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
+		Serializable serializable = EntityCacheUtil.getResult(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
 				SystemEventImpl.class, primaryKey);
 
 		if (serializable == nullModel) {
@@ -2745,12 +2795,12 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 					cacheResult(systemEvent);
 				}
 				else {
-					entityCache.putResult(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
+					EntityCacheUtil.putResult(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
 						SystemEventImpl.class, primaryKey, nullModel);
 				}
 			}
 			catch (Exception e) {
-				entityCache.removeResult(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
+				EntityCacheUtil.removeResult(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
 					SystemEventImpl.class, primaryKey);
 
 				throw processException(e);
@@ -2800,7 +2850,7 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 		Set<Serializable> uncachedPrimaryKeys = null;
 
 		for (Serializable primaryKey : primaryKeys) {
-			Serializable serializable = entityCache.getResult(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
+			Serializable serializable = EntityCacheUtil.getResult(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
 					SystemEventImpl.class, primaryKey);
 
 			if (serializable != nullModel) {
@@ -2827,14 +2877,14 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 		query.append(_SQL_SELECT_SYSTEMEVENT_WHERE_PKS_IN);
 
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
-			query.append(String.valueOf(primaryKey));
+			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 
@@ -2854,7 +2904,7 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 			}
 
 			for (Serializable primaryKey : uncachedPrimaryKeys) {
-				entityCache.putResult(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
+				EntityCacheUtil.putResult(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
 					SystemEventImpl.class, primaryKey, nullModel);
 			}
 		}
@@ -2947,7 +2997,7 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 		List<SystemEvent> list = null;
 
 		if (retrieveFromCache) {
-			list = (List<SystemEvent>)finderCache.getResult(finderPath,
+			list = (List<SystemEvent>)FinderCacheUtil.getResult(finderPath,
 					finderArgs, this);
 		}
 
@@ -2996,10 +3046,10 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				FinderCacheUtil.putResult(finderPath, finderArgs, list);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -3029,7 +3079,7 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 */
 	@Override
 	public int countAll() {
-		Long count = (Long)finderCache.getResult(FINDER_PATH_COUNT_ALL,
+		Long count = (Long)FinderCacheUtil.getResult(FINDER_PATH_COUNT_ALL,
 				FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
@@ -3042,11 +3092,11 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 
 				count = (Long)q.uniqueResult();
 
-				finderCache.putResult(FINDER_PATH_COUNT_ALL, FINDER_ARGS_EMPTY,
-					count);
+				FinderCacheUtil.putResult(FINDER_PATH_COUNT_ALL,
+					FINDER_ARGS_EMPTY, count);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(FINDER_PATH_COUNT_ALL,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_ALL,
 					FINDER_ARGS_EMPTY);
 
 				throw processException(e);
@@ -3076,16 +3126,14 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	}
 
 	public void destroy() {
-		entityCache.removeCache(SystemEventImpl.class.getName());
-		finderCache.removeCache(FINDER_CLASS_NAME_ENTITY);
-		finderCache.removeCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.removeCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		EntityCacheUtil.removeCache(SystemEventImpl.class.getName());
+		FinderCacheUtil.removeCache(FINDER_CLASS_NAME_ENTITY);
+		FinderCacheUtil.removeCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.removeCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 	}
 
 	@BeanReference(type = CompanyProviderWrapper.class)
 	protected CompanyProvider companyProvider;
-	protected EntityCache entityCache = EntityCacheUtil.getEntityCache();
-	protected FinderCache finderCache = FinderCacheUtil.getFinderCache();
 	private static final String _SQL_SELECT_SYSTEMEVENT = "SELECT systemEvent FROM SystemEvent systemEvent";
 	private static final String _SQL_SELECT_SYSTEMEVENT_WHERE_PKS_IN = "SELECT systemEvent FROM SystemEvent systemEvent WHERE systemEventId IN (";
 	private static final String _SQL_SELECT_SYSTEMEVENT_WHERE = "SELECT systemEvent FROM SystemEvent systemEvent WHERE ";

@@ -55,12 +55,11 @@ import com.liferay.portal.kernel.util.MethodKey;
 @ProviderType
 public class PasswordPolicyServiceHttp {
 	public static com.liferay.portal.kernel.model.PasswordPolicy addPasswordPolicy(
-		HttpPrincipal httpPrincipal, java.lang.String name,
-		java.lang.String description, boolean changeable,
-		boolean changeRequired, long minAge, boolean checkSyntax,
-		boolean allowDictionaryWords, int minAlphanumeric, int minLength,
-		int minLowerCase, int minNumbers, int minSymbols, int minUpperCase,
-		java.lang.String regex, boolean history, int historyCount,
+		HttpPrincipal httpPrincipal, String name, String description,
+		boolean changeable, boolean changeRequired, long minAge,
+		boolean checkSyntax, boolean allowDictionaryWords, int minAlphanumeric,
+		int minLength, int minLowerCase, int minNumbers, int minSymbols,
+		int minUpperCase, String regex, boolean history, int historyCount,
 		boolean expireable, long maxAge, long warningTime, int graceLimit,
 		boolean lockout, int maxFailure, long lockoutDuration,
 		long resetFailureCount, long resetTicketMaxAge,
@@ -161,13 +160,68 @@ public class PasswordPolicyServiceHttp {
 		}
 	}
 
+	public static java.util.List<com.liferay.portal.kernel.model.PasswordPolicy> search(
+		HttpPrincipal httpPrincipal, long companyId, String name, int start,
+		int end,
+		com.liferay.portal.kernel.util.OrderByComparator<com.liferay.portal.kernel.model.PasswordPolicy> obc) {
+		try {
+			MethodKey methodKey = new MethodKey(PasswordPolicyServiceUtil.class,
+					"search", _searchParameterTypes3);
+
+			MethodHandler methodHandler = new MethodHandler(methodKey,
+					companyId, name, start, end, obc);
+
+			Object returnObj = null;
+
+			try {
+				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
+			}
+			catch (Exception e) {
+				throw new com.liferay.portal.kernel.exception.SystemException(e);
+			}
+
+			return (java.util.List<com.liferay.portal.kernel.model.PasswordPolicy>)returnObj;
+		}
+		catch (com.liferay.portal.kernel.exception.SystemException se) {
+			_log.error(se, se);
+
+			throw se;
+		}
+	}
+
+	public static int searchCount(HttpPrincipal httpPrincipal, long companyId,
+		String name) {
+		try {
+			MethodKey methodKey = new MethodKey(PasswordPolicyServiceUtil.class,
+					"searchCount", _searchCountParameterTypes4);
+
+			MethodHandler methodHandler = new MethodHandler(methodKey,
+					companyId, name);
+
+			Object returnObj = null;
+
+			try {
+				returnObj = TunnelUtil.invoke(httpPrincipal, methodHandler);
+			}
+			catch (Exception e) {
+				throw new com.liferay.portal.kernel.exception.SystemException(e);
+			}
+
+			return ((Integer)returnObj).intValue();
+		}
+		catch (com.liferay.portal.kernel.exception.SystemException se) {
+			_log.error(se, se);
+
+			throw se;
+		}
+	}
+
 	public static com.liferay.portal.kernel.model.PasswordPolicy updatePasswordPolicy(
-		HttpPrincipal httpPrincipal, long passwordPolicyId,
-		java.lang.String name, java.lang.String description,
-		boolean changeable, boolean changeRequired, long minAge,
-		boolean checkSyntax, boolean allowDictionaryWords, int minAlphanumeric,
-		int minLength, int minLowerCase, int minNumbers, int minSymbols,
-		int minUpperCase, java.lang.String regex, boolean history,
+		HttpPrincipal httpPrincipal, long passwordPolicyId, String name,
+		String description, boolean changeable, boolean changeRequired,
+		long minAge, boolean checkSyntax, boolean allowDictionaryWords,
+		int minAlphanumeric, int minLength, int minLowerCase, int minNumbers,
+		int minSymbols, int minUpperCase, String regex, boolean history,
 		int historyCount, boolean expireable, long maxAge, long warningTime,
 		int graceLimit, boolean lockout, int maxFailure, long lockoutDuration,
 		long resetFailureCount, long resetTicketMaxAge,
@@ -175,7 +229,7 @@ public class PasswordPolicyServiceHttp {
 		throws com.liferay.portal.kernel.exception.PortalException {
 		try {
 			MethodKey methodKey = new MethodKey(PasswordPolicyServiceUtil.class,
-					"updatePasswordPolicy", _updatePasswordPolicyParameterTypes3);
+					"updatePasswordPolicy", _updatePasswordPolicyParameterTypes5);
 
 			MethodHandler methodHandler = new MethodHandler(methodKey,
 					passwordPolicyId, name, description, changeable,
@@ -210,12 +264,11 @@ public class PasswordPolicyServiceHttp {
 
 	private static Log _log = LogFactoryUtil.getLog(PasswordPolicyServiceHttp.class);
 	private static final Class<?>[] _addPasswordPolicyParameterTypes0 = new Class[] {
-			java.lang.String.class, java.lang.String.class, boolean.class,
-			boolean.class, long.class, boolean.class, boolean.class, int.class,
-			int.class, int.class, int.class, int.class, int.class,
-			java.lang.String.class, boolean.class, int.class, boolean.class,
-			long.class, long.class, int.class, boolean.class, int.class,
-			long.class, long.class, long.class,
+			String.class, String.class, boolean.class, boolean.class, long.class,
+			boolean.class, boolean.class, int.class, int.class, int.class,
+			int.class, int.class, int.class, String.class, boolean.class,
+			int.class, boolean.class, long.class, long.class, int.class,
+			boolean.class, int.class, long.class, long.class, long.class,
 			com.liferay.portal.kernel.service.ServiceContext.class
 		};
 	private static final Class<?>[] _deletePasswordPolicyParameterTypes1 = new Class[] {
@@ -224,13 +277,19 @@ public class PasswordPolicyServiceHttp {
 	private static final Class<?>[] _fetchPasswordPolicyParameterTypes2 = new Class[] {
 			long.class
 		};
-	private static final Class<?>[] _updatePasswordPolicyParameterTypes3 = new Class[] {
-			long.class, java.lang.String.class, java.lang.String.class,
-			boolean.class, boolean.class, long.class, boolean.class,
-			boolean.class, int.class, int.class, int.class, int.class, int.class,
-			int.class, java.lang.String.class, boolean.class, int.class,
-			boolean.class, long.class, long.class, int.class, boolean.class,
-			int.class, long.class, long.class, long.class,
-			com.liferay.portal.kernel.service.ServiceContext.class
+	private static final Class<?>[] _searchParameterTypes3 = new Class[] {
+			long.class, String.class, int.class, int.class,
+			com.liferay.portal.kernel.util.OrderByComparator.class
+		};
+	private static final Class<?>[] _searchCountParameterTypes4 = new Class[] {
+			long.class, String.class
+		};
+	private static final Class<?>[] _updatePasswordPolicyParameterTypes5 = new Class[] {
+			long.class, String.class, String.class, boolean.class, boolean.class,
+			long.class, boolean.class, boolean.class, int.class, int.class,
+			int.class, int.class, int.class, int.class, String.class,
+			boolean.class, int.class, boolean.class, long.class, long.class,
+			int.class, boolean.class, int.class, long.class, long.class,
+			long.class, com.liferay.portal.kernel.service.ServiceContext.class
 		};
 }

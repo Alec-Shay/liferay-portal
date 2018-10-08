@@ -41,6 +41,10 @@ public abstract class BaseFieldWrapperTag extends com.liferay.taglib.util.Includ
 		return _data;
 	}
 
+	public boolean getDisabled() {
+		return _disabled;
+	}
+
 	public boolean getFirst() {
 		return _first;
 	}
@@ -79,68 +83,50 @@ public abstract class BaseFieldWrapperTag extends com.liferay.taglib.util.Includ
 
 	public void setCssClass(java.lang.String cssClass) {
 		_cssClass = cssClass;
-
-		setScopedAttribute("cssClass", cssClass);
 	}
 
 	public void setData(java.lang.Object data) {
 		_data = data;
+	}
 
-		setScopedAttribute("data", data);
+	public void setDisabled(boolean disabled) {
+		_disabled = disabled;
 	}
 
 	public void setFirst(boolean first) {
 		_first = first;
-
-		setScopedAttribute("first", first);
 	}
 
 	public void setHelpMessage(java.lang.String helpMessage) {
 		_helpMessage = helpMessage;
-
-		setScopedAttribute("helpMessage", helpMessage);
 	}
 
 	public void setInlineField(boolean inlineField) {
 		_inlineField = inlineField;
-
-		setScopedAttribute("inlineField", inlineField);
 	}
 
 	public void setInlineLabel(java.lang.String inlineLabel) {
 		_inlineLabel = inlineLabel;
-
-		setScopedAttribute("inlineLabel", inlineLabel);
 	}
 
 	public void setLabel(java.lang.String label) {
 		_label = label;
-
-		setScopedAttribute("label", label);
 	}
 
 	public void setLast(boolean last) {
 		_last = last;
-
-		setScopedAttribute("last", last);
 	}
 
 	public void setLocalizeLabel(boolean localizeLabel) {
 		_localizeLabel = localizeLabel;
-
-		setScopedAttribute("localizeLabel", localizeLabel);
 	}
 
 	public void setName(java.lang.String name) {
 		_name = name;
-
-		setScopedAttribute("name", name);
 	}
 
 	public void setRequired(boolean required) {
 		_required = required;
-
-		setScopedAttribute("required", required);
 	}
 
 	@Override
@@ -149,6 +135,7 @@ public abstract class BaseFieldWrapperTag extends com.liferay.taglib.util.Includ
 
 		_cssClass = null;
 		_data = null;
+		_disabled = false;
 		_first = false;
 		_helpMessage = null;
 		_inlineField = false;
@@ -172,17 +159,18 @@ public abstract class BaseFieldWrapperTag extends com.liferay.taglib.util.Includ
 
 	@Override
 	protected void setAttributes(HttpServletRequest request) {
-		setNamespacedAttribute(request, "cssClass", _cssClass);
-		setNamespacedAttribute(request, "data", _data);
-		setNamespacedAttribute(request, "first", _first);
-		setNamespacedAttribute(request, "helpMessage", _helpMessage);
-		setNamespacedAttribute(request, "inlineField", _inlineField);
-		setNamespacedAttribute(request, "inlineLabel", _inlineLabel);
-		setNamespacedAttribute(request, "label", _label);
-		setNamespacedAttribute(request, "last", _last);
-		setNamespacedAttribute(request, "localizeLabel", _localizeLabel);
-		setNamespacedAttribute(request, "name", _name);
-		setNamespacedAttribute(request, "required", _required);
+		request.setAttribute("aui:field-wrapper:cssClass", _cssClass);
+		request.setAttribute("aui:field-wrapper:data", _data);
+		request.setAttribute("aui:field-wrapper:disabled", String.valueOf(_disabled));
+		request.setAttribute("aui:field-wrapper:first", String.valueOf(_first));
+		request.setAttribute("aui:field-wrapper:helpMessage", _helpMessage);
+		request.setAttribute("aui:field-wrapper:inlineField", String.valueOf(_inlineField));
+		request.setAttribute("aui:field-wrapper:inlineLabel", _inlineLabel);
+		request.setAttribute("aui:field-wrapper:label", _label);
+		request.setAttribute("aui:field-wrapper:last", String.valueOf(_last));
+		request.setAttribute("aui:field-wrapper:localizeLabel", String.valueOf(_localizeLabel));
+		request.setAttribute("aui:field-wrapper:name", _name);
+		request.setAttribute("aui:field-wrapper:required", String.valueOf(_required));
 	}
 
 	protected static final String _ATTRIBUTE_NAMESPACE = "aui:field-wrapper:";
@@ -195,6 +183,7 @@ public abstract class BaseFieldWrapperTag extends com.liferay.taglib.util.Includ
 
 	private java.lang.String _cssClass = null;
 	private java.lang.Object _data = null;
+	private boolean _disabled = false;
 	private boolean _first = false;
 	private java.lang.String _helpMessage = null;
 	private boolean _inlineField = false;

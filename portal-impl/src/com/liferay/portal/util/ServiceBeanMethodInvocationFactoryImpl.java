@@ -15,7 +15,6 @@
 package com.liferay.portal.util;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.security.pacl.DoPrivileged;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ServiceBeanMethodInvocationFactory;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -23,7 +22,7 @@ import com.liferay.portal.spring.aop.ServiceBeanMethodInvocation;
 
 import java.lang.reflect.Method;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +33,6 @@ import org.aopalliance.intercept.MethodInterceptor;
  * @author Brian Wing Shun Chan
  * @author Wesley Gong
  */
-@DoPrivileged
 public class ServiceBeanMethodInvocationFactoryImpl
 	implements ServiceBeanMethodInvocationFactory {
 
@@ -49,10 +47,10 @@ public class ServiceBeanMethodInvocationFactoryImpl
 				"Method interceptor bean IDs array is empty");
 		}
 
-		ServiceBeanMethodInvocation serviceBeanMethodInvocation = create(
-			target, targetClass, method, arguments);
+		ServiceBeanMethodInvocation serviceBeanMethodInvocation =
+			new ServiceBeanMethodInvocation(target, method, arguments);
 
-		List<MethodInterceptor> methodInterceptors = getMethodInterceptors(
+		MethodInterceptor[] methodInterceptors = _getMethodInterceptors(
 			methodInterceptorBeanIds);
 
 		serviceBeanMethodInvocation.setMethodInterceptors(methodInterceptors);
@@ -69,35 +67,51 @@ public class ServiceBeanMethodInvocationFactoryImpl
 		}
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	protected ServiceBeanMethodInvocation create(
 		Object target, Class<?> targetClass, Method method,
 		Object[] arguments) {
 
-		return new ServiceBeanMethodInvocation(
-			target, targetClass, method, arguments);
+		return new ServiceBeanMethodInvocation(target, method, arguments);
 	}
 
+	/**
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
+	 */
+	@Deprecated
 	protected List<MethodInterceptor> getMethodInterceptors(
+		String... methodInterceptorBeanIds) {
+
+		return Arrays.asList(_getMethodInterceptors(methodInterceptorBeanIds));
+	}
+
+	private MethodInterceptor[] _getMethodInterceptors(
 		String... methodInterceptorBeanIds) {
 
 		String methodInterceptorsKey = StringUtil.merge(
 			methodInterceptorBeanIds);
 
-		List<MethodInterceptor> methodInterceptors = _methodInterceptors.get(
+		MethodInterceptor[] methodInterceptors = _methodInterceptors.get(
 			methodInterceptorsKey);
 
 		if (methodInterceptors != null) {
 			return methodInterceptors;
 		}
 
-		methodInterceptors = new ArrayList<>();
+		methodInterceptors = new MethodInterceptor[
+			methodInterceptorBeanIds.length];
 
-		for (String methodInterceptorBeanId : methodInterceptorBeanIds) {
+		for (int i = 0; i < methodInterceptorBeanIds.length; i++) {
+			String methodInterceptorBeanId = methodInterceptorBeanIds[i];
+
 			MethodInterceptor methodInterceptor =
 				(MethodInterceptor)PortalBeanLocatorUtil.locate(
 					methodInterceptorBeanId);
 
-			methodInterceptors.add(methodInterceptor);
+			methodInterceptors[i] = methodInterceptor;
 		}
 
 		_methodInterceptors.put(methodInterceptorsKey, methodInterceptors);
@@ -105,7 +119,7 @@ public class ServiceBeanMethodInvocationFactoryImpl
 		return methodInterceptors;
 	}
 
-	private final Map<String, List<MethodInterceptor>> _methodInterceptors =
+	private final Map<String, MethodInterceptor[]> _methodInterceptors =
 		new HashMap<>();
 
 }

@@ -299,67 +299,6 @@
 		<dynamic-attributes>true</dynamic-attributes>
 	</tag>
 	<tag>
-		<description><![CDATA[Deprecated as of 7.0.0, with no direct replacement.]]></description>
-		<name>component</name>
-		<tag-class>com.liferay.taglib.aui.ComponentTag</tag-class>
-		<body-content>JSP</body-content>
-		<attribute>
-			<name>defineVar</name>
-			<required>false</required>
-			<rtexprvalue>true</rtexprvalue>
-			<type>boolean</type>
-		</attribute>
-		<attribute>
-			<name>excludeAttributes</name>
-			<required>false</required>
-			<rtexprvalue>true</rtexprvalue>
-		</attribute>
-		<attribute>
-			<name>javaScriptAttributes</name>
-			<required>false</required>
-			<rtexprvalue>true</rtexprvalue>
-		</attribute>
-		<attribute>
-			<name>module</name>
-			<required>false</required>
-			<rtexprvalue>true</rtexprvalue>
-		</attribute>
-		<attribute>
-			<name>name</name>
-			<required>false</required>
-			<rtexprvalue>true</rtexprvalue>
-		</attribute>
-		<attribute>
-			<name>options</name>
-			<required>false</required>
-			<rtexprvalue>true</rtexprvalue>
-			<type>java.util.Map</type>
-		</attribute>
-		<attribute>
-			<name>scriptPosition</name>
-			<required>false</required>
-			<rtexprvalue>true</rtexprvalue>
-		</attribute>
-		<attribute>
-			<name>tagPageContext</name>
-			<required>true</required>
-			<rtexprvalue>true</rtexprvalue>
-			<type>javax.servlet.jsp.JspContext</type>
-		</attribute>
-		<attribute>
-			<name>useJavaScript</name>
-			<required>false</required>
-			<rtexprvalue>true</rtexprvalue>
-			<type>java.io.Serializable</type>
-		</attribute>
-		<attribute>
-			<name>var</name>
-			<required>false</required>
-			<rtexprvalue>true</rtexprvalue>
-		</attribute>
-		<dynamic-attributes>true</dynamic-attributes>
-	</tag>
-	<tag>
 		<description><![CDATA[Creates a container <code>&lt;div&gt;</code> tag to wrap <code>&lt;aui:row&gt;</code> components and offer additional styling.]]></description>
 		<name>container</name>
 		<tag-class>com.liferay.taglib.aui.ContainerTag</tag-class>
@@ -402,6 +341,13 @@
 			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
 			<type>java.lang.Object</type>
+		</attribute>
+		<attribute>
+			<description><![CDATA[Whether the component is disabled. The default value is <code>false</code>.]]></description>
+			<name>disabled</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>boolean</type>
 		</attribute>
 		<attribute>
 			<description><![CDATA[Whether the wrapper should be the first element of the form. The default value is <code>false</code>.]]></description>
@@ -595,6 +541,13 @@
 		<attribute>
 			<description><![CDATA[Whether to use the default portlet namespace, to avoid name conflicts. The default value is <code>true</code>.]]></description>
 			<name>useNamespace</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>boolean</type>
+		</attribute>
+		<attribute>
+			<description><![CDATA[Whether to validate fields when they lose focus. The default value is <code>true</code>.]]></description>
+			<name>validateOnBlur</name>
 			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
 			<type>boolean</type>
@@ -868,7 +821,7 @@
 			<type>boolean</type>
 		</attribute>
 		<attribute>
-			<description><![CDATA[A name for the component.]]></description>
+			<description><![CDATA[A name for the component. If the name contains <code>--</code>, the generated name will be the substring following the <code>--</code>, excluding the last two characters and any prefixes. For example, the pattern <code>prefix--customName--</code> would result in the name <code>customName</code>. If the <code>id</code> is not provided and the <code>type</code> is given, the name is used as the <code>id</code>.]]></description>
 			<name>name</name>
 			<required>true</required>
 			<rtexprvalue>true</rtexprvalue>
@@ -1321,40 +1274,6 @@
 		<dynamic-attributes>true</dynamic-attributes>
 	</tag>
 	<tag>
-		<description><![CDATA[Deprecated as of 7.0.0, with no direct replacement.]]></description>
-		<name>panel</name>
-		<tag-class>com.liferay.taglib.aui.PanelTag</tag-class>
-		<body-content>JSP</body-content>
-		<attribute>
-			<name>collapsed</name>
-			<required>false</required>
-			<rtexprvalue>true</rtexprvalue>
-			<type>boolean</type>
-		</attribute>
-		<attribute>
-			<name>collapsible</name>
-			<required>false</required>
-			<rtexprvalue>true</rtexprvalue>
-			<type>boolean</type>
-		</attribute>
-		<attribute>
-			<name>id</name>
-			<required>false</required>
-			<rtexprvalue>true</rtexprvalue>
-		</attribute>
-		<attribute>
-			<name>label</name>
-			<required>false</required>
-			<rtexprvalue>true</rtexprvalue>
-		</attribute>
-		<attribute>
-			<name>localizeLabel</name>
-			<required>false</required>
-			<rtexprvalue>true</rtexprvalue>
-			<type>boolean</type>
-		</attribute>
-	</tag>
-	<tag>
 		<description><![CDATA[Creates a row to hold <code>&lt;aui:col&gt;</code> components.]]></description>
 		<name>row</name>
 		<tag-class>com.liferay.taglib.aui.RowTag</tag-class>
@@ -1608,12 +1527,6 @@
 		<dynamic-attributes>true</dynamic-attributes>
 	</tag>
 	<tag>
-		<description><![CDATA[Deprecated as of 7.0.0, with no direct replacement. Creates a spacer component that enables JSP 2.1 server-side trimming of white spaces.]]></description>
-		<name>spacer</name>
-		<tag-class>com.liferay.taglib.aui.SpacerTag</tag-class>
-		<body-content>JSP</body-content>
-	</tag>
-	<tag>
 		<description><![CDATA[Creates a UI component for managing translation of associated content.]]></description>
 		<name>translation-manager</name>
 		<tag-class>com.liferay.taglib.aui.TranslationManagerTag</tag-class>
@@ -1719,6 +1632,7 @@
 			<type>java.lang.Class</type>
 		</attribute>
 		<attribute>
+			<description><![CDATA[Whether to show the workflow status help message. The default value is <code>true</code>.]]></description>
 			<name>showHelpMessage</name>
 			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>

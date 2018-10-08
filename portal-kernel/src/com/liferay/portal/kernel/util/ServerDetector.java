@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 
@@ -48,7 +49,7 @@ public class ServerDetector {
 	public static final String WILDFLY_ID = "wildfly";
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	public static ServerDetector getInstance() {
@@ -60,7 +61,7 @@ public class ServerDetector {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	public static void init(String serverId) {
@@ -132,12 +133,30 @@ public class ServerDetector {
 		return false;
 	}
 
+	public static boolean isSupported(String serverType) {
+		if (serverType.equals(ServerDetector.GLASSFISH_ID) ||
+			serverType.equals(ServerDetector.JBOSS_ID) ||
+			serverType.equals(ServerDetector.JONAS_ID) ||
+			serverType.equals(ServerDetector.JETTY_ID) ||
+			serverType.equals(ServerDetector.OC4J_ID) ||
+			serverType.equals(ServerDetector.RESIN_ID) ||
+			serverType.equals(ServerDetector.TOMCAT_ID) ||
+			serverType.equals(ServerDetector.WEBLOGIC_ID) ||
+			serverType.equals(ServerDetector.WEBSPHERE_ID) ||
+			serverType.equals(ServerDetector.WILDFLY_ID)) {
+
+			return true;
+		}
+
+		return false;
+	}
+
 	public static boolean isSupportsComet() {
 		return _SUPPORTS_COMET;
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	public static boolean isSupportsHotDeploy() {
@@ -177,7 +196,7 @@ public class ServerDetector {
 	}
 
 	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
+	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
 	@Deprecated
 	public static void setSupportsHotDeploy(boolean supportsHotDeploy) {
@@ -195,9 +214,8 @@ public class ServerDetector {
 			if (ServerDetector.class.getResource(className) != null) {
 				return true;
 			}
-			else {
-				return false;
-			}
+
+			return false;
 		}
 	}
 
@@ -258,9 +276,8 @@ public class ServerDetector {
 		if (value != null) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	private static final boolean _SUPPORTS_COMET = false;
@@ -284,7 +301,7 @@ public class ServerDetector {
 	private enum ServerType {
 
 		GLASSFISH, JBOSS, JETTY, JONAS, OC4J, RESIN, TOMCAT, UNKNOWN, WEBLOGIC,
-		WEBSPHERE, WILDFLY;
+		WEBSPHERE, WILDFLY
 
 	}
 

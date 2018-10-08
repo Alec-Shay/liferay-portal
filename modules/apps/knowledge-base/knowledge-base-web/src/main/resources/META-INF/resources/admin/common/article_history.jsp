@@ -42,12 +42,18 @@
 						</div>
 
 						<div class="h6 sidebar-caption">
-							<liferay-ui:message arguments="<%= new Object[] {curKBArticle.getUserName(), dateFormatDateTime.format(curKBArticle.getModifiedDate())} %>" key="by-x-on-x" />
+							<liferay-ui:message arguments="<%= new Object[] {HtmlUtil.escape(curKBArticle.getUserName()), dateFormatDateTime.format(curKBArticle.getModifiedDate())} %>" key="by-x-on-x" />
 						</div>
 					</div>
 
 					<div class="list-group-item-field">
-						<liferay-ui:icon-menu direction="left-side" icon="<%= StringPool.BLANK %>" markupView="lexicon" message="<%= StringPool.BLANK %>" showWhenSingleIcon="<%= true %>">
+						<liferay-ui:icon-menu
+							direction="left-side"
+							icon="<%= StringPool.BLANK %>"
+							markupView="lexicon"
+							message="<%= StringPool.BLANK %>"
+							showWhenSingleIcon="<%= true %>"
+						>
 							<c:if test="<%= (kbArticle.getStatus() == WorkflowConstants.STATUS_APPROVED) && KBArticlePermission.contains(permissionChecker, kbArticle, KBActionKeys.UPDATE) %>">
 								<liferay-portlet:actionURL name="updateKBArticle" varImpl="revertURL">
 									<portlet:param name="redirect" value="<%= currentURL %>" />
@@ -117,7 +123,7 @@
 													<portlet:param name="resourcePrimKey" value="<%= String.valueOf(kbArticle.getResourcePrimKey()) %>" />
 												</portlet:renderURL>
 
-												var uri = '<%= compareVersionURL %>';
+												var uri = '<%= HtmlUtil.escapeJS(compareVersionURL) %>';
 
 												uri = Liferay.Util.addParams('<portlet:namespace />sourceVersion=' + event.sourceversion, uri);
 												uri = Liferay.Util.addParams('<portlet:namespace />targetVersion=' + event.targetversion, uri);

@@ -102,9 +102,9 @@ if (portletTitleBasedNavigation) {
 		</aui:fieldset-group>
 
 		<aui:button-row>
-			<aui:button cssClass="btn btn-lg btn-primary" type="submit" value="move" />
+			<aui:button type="submit" value="move" />
 
-			<aui:button cssClass="btn-lg" href="<%= redirect %>" type="cancel" />
+			<aui:button href="<%= redirect %>" type="cancel" />
 		</aui:button-row>
 	</aui:form>
 </div>
@@ -136,7 +136,7 @@ if (portletTitleBasedNavigation) {
 						<portlet:param name="targetStatus" value="<%= String.valueOf(targetStatus) %>" />
 					</liferay-portlet:renderURL>
 
-					uri: '<%= selectKBObjectURL %>'
+					uri: '<%= HtmlUtil.escapeJS(selectKBObjectURL) %>'
 				},
 				function(event) {
 					document.<portlet:namespace />fm.<portlet:namespace />parentPriority.value = event.priority;

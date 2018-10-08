@@ -35,6 +35,10 @@ import javax.servlet.http.HttpServletRequest;
 @ProviderType
 public interface ResourceActions {
 
+	public void check(Portlet portlet);
+
+	public void check(String portletName);
+
 	public void checkAction(String name, String actionId)
 		throws NoSuchResourceActionException;
 
@@ -45,14 +49,14 @@ public interface ResourceActions {
 	public String getActionNamePrefix();
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	public List<String> getActionsNames(
 		HttpServletRequest request, List<String> actions);
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	public List<String> getActionsNames(
@@ -135,11 +139,23 @@ public interface ResourceActions {
 			String servletContextName, ClassLoader classLoader, String source)
 		throws Exception;
 
+	public void read(
+			String servletContextName, ClassLoader classLoader,
+			String... sources)
+		throws Exception;
+
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Wilberforce (7.0.x)
 	 */
 	@Deprecated
 	public void read(String servletContextName, InputStream inputStream)
 		throws Exception;
+
+	public void readAndCheck(
+			String servletContextName, ClassLoader classLoader,
+			String... sources)
+		throws Exception;
+
+	public void removePortletResource(String portletName);
 
 }

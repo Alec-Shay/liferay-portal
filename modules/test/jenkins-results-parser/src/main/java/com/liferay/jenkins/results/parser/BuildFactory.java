@@ -14,6 +14,11 @@
 
 package com.liferay.jenkins.results.parser;
 
+import java.io.IOException;
+import java.io.StringReader;
+
+import java.util.Properties;
+
 /**
  * @author Peter Yoo
  */
@@ -26,30 +31,21 @@ public class BuildFactory {
 			return new AxisBuild(url, (BatchBuild)parentBuild);
 		}
 
+		if (url.contains("-source-format")) {
+			return new SourceFormatBuild(url, (TopLevelBuild)parentBuild);
+		}
+
 		if (url.contains("-source")) {
 			return new SourceBuild(url, parentBuild);
 		}
 
+		if (url.contains("-validation")) {
+			return new ValidationBuild(url, (TopLevelBuild)parentBuild);
+		}
+
 		for (String batchIndicator : _BATCH_INDICATORS) {
 			if (url.contains(batchIndicator)) {
-				BatchBuild batchBuild = new BatchBuild(
-					url, (TopLevelBuild)parentBuild);
-
-				String jobVariant = batchBuild.getParameterValue("JOB_VARIANT");
-
-				if (jobVariant != null) {
-					if (jobVariant.contains("functional")) {
-						batchBuild = new FunctionalBatchBuild(
-							url, (TopLevelBuild)parentBuild);
-					}
-
-					if (jobVariant.contains("modules-integration")) {
-						batchBuild = new ModulesIntegrationBatchBuild(
-							url, (TopLevelBuild)parentBuild);
-					}
-				}
-
-				return batchBuild;
+				return new BatchBuild(url, (TopLevelBuild)parentBuild);
 			}
 		}
 
@@ -58,7 +54,9 @@ public class BuildFactory {
 
 		String jobName = topLevelBuild.getJobName();
 
-		if (jobName.equals("test-portal-acceptance-pullrequest(ee-6.2.x)")) {
+		if ((parentBuild != null) &&
+			jobName.equals("test-portal-acceptance-pullrequest(ee-6.2.x)")) {
+
 			String jenkinsJobVariant = topLevelBuild.getParameterValue(
 				"JENKINS_JOB_VARIANT");
 
@@ -71,6 +69,27 @@ public class BuildFactory {
 		}
 
 		return topLevelBuild;
+	}
+
+	public static Build newBuildFromArchive(String archiveName) {
+		String url = JenkinsResultsParserUtil.combine(
+			"${dependencies.url}/", archiveName, "/", "archive.properties");
+
+		Properties archiveProperties = new Properties();
+
+		try {
+			archiveProperties.load(
+				new StringReader(
+					JenkinsResultsParserUtil.toString(
+						JenkinsResultsParserUtil.getLocalURL(url))));
+		}
+		catch (IOException ioe) {
+			throw new RuntimeException(
+				"Unable to find archive " + archiveName, ioe);
+		}
+
+		return newBuild(
+			archiveProperties.getProperty("top.level.build.url"), null);
 	}
 
 	private static final String[] _BATCH_INDICATORS =

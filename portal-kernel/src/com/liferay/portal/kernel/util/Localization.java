@@ -14,14 +14,19 @@
 
 package com.liferay.portal.kernel.util;
 
+import aQute.bnd.annotation.ProviderType;
+
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.settings.LocalizedValuesMap;
 import com.liferay.portal.kernel.settings.Settings;
 import com.liferay.portal.kernel.xml.Document;
 
+import java.io.Serializable;
+
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Function;
 
 import javax.portlet.PortletPreferences;
 import javax.portlet.PortletRequest;
@@ -49,6 +54,7 @@ import javax.servlet.http.HttpServletRequest;
  * @author Julio Camarero
  * @author Brian Wing Shun Chan
  */
+@ProviderType
 public interface Localization {
 
 	/**
@@ -82,6 +88,19 @@ public interface Localization {
 		String className, long classPK, Locale contentDefaultLocale,
 		Locale[] contentAvailableLocales);
 
+	/**
+	 * Returns a valid default locale for importing a localized entity.
+	 *
+	 * @param  className the class name of the entity
+	 * @param  primaryKey the primary keys of the entity
+	 * @param  contentDefaultLocale the default Locale of the entity
+	 * @param  contentAvailableLocales the available locales of the entity
+	 * @return the valid locale
+	 */
+	public Locale getDefaultImportLocale(
+		String className, Serializable primaryKey, Locale contentDefaultLocale,
+		Locale[] contentAvailableLocales);
+
 	public String getDefaultLanguageId(Document document);
 
 	public String getDefaultLanguageId(Document document, Locale defaultLocale);
@@ -96,6 +115,10 @@ public interface Localization {
 	public String getDefaultLanguageId(String xml);
 
 	public String getDefaultLanguageId(String xml, Locale defaultLocale);
+
+	public String getLocalization(
+		Function<String, String> localizationFunction,
+		String requestedLanguageId, String defaultLanguageId);
 
 	/**
 	 * Returns the localized string from the localizations XML in the language.
@@ -325,8 +348,8 @@ public interface Localization {
 	 * @param      key the preferences key
 	 * @param      languageId the ID of the language
 	 * @return     the localized preferences key
-	 * @deprecated As of 7.0.0, replaced by {@link #getLocalizedName(String,
-	 *             String)}
+	 * @deprecated As of Wilberforce (7.0.x), replaced by {@link
+	 *             #getLocalizedName(String, String)}
 	 */
 	@Deprecated
 	public String getPreferencesKey(String key, String languageId);
@@ -454,6 +477,9 @@ public interface Localization {
 		Settings settings, String key, String languageId, boolean useDefault);
 
 	public String getXml(LocalizedValuesMap localizedValuesMap, String key);
+
+	public String getXml(
+		Map<String, String> map, String defaultLanguageId, String key);
 
 	/**
 	 * Removes the localization for the language from the localizations XML. The

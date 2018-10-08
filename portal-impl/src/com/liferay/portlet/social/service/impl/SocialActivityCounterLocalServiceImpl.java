@@ -15,8 +15,10 @@
 package com.liferay.portlet.social.service.impl;
 
 import com.liferay.asset.kernel.model.AssetEntry;
-import com.liferay.portal.kernel.cache.MultiVMPoolUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.cache.PortalCache;
+import com.liferay.portal.kernel.cache.PortalCacheHelperUtil;
+import com.liferay.portal.kernel.cache.PortalCacheManagerNames;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.lock.LockProtectedAction;
@@ -25,7 +27,6 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Tuple;
 import com.liferay.portal.util.PropsValues;
@@ -990,7 +991,8 @@ public class SocialActivityCounterLocalServiceImpl
 
 	protected void clearFinderCache() {
 		PortalCache<String, SocialActivityCounter> portalCache =
-			MultiVMPoolUtil.getPortalCache(
+			PortalCacheHelperUtil.getPortalCache(
+				PortalCacheManagerNames.MULTI_VM,
 				SocialActivityCounterFinder.class.getName());
 
 		portalCache.removeAll();

@@ -85,13 +85,15 @@ public class RenderPortletAction extends Action {
 		}
 
 		boolean staticPortlet = ParamUtil.getBoolean(request, "p_p_static");
-		boolean staticStartPortlet = ParamUtil.getBoolean(
-			request, "p_p_static_start");
 
 		if (staticPortlet) {
 			portlet = (Portlet)portlet.clone();
 
 			portlet.setStatic(true);
+
+			boolean staticStartPortlet = ParamUtil.getBoolean(
+				request, "p_p_static_start");
+
 			portlet.setStaticStart(staticStartPortlet);
 		}
 
@@ -108,6 +110,9 @@ public class RenderPortletAction extends Action {
 		request = PortletContainerUtil.setupOptionalRenderParameters(
 			request, null, columnId, columnPos, columnCount, boundary,
 			decorate);
+
+		PortletContainerUtil.processPublicRenderParameters(
+			request, themeDisplay.getLayout());
 
 		PortletContainerUtil.render(request, response, portlet);
 

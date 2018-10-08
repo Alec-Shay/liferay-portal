@@ -80,12 +80,16 @@ import java.util.Map;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
- * @author Daniel Kocsis
- * @author Mate Thurzo
+ * @author     Daniel Kocsis
+ * @author     Mate Thurzo
+ * @deprecated As of Judson (7.1.x), replaced by {@link
+ *             com.liferay.exportimport.test.util.lar.BaseStagedModelDataHandlerTestCase}
  */
+@Deprecated
 public abstract class BaseStagedModelDataHandlerTestCase {
 
 	@Before
@@ -104,6 +108,102 @@ public abstract class BaseStagedModelDataHandlerTestCase {
 	@After
 	public void tearDown() throws Exception {
 		ServiceContextThreadLocal.popServiceContext();
+	}
+
+	@Ignore
+	@Test
+	public void testCleanAssetCategoriesAndTags() throws Exception {
+		Map<String, List<StagedModel>> dependentStagedModelsMap =
+			addDependentStagedModelsMap(stagingGroup);
+
+		StagedModel stagedModel = addStagedModel(
+			stagingGroup, dependentStagedModelsMap);
+
+		AssetEntry assetEntry = fetchAssetEntry(stagedModel, stagingGroup);
+
+		if (assetEntry == null) {
+			return;
+		}
+
+		AssetVocabulary assetVocabulary = AssetTestUtil.addVocabulary(
+			stagingGroup.getGroupId());
+
+		AssetCategory assetCategory = AssetTestUtil.addCategory(
+			stagingGroup.getGroupId(), assetVocabulary.getVocabularyId());
+
+		AssetTag assetTag = AssetTestUtil.addTag(stagingGroup.getGroupId());
+
+		assetEntry = AssetEntryLocalServiceUtil.updateEntry(
+			TestPropsValues.getUserId(), stagingGroup.getGroupId(),
+			assetEntry.getCreateDate(), assetEntry.getModifiedDate(),
+			assetEntry.getClassName(), assetEntry.getClassPK(),
+			assetEntry.getClassUuid(), assetEntry.getClassTypeId(),
+			new long[] {assetCategory.getCategoryId()},
+			new String[] {assetTag.getName()}, assetEntry.isListable(),
+			assetEntry.isVisible(), assetEntry.getStartDate(),
+			assetEntry.getEndDate(), assetEntry.getPublishDate(),
+			assetEntry.getExpirationDate(), assetEntry.getMimeType(),
+			assetEntry.getTitle(), assetEntry.getDescription(),
+			assetEntry.getSummary(), assetEntry.getUrl(),
+			assetEntry.getLayoutUuid(), assetEntry.getHeight(),
+			assetEntry.getWidth(), assetEntry.getPriority());
+
+		exportImportStagedModel(stagedModel);
+
+		StagedModel importedStagedModel = getStagedModel(
+			stagedModel.getUuid(), liveGroup);
+
+		Assert.assertNotNull(importedStagedModel);
+
+		AssetEntry importedAssetEntry = fetchAssetEntry(
+			importedStagedModel, liveGroup);
+
+		Assert.assertNotNull(importedAssetEntry);
+
+		List<AssetTag> assetTags = importedAssetEntry.getTags();
+
+		Assert.assertFalse(assetTags.toString(), assetTags.isEmpty());
+
+		List<AssetCategory> assetCategories =
+			importedAssetEntry.getCategories();
+
+		Assert.assertFalse(
+			assetCategories.toString(), assetCategories.isEmpty());
+
+		assetEntry = fetchAssetEntry(stagedModel, stagingGroup);
+
+		assetEntry = AssetEntryLocalServiceUtil.updateEntry(
+			TestPropsValues.getUserId(), stagingGroup.getGroupId(),
+			assetEntry.getCreateDate(), assetEntry.getModifiedDate(),
+			assetEntry.getClassName(), assetEntry.getClassPK(),
+			assetEntry.getClassUuid(), assetEntry.getClassTypeId(), new long[0],
+			new String[0], assetEntry.isListable(), assetEntry.isVisible(),
+			assetEntry.getStartDate(), assetEntry.getEndDate(),
+			assetEntry.getPublishDate(), assetEntry.getExpirationDate(),
+			assetEntry.getMimeType(), assetEntry.getTitle(),
+			assetEntry.getDescription(), assetEntry.getSummary(),
+			assetEntry.getUrl(), assetEntry.getLayoutUuid(),
+			assetEntry.getHeight(), assetEntry.getWidth(),
+			assetEntry.getPriority());
+
+		exportImportStagedModel(stagedModel);
+
+		importedStagedModel = getStagedModel(stagedModel.getUuid(), liveGroup);
+
+		Assert.assertNotNull(importedStagedModel);
+
+		importedAssetEntry = fetchAssetEntry(importedStagedModel, liveGroup);
+
+		Assert.assertNotNull(importedAssetEntry);
+
+		assetTags = importedAssetEntry.getTags();
+
+		Assert.assertFalse(assetTags.toString(), assetTags.isEmpty());
+
+		assetCategories = importedAssetEntry.getCategories();
+
+		Assert.assertFalse(
+			assetCategories.toString(), assetCategories.isEmpty());
 	}
 
 	@Test
@@ -147,6 +247,59 @@ public abstract class BaseStagedModelDataHandlerTestCase {
 
 		StagedModelDataHandlerUtil.importStagedModel(
 			portletDataContext, exportedStagedModel);
+	}
+
+	@Test
+	public void testExportImportWithDefaultData() throws Exception {
+
+		// Export default data
+
+		initExport();
+
+		Map<String, List<StagedModel>> defaultDependentStagedModelsMap =
+			addDefaultDependentStagedModelsMap(stagingGroup);
+
+		StagedModel stagedModel = addDefaultStagedModel(
+			stagingGroup, defaultDependentStagedModelsMap);
+
+		if (stagedModel == null) {
+			return;
+		}
+
+		StagedModelDataHandlerUtil.exportStagedModel(
+			portletDataContext, stagedModel);
+
+		validateExport(
+			portletDataContext, stagedModel, defaultDependentStagedModelsMap);
+
+		// Add default data to live site
+
+		Map<String, List<StagedModel>> secondDependentStagedModelsMap =
+			addDefaultDependentStagedModelsMap(liveGroup);
+
+		addDefaultStagedModel(liveGroup, secondDependentStagedModelsMap);
+
+		// Import
+
+		initImport();
+
+		StagedModel exportedStagedModel = readExportedStagedModel(stagedModel);
+
+		Assert.assertNotNull(exportedStagedModel);
+
+		StagedModelDataHandlerUtil.importStagedModel(
+			portletDataContext, exportedStagedModel);
+
+		// Import again for more robustness (i.e. filter name issues)
+
+		StagedModelDataHandlerUtil.importStagedModel(
+			portletDataContext, exportedStagedModel);
+
+		String uuid = exportedStagedModel.getUuid();
+
+		StagedModel importedModel = getStagedModel(uuid, liveGroup);
+
+		Assert.assertNotNull(importedModel);
 	}
 
 	public void testLastPublishDate() throws Exception {
@@ -369,6 +522,21 @@ public abstract class BaseStagedModelDataHandlerTestCase {
 			new IdentityServiceContextFunction(serviceContext));
 	}
 
+	protected Map<String, List<StagedModel>> addDefaultDependentStagedModelsMap(
+			Group group)
+		throws Exception {
+
+		return new HashMap<>();
+	}
+
+	protected StagedModel addDefaultStagedModel(
+			Group group,
+			Map<String, List<StagedModel>> dependentStagedModelsMap)
+		throws Exception {
+
+		return null;
+	}
+
 	protected List<StagedModel> addDependentStagedModel(
 		Map<String, List<StagedModel>> dependentStagedModelsMap, Class<?> clazz,
 		StagedModel dependentStagedModel) {
@@ -513,6 +681,9 @@ public abstract class BaseStagedModelDataHandlerTestCase {
 				stagingGroup.getCompanyId(), stagingGroup.getGroupId(),
 				getParameterMap(), getStartDate(), getEndDate(), zipWriter);
 
+		portletDataContext.setExportImportProcessId(
+			BaseStagedModelDataHandlerTestCase.class.getName());
+
 		rootElement = SAXReaderUtil.createElement("root");
 
 		portletDataContext.setExportDataRootElement(rootElement);
@@ -547,6 +718,8 @@ public abstract class BaseStagedModelDataHandlerTestCase {
 				liveGroup.getCompanyId(), liveGroup.getGroupId(),
 				getParameterMap(), userIdStrategy, zipReader);
 
+		portletDataContext.setExportImportProcessId(
+			BaseStagedModelDataHandlerTestCase.class.getName());
 		portletDataContext.setImportDataRootElement(rootElement);
 
 		Element missingReferencesElement = rootElement.element(
@@ -676,7 +849,9 @@ public abstract class BaseStagedModelDataHandlerTestCase {
 			AssetCategoryLocalServiceUtil.getEntryCategories(
 				importedAssetEntry.getEntryId());
 
-		Assert.assertEquals(2, importedAssetCategories.size());
+		Assert.assertEquals(
+			importedAssetCategories.toString(), 2,
+			importedAssetCategories.size());
 
 		AssetCategory stagedAssetCategory =
 			stagedModelAssets.getAssetCategory();
@@ -705,7 +880,8 @@ public abstract class BaseStagedModelDataHandlerTestCase {
 			AssetTagLocalServiceUtil.getEntryTags(
 				importedAssetEntry.getEntryId());
 
-		Assert.assertEquals(1, importedAssetTags.size());
+		Assert.assertEquals(
+			importedAssetTags.toString(), 1, importedAssetTags.size());
 
 		AssetTag assetTag = stagedModelAssets.getAssetTag();
 		AssetTag importedAssetTag = importedAssetTags.get(0);
@@ -809,7 +985,9 @@ public abstract class BaseStagedModelDataHandlerTestCase {
 
 			List<Element> elements = stagedModelGroupElement.elements();
 
-			Assert.assertEquals(dependentStagedModels.size(), elements.size());
+			Assert.assertEquals(
+				elements.toString(), dependentStagedModels.size(),
+				elements.size());
 
 			for (Element element : elements) {
 				String path = element.attributeValue("path");
@@ -899,7 +1077,8 @@ public abstract class BaseStagedModelDataHandlerTestCase {
 				WorkflowConstants.STATUS_ANY);
 
 		Assert.assertEquals(
-			ratingsEntries.size(), importedRatingsEntries.size());
+			importedRatingsEntries.toString(), ratingsEntries.size(),
+			importedRatingsEntries.size());
 
 		for (RatingsEntry ratingsEntry : ratingsEntries) {
 			Iterator<RatingsEntry> iterator = importedRatingsEntries.iterator();
@@ -917,7 +1096,9 @@ public abstract class BaseStagedModelDataHandlerTestCase {
 			}
 		}
 
-		Assert.assertTrue(importedRatingsEntries.isEmpty());
+		Assert.assertTrue(
+			importedRatingsEntries.toString(),
+			importedRatingsEntries.isEmpty());
 	}
 
 	@DeleteAfterTestRun

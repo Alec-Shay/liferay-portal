@@ -14,26 +14,26 @@
 
 package com.liferay.sync.internal.servlet.filter;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.upload.UploadServletRequest;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PrefsPropsUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.sync.SyncClientMinBuildException;
 import com.liferay.sync.SyncDeviceHeaderException;
 import com.liferay.sync.SyncServicesUnavailableException;
+import com.liferay.sync.internal.util.SyncDeviceThreadLocal;
 import com.liferay.sync.model.SyncDevice;
 import com.liferay.sync.service.SyncDeviceLocalServiceUtil;
 import com.liferay.sync.service.configuration.SyncServiceConfigurationKeys;
-import com.liferay.sync.service.configuration.SyncServiceConfigurationValues;
-import com.liferay.sync.util.SyncDeviceThreadLocal;
-import com.liferay.sync.util.SyncUtil;
+import com.liferay.sync.service.internal.configuration.SyncServiceConfigurationValues;
+import com.liferay.sync.util.SyncHelper;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -53,6 +53,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Shinn Lok
@@ -87,7 +88,7 @@ public class SyncJSONFilter implements Filter {
 		if (uuid != null) {
 			syncDevice =
 				SyncDeviceLocalServiceUtil.fetchSyncDeviceByUuidAndCompanyId(
-					uuid, PortalUtil.getCompanyId(httpServletRequest));
+					uuid, _portal.getCompanyId(httpServletRequest));
 		}
 
 		if (syncDevice == null) {
@@ -120,7 +121,7 @@ public class SyncJSONFilter implements Filter {
 			}
 
 			if (!(httpServletRequest instanceof UploadServletRequest)) {
-				servletRequest = PortalUtil.getUploadServletRequest(
+				servletRequest = _portal.getUploadServletRequest(
 					httpServletRequest);
 			}
 
@@ -145,7 +146,7 @@ public class SyncJSONFilter implements Filter {
 		Throwable throwable = null;
 
 		if (PrefsPropsUtil.getBoolean(
-				PortalUtil.getCompanyId(httpServletRequest),
+				_portal.getCompanyId(httpServletRequest),
 				SyncServiceConfigurationKeys.SYNC_SERVICES_ENABLED,
 				SyncServiceConfigurationValues.SYNC_SERVICES_ENABLED)) {
 
@@ -162,7 +163,7 @@ public class SyncJSONFilter implements Filter {
 					_ABSOLUTE_SYNC_CLIENT_MIN_BUILD_DESKTOP;
 
 				syncClientMinBuild = PrefsPropsUtil.getInteger(
-					PortalUtil.getCompanyId(httpServletRequest),
+					_portal.getCompanyId(httpServletRequest),
 					SyncServiceConfigurationKeys.SYNC_CLIENT_MIN_BUILD_DESKTOP,
 					SyncServiceConfigurationValues.
 						SYNC_CLIENT_MIN_BUILD_DESKTOP);
@@ -172,7 +173,7 @@ public class SyncJSONFilter implements Filter {
 					_ABSOLUTE_SYNC_CLIENT_MIN_BUILD_ANDROID;
 
 				syncClientMinBuild = PrefsPropsUtil.getInteger(
-					PortalUtil.getCompanyId(httpServletRequest),
+					_portal.getCompanyId(httpServletRequest),
 					SyncServiceConfigurationKeys.SYNC_CLIENT_MIN_BUILD_ANDROID,
 					SyncServiceConfigurationValues.
 						SYNC_CLIENT_MIN_BUILD_ANDROID);
@@ -182,7 +183,7 @@ public class SyncJSONFilter implements Filter {
 					_ABSOLUTE_SYNC_CLIENT_MIN_BUILD_IOS;
 
 				syncClientMinBuild = PrefsPropsUtil.getInteger(
-					PortalUtil.getCompanyId(httpServletRequest),
+					_portal.getCompanyId(httpServletRequest),
 					SyncServiceConfigurationKeys.SYNC_CLIENT_MIN_BUILD_IOS,
 					SyncServiceConfigurationValues.SYNC_CLIENT_MIN_BUILD_IOS);
 			}
@@ -218,7 +219,7 @@ public class SyncJSONFilter implements Filter {
 
 		OutputStream outputStream = servletResponse.getOutputStream();
 
-		String json = SyncUtil.buildExceptionMessage(throwable);
+		String json = _syncHelper.buildExceptionMessage(throwable);
 
 		json = "{\"exception\": \"" + json + "\"}";
 
@@ -239,17 +240,17 @@ public class SyncJSONFilter implements Filter {
 				cmd = StringUtil.read(servletRequest.getInputStream());
 			}
 
-			Object jsonObject = JSONFactoryUtil.looseDeserialize(cmd);
+			Object cmdObject = JSONFactoryUtil.looseDeserialize(cmd);
 
 			List<Object> jsonItems = null;
 
-			if (jsonObject instanceof List) {
-				jsonItems = (List<Object>)jsonObject;
+			if (cmdObject instanceof List) {
+				jsonItems = (List<Object>)cmdObject;
 			}
-			else if (jsonObject instanceof Map) {
+			else if (cmdObject instanceof Map) {
 				jsonItems = new ArrayList<>(1);
 
-				jsonItems.add(jsonObject);
+				jsonItems.add(cmdObject);
 			}
 
 			for (Object jsonItem : jsonItems) {
@@ -282,5 +283,11 @@ public class SyncJSONFilter implements Filter {
 	private static final int _ABSOLUTE_SYNC_CLIENT_MIN_BUILD_DESKTOP = 3200;
 
 	private static final int _ABSOLUTE_SYNC_CLIENT_MIN_BUILD_IOS = 7;
+
+	@Reference
+	private Portal _portal;
+
+	@Reference
+	private SyncHelper _syncHelper;
 
 }

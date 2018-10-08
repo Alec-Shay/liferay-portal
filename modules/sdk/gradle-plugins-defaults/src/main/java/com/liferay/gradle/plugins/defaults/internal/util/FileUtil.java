@@ -22,13 +22,17 @@ import java.io.FileFilter;
 import java.io.IOException;
 
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -60,6 +64,35 @@ public class FileUtil extends com.liferay.gradle.util.FileUtil {
 		}
 
 		return false;
+	}
+
+	public static File findFile(File dir, final String fileName)
+		throws IOException {
+
+		final AtomicReference<File> file = new AtomicReference<>(null);
+
+		Files.walkFileTree(
+			dir.toPath(),
+			new SimpleFileVisitor<Path>() {
+
+				@Override
+				public FileVisitResult preVisitDirectory(
+					Path dirPath, BasicFileAttributes basicFileAttributes) {
+
+					Path path = dirPath.resolve(fileName);
+
+					if (Files.isRegularFile(path)) {
+						file.set(path.toFile());
+
+						return FileVisitResult.TERMINATE;
+					}
+
+					return FileVisitResult.CONTINUE;
+				}
+
+			});
+
+		return file.get();
 	}
 
 	public static File[] getDirectories(File dir) {
@@ -100,10 +133,8 @@ public class FileUtil extends com.liferay.gradle.util.FileUtil {
 		return relativePath.replace('\\', '/');
 	}
 
-	public static boolean hasSourceFiles(Task task, Spec<File> spec) {
-		TaskInputs taskInputs = task.getInputs();
-
-		FileCollection fileCollection = taskInputs.getSourceFiles();
+	public static boolean hasFiles(
+		FileCollection fileCollection, Spec<File> spec) {
 
 		fileCollection = fileCollection.filter(spec);
 
@@ -112,6 +143,12 @@ public class FileUtil extends com.liferay.gradle.util.FileUtil {
 		}
 
 		return true;
+	}
+
+	public static boolean hasSourceFiles(Task task, Spec<File> spec) {
+		TaskInputs taskInputs = task.getInputs();
+
+		return hasFiles(taskInputs.getSourceFiles(), spec);
 	}
 
 	public static FileCollection join(FileCollection... fileCollections) {

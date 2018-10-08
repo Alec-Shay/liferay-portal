@@ -224,9 +224,8 @@ public class PortletAction extends Action {
 		if (forward == null) {
 			return defaultValue;
 		}
-		else {
-			return forward;
-		}
+
+		return forward;
 	}
 
 	protected ModuleConfig getModuleConfig(PortletRequest portletRequest) {
@@ -334,9 +333,8 @@ public class PortletAction extends Action {
 
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	protected void sendRedirect(
@@ -402,20 +400,22 @@ public class PortletAction extends Action {
 
 	protected void writeJSON(
 			PortletRequest portletRequest, ActionResponse actionResponse,
-			Object json)
+			Object jsonObj)
 		throws IOException {
 
-		JSONPortletResponseUtil.writeJSON(portletRequest, actionResponse, json);
+		JSONPortletResponseUtil.writeJSON(
+			portletRequest, actionResponse, jsonObj);
 
 		setForward(portletRequest, ActionConstants.COMMON_NULL);
 	}
 
 	protected void writeJSON(
 			PortletRequest portletRequest, MimeResponse mimeResponse,
-			Object json)
+			Object jsonObj)
 		throws IOException {
 
-		JSONPortletResponseUtil.writeJSON(portletRequest, mimeResponse, json);
+		JSONPortletResponseUtil.writeJSON(
+			portletRequest, mimeResponse, jsonObj);
 	}
 
 	private static final boolean _CHECK_METHOD_ON_PROCESS_ACTION = true;

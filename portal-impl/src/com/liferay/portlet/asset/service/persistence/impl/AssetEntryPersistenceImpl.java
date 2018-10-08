@@ -22,10 +22,10 @@ import com.liferay.asset.kernel.service.persistence.AssetCategoryPersistence;
 import com.liferay.asset.kernel.service.persistence.AssetEntryPersistence;
 import com.liferay.asset.kernel.service.persistence.AssetTagPersistence;
 
+import com.liferay.petra.string.StringBundler;
+
 import com.liferay.portal.kernel.bean.BeanReference;
-import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
-import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
 import com.liferay.portal.kernel.dao.orm.Query;
@@ -44,15 +44,16 @@ import com.liferay.portal.kernel.service.persistence.impl.TableMapperFactory;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import com.liferay.portlet.asset.model.impl.AssetEntryImpl;
 import com.liferay.portlet.asset.model.impl.AssetEntryModelImpl;
 
 import java.io.Serializable;
+
+import java.lang.reflect.InvocationHandler;
 
 import java.sql.Timestamp;
 
@@ -203,7 +204,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		List<AssetEntry> list = null;
 
 		if (retrieveFromCache) {
-			list = (List<AssetEntry>)finderCache.getResult(finderPath,
+			list = (List<AssetEntry>)FinderCacheUtil.getResult(finderPath,
 					finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
@@ -269,10 +270,10 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				FinderCacheUtil.putResult(finderPath, finderArgs, list);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -309,7 +310,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		msg.append("groupId=");
 		msg.append(groupId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchEntryException(msg.toString());
 	}
@@ -358,7 +359,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		msg.append("groupId=");
 		msg.append(groupId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchEntryException(msg.toString());
 	}
@@ -560,7 +561,8 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 
 		Object[] finderArgs = new Object[] { groupId };
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs,
+				this);
 
 		if (count == null) {
 			StringBundler query = new StringBundler(2);
@@ -584,10 +586,10 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 
 				count = (Long)q.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -705,7 +707,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		List<AssetEntry> list = null;
 
 		if (retrieveFromCache) {
-			list = (List<AssetEntry>)finderCache.getResult(finderPath,
+			list = (List<AssetEntry>)FinderCacheUtil.getResult(finderPath,
 					finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
@@ -771,10 +773,10 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				FinderCacheUtil.putResult(finderPath, finderArgs, list);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -812,7 +814,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		msg.append("companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchEntryException(msg.toString());
 	}
@@ -863,7 +865,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		msg.append("companyId=");
 		msg.append(companyId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchEntryException(msg.toString());
 	}
@@ -1065,7 +1067,8 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 
 		Object[] finderArgs = new Object[] { companyId };
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs,
+				this);
 
 		if (count == null) {
 			StringBundler query = new StringBundler(2);
@@ -1089,10 +1092,10 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 
 				count = (Long)q.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -1208,12 +1211,12 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		List<AssetEntry> list = null;
 
 		if (retrieveFromCache) {
-			list = (List<AssetEntry>)finderCache.getResult(finderPath,
+			list = (List<AssetEntry>)FinderCacheUtil.getResult(finderPath,
 					finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (AssetEntry assetEntry : list) {
-					if ((visible != assetEntry.getVisible())) {
+					if ((visible != assetEntry.isVisible())) {
 						list = null;
 
 						break;
@@ -1274,10 +1277,10 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				FinderCacheUtil.putResult(finderPath, finderArgs, list);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -1314,7 +1317,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		msg.append("visible=");
 		msg.append(visible);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchEntryException(msg.toString());
 	}
@@ -1363,7 +1366,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		msg.append("visible=");
 		msg.append(visible);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchEntryException(msg.toString());
 	}
@@ -1565,7 +1568,8 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 
 		Object[] finderArgs = new Object[] { visible };
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs,
+				this);
 
 		if (count == null) {
 			StringBundler query = new StringBundler(2);
@@ -1589,10 +1593,10 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 
 				count = (Long)q.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -1702,17 +1706,21 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 				(orderByComparator == null)) {
 			pagination = false;
 			finderPath = FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_PUBLISHDATE;
-			finderArgs = new Object[] { publishDate };
+			finderArgs = new Object[] { _getTime(publishDate) };
 		}
 		else {
 			finderPath = FINDER_PATH_WITH_PAGINATION_FIND_BY_PUBLISHDATE;
-			finderArgs = new Object[] { publishDate, start, end, orderByComparator };
+			finderArgs = new Object[] {
+					_getTime(publishDate),
+					
+					start, end, orderByComparator
+				};
 		}
 
 		List<AssetEntry> list = null;
 
 		if (retrieveFromCache) {
-			list = (List<AssetEntry>)finderCache.getResult(finderPath,
+			list = (List<AssetEntry>)FinderCacheUtil.getResult(finderPath,
 					finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
@@ -1789,10 +1797,10 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				FinderCacheUtil.putResult(finderPath, finderArgs, list);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -1830,7 +1838,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		msg.append("publishDate=");
 		msg.append(publishDate);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchEntryException(msg.toString());
 	}
@@ -1881,7 +1889,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		msg.append("publishDate=");
 		msg.append(publishDate);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchEntryException(msg.toString());
 	}
@@ -2092,9 +2100,10 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 	public int countByPublishDate(Date publishDate) {
 		FinderPath finderPath = FINDER_PATH_COUNT_BY_PUBLISHDATE;
 
-		Object[] finderArgs = new Object[] { publishDate };
+		Object[] finderArgs = new Object[] { _getTime(publishDate) };
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs,
+				this);
 
 		if (count == null) {
 			StringBundler query = new StringBundler(2);
@@ -2129,10 +2138,10 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 
 				count = (Long)q.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -2243,12 +2252,12 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 				(orderByComparator == null)) {
 			pagination = false;
 			finderPath = FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_EXPIRATIONDATE;
-			finderArgs = new Object[] { expirationDate };
+			finderArgs = new Object[] { _getTime(expirationDate) };
 		}
 		else {
 			finderPath = FINDER_PATH_WITH_PAGINATION_FIND_BY_EXPIRATIONDATE;
 			finderArgs = new Object[] {
-					expirationDate,
+					_getTime(expirationDate),
 					
 					start, end, orderByComparator
 				};
@@ -2257,7 +2266,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		List<AssetEntry> list = null;
 
 		if (retrieveFromCache) {
-			list = (List<AssetEntry>)finderCache.getResult(finderPath,
+			list = (List<AssetEntry>)FinderCacheUtil.getResult(finderPath,
 					finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
@@ -2335,10 +2344,10 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				FinderCacheUtil.putResult(finderPath, finderArgs, list);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -2376,7 +2385,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		msg.append("expirationDate=");
 		msg.append(expirationDate);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchEntryException(msg.toString());
 	}
@@ -2427,7 +2436,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		msg.append("expirationDate=");
 		msg.append(expirationDate);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchEntryException(msg.toString());
 	}
@@ -2638,9 +2647,10 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 	public int countByExpirationDate(Date expirationDate) {
 		FinderPath finderPath = FINDER_PATH_COUNT_BY_EXPIRATIONDATE;
 
-		Object[] finderArgs = new Object[] { expirationDate };
+		Object[] finderArgs = new Object[] { _getTime(expirationDate) };
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs,
+				this);
 
 		if (count == null) {
 			StringBundler query = new StringBundler(2);
@@ -2675,10 +2685,10 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 
 				count = (Long)q.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -2798,7 +2808,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		List<AssetEntry> list = null;
 
 		if (retrieveFromCache) {
-			list = (List<AssetEntry>)finderCache.getResult(finderPath,
+			list = (List<AssetEntry>)FinderCacheUtil.getResult(finderPath,
 					finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
@@ -2830,7 +2840,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 			if (layoutUuid == null) {
 				query.append(_FINDER_COLUMN_LAYOUTUUID_LAYOUTUUID_1);
 			}
-			else if (layoutUuid.equals(StringPool.BLANK)) {
+			else if (layoutUuid.equals("")) {
 				query.append(_FINDER_COLUMN_LAYOUTUUID_LAYOUTUUID_3);
 			}
 			else {
@@ -2878,10 +2888,10 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				FinderCacheUtil.putResult(finderPath, finderArgs, list);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -2919,7 +2929,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		msg.append("layoutUuid=");
 		msg.append(layoutUuid);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchEntryException(msg.toString());
 	}
@@ -2970,7 +2980,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		msg.append("layoutUuid=");
 		msg.append(layoutUuid);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		msg.append("}");
 
 		throw new NoSuchEntryException(msg.toString());
 	}
@@ -3062,7 +3072,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		if (layoutUuid == null) {
 			query.append(_FINDER_COLUMN_LAYOUTUUID_LAYOUTUUID_1);
 		}
-		else if (layoutUuid.equals(StringPool.BLANK)) {
+		else if (layoutUuid.equals("")) {
 			query.append(_FINDER_COLUMN_LAYOUTUUID_LAYOUTUUID_3);
 		}
 		else {
@@ -3186,7 +3196,8 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 
 		Object[] finderArgs = new Object[] { layoutUuid };
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs,
+				this);
 
 		if (count == null) {
 			StringBundler query = new StringBundler(2);
@@ -3198,7 +3209,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 			if (layoutUuid == null) {
 				query.append(_FINDER_COLUMN_LAYOUTUUID_LAYOUTUUID_1);
 			}
-			else if (layoutUuid.equals(StringPool.BLANK)) {
+			else if (layoutUuid.equals("")) {
 				query.append(_FINDER_COLUMN_LAYOUTUUID_LAYOUTUUID_3);
 			}
 			else {
@@ -3224,10 +3235,10 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 
 				count = (Long)q.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -3277,7 +3288,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 			msg.append(", classUuid=");
 			msg.append(classUuid);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -3317,7 +3328,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		Object result = null;
 
 		if (retrieveFromCache) {
-			result = finderCache.getResult(FINDER_PATH_FETCH_BY_G_CU,
+			result = FinderCacheUtil.getResult(FINDER_PATH_FETCH_BY_G_CU,
 					finderArgs, this);
 		}
 
@@ -3342,7 +3353,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 			if (classUuid == null) {
 				query.append(_FINDER_COLUMN_G_CU_CLASSUUID_1);
 			}
-			else if (classUuid.equals(StringPool.BLANK)) {
+			else if (classUuid.equals("")) {
 				query.append(_FINDER_COLUMN_G_CU_CLASSUUID_3);
 			}
 			else {
@@ -3371,7 +3382,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 				List<AssetEntry> list = q.list();
 
 				if (list.isEmpty()) {
-					finderCache.putResult(FINDER_PATH_FETCH_BY_G_CU,
+					FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_G_CU,
 						finderArgs, list);
 				}
 				else {
@@ -3391,17 +3402,11 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 					result = assetEntry;
 
 					cacheResult(assetEntry);
-
-					if ((assetEntry.getGroupId() != groupId) ||
-							(assetEntry.getClassUuid() == null) ||
-							!assetEntry.getClassUuid().equals(classUuid)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_G_CU,
-							finderArgs, assetEntry);
-					}
 				}
 			}
 			catch (Exception e) {
-				finderCache.removeResult(FINDER_PATH_FETCH_BY_G_CU, finderArgs);
+				FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_G_CU,
+					finderArgs);
 
 				throw processException(e);
 			}
@@ -3446,7 +3451,8 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 
 		Object[] finderArgs = new Object[] { groupId, classUuid };
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs,
+				this);
 
 		if (count == null) {
 			StringBundler query = new StringBundler(3);
@@ -3460,7 +3466,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 			if (classUuid == null) {
 				query.append(_FINDER_COLUMN_G_CU_CLASSUUID_1);
 			}
-			else if (classUuid.equals(StringPool.BLANK)) {
+			else if (classUuid.equals("")) {
 				query.append(_FINDER_COLUMN_G_CU_CLASSUUID_3);
 			}
 			else {
@@ -3488,10 +3494,10 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 
 				count = (Long)q.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -3542,7 +3548,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 			msg.append(", classPK=");
 			msg.append(classPK);
 
-			msg.append(StringPool.CLOSE_CURLY_BRACE);
+			msg.append("}");
 
 			if (_log.isDebugEnabled()) {
 				_log.debug(msg.toString());
@@ -3582,7 +3588,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		Object result = null;
 
 		if (retrieveFromCache) {
-			result = finderCache.getResult(FINDER_PATH_FETCH_BY_C_C,
+			result = FinderCacheUtil.getResult(FINDER_PATH_FETCH_BY_C_C,
 					finderArgs, this);
 		}
 
@@ -3622,8 +3628,8 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 				List<AssetEntry> list = q.list();
 
 				if (list.isEmpty()) {
-					finderCache.putResult(FINDER_PATH_FETCH_BY_C_C, finderArgs,
-						list);
+					FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_C_C,
+						finderArgs, list);
 				}
 				else {
 					AssetEntry assetEntry = list.get(0);
@@ -3631,16 +3637,11 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 					result = assetEntry;
 
 					cacheResult(assetEntry);
-
-					if ((assetEntry.getClassNameId() != classNameId) ||
-							(assetEntry.getClassPK() != classPK)) {
-						finderCache.putResult(FINDER_PATH_FETCH_BY_C_C,
-							finderArgs, assetEntry);
-					}
 				}
 			}
 			catch (Exception e) {
-				finderCache.removeResult(FINDER_PATH_FETCH_BY_C_C, finderArgs);
+				FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_C_C,
+					finderArgs);
 
 				throw processException(e);
 			}
@@ -3685,7 +3686,8 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 
 		Object[] finderArgs = new Object[] { classNameId, classPK };
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs,
+				this);
 
 		if (count == null) {
 			StringBundler query = new StringBundler(3);
@@ -3713,10 +3715,10 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 
 				count = (Long)q.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				FinderCacheUtil.putResult(finderPath, finderArgs, count);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -3730,6 +3732,1298 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 
 	private static final String _FINDER_COLUMN_C_C_CLASSNAMEID_2 = "assetEntry.classNameId = ? AND ";
 	private static final String _FINDER_COLUMN_C_C_CLASSPK_2 = "assetEntry.classPK = ?";
+	public static final FinderPath FINDER_PATH_WITH_PAGINATION_FIND_BY_G_C_V = new FinderPath(AssetEntryModelImpl.ENTITY_CACHE_ENABLED,
+			AssetEntryModelImpl.FINDER_CACHE_ENABLED, AssetEntryImpl.class,
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C_V",
+			new String[] {
+				Long.class.getName(), Long.class.getName(),
+				Boolean.class.getName(),
+				
+			Integer.class.getName(), Integer.class.getName(),
+				OrderByComparator.class.getName()
+			});
+	public static final FinderPath FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_V = new FinderPath(AssetEntryModelImpl.ENTITY_CACHE_ENABLED,
+			AssetEntryModelImpl.FINDER_CACHE_ENABLED, AssetEntryImpl.class,
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_C_V",
+			new String[] {
+				Long.class.getName(), Long.class.getName(),
+				Boolean.class.getName()
+			},
+			AssetEntryModelImpl.GROUPID_COLUMN_BITMASK |
+			AssetEntryModelImpl.CLASSNAMEID_COLUMN_BITMASK |
+			AssetEntryModelImpl.VISIBLE_COLUMN_BITMASK);
+	public static final FinderPath FINDER_PATH_COUNT_BY_G_C_V = new FinderPath(AssetEntryModelImpl.ENTITY_CACHE_ENABLED,
+			AssetEntryModelImpl.FINDER_CACHE_ENABLED, Long.class,
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_C_V",
+			new String[] {
+				Long.class.getName(), Long.class.getName(),
+				Boolean.class.getName()
+			});
+
+	/**
+	 * Returns all the asset entries where groupId = &#63; and classNameId = &#63; and visible = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param classNameId the class name ID
+	 * @param visible the visible
+	 * @return the matching asset entries
+	 */
+	@Override
+	public List<AssetEntry> findByG_C_V(long groupId, long classNameId,
+		boolean visible) {
+		return findByG_C_V(groupId, classNameId, visible, QueryUtil.ALL_POS,
+			QueryUtil.ALL_POS, null);
+	}
+
+	/**
+	 * Returns a range of all the asset entries where groupId = &#63; and classNameId = &#63; and visible = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link AssetEntryModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param classNameId the class name ID
+	 * @param visible the visible
+	 * @param start the lower bound of the range of asset entries
+	 * @param end the upper bound of the range of asset entries (not inclusive)
+	 * @return the range of matching asset entries
+	 */
+	@Override
+	public List<AssetEntry> findByG_C_V(long groupId, long classNameId,
+		boolean visible, int start, int end) {
+		return findByG_C_V(groupId, classNameId, visible, start, end, null);
+	}
+
+	/**
+	 * Returns an ordered range of all the asset entries where groupId = &#63; and classNameId = &#63; and visible = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link AssetEntryModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param classNameId the class name ID
+	 * @param visible the visible
+	 * @param start the lower bound of the range of asset entries
+	 * @param end the upper bound of the range of asset entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching asset entries
+	 */
+	@Override
+	public List<AssetEntry> findByG_C_V(long groupId, long classNameId,
+		boolean visible, int start, int end,
+		OrderByComparator<AssetEntry> orderByComparator) {
+		return findByG_C_V(groupId, classNameId, visible, start, end,
+			orderByComparator, true);
+	}
+
+	/**
+	 * Returns an ordered range of all the asset entries where groupId = &#63; and classNameId = &#63; and visible = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link AssetEntryModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param classNameId the class name ID
+	 * @param visible the visible
+	 * @param start the lower bound of the range of asset entries
+	 * @param end the upper bound of the range of asset entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @return the ordered range of matching asset entries
+	 */
+	@Override
+	public List<AssetEntry> findByG_C_V(long groupId, long classNameId,
+		boolean visible, int start, int end,
+		OrderByComparator<AssetEntry> orderByComparator,
+		boolean retrieveFromCache) {
+		boolean pagination = true;
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
+
+		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
+				(orderByComparator == null)) {
+			pagination = false;
+			finderPath = FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_V;
+			finderArgs = new Object[] { groupId, classNameId, visible };
+		}
+		else {
+			finderPath = FINDER_PATH_WITH_PAGINATION_FIND_BY_G_C_V;
+			finderArgs = new Object[] {
+					groupId, classNameId, visible,
+					
+					start, end, orderByComparator
+				};
+		}
+
+		List<AssetEntry> list = null;
+
+		if (retrieveFromCache) {
+			list = (List<AssetEntry>)FinderCacheUtil.getResult(finderPath,
+					finderArgs, this);
+
+			if ((list != null) && !list.isEmpty()) {
+				for (AssetEntry assetEntry : list) {
+					if ((groupId != assetEntry.getGroupId()) ||
+							(classNameId != assetEntry.getClassNameId()) ||
+							(visible != assetEntry.isVisible())) {
+						list = null;
+
+						break;
+					}
+				}
+			}
+		}
+
+		if (list == null) {
+			StringBundler query = null;
+
+			if (orderByComparator != null) {
+				query = new StringBundler(5 +
+						(orderByComparator.getOrderByFields().length * 2));
+			}
+			else {
+				query = new StringBundler(5);
+			}
+
+			query.append(_SQL_SELECT_ASSETENTRY_WHERE);
+
+			query.append(_FINDER_COLUMN_G_C_V_GROUPID_2);
+
+			query.append(_FINDER_COLUMN_G_C_V_CLASSNAMEID_2);
+
+			query.append(_FINDER_COLUMN_G_C_V_VISIBLE_2);
+
+			if (orderByComparator != null) {
+				appendOrderByComparator(query, _ORDER_BY_ENTITY_ALIAS,
+					orderByComparator);
+			}
+			else
+			 if (pagination) {
+				query.append(AssetEntryModelImpl.ORDER_BY_JPQL);
+			}
+
+			String sql = query.toString();
+
+			Session session = null;
+
+			try {
+				session = openSession();
+
+				Query q = session.createQuery(sql);
+
+				QueryPos qPos = QueryPos.getInstance(q);
+
+				qPos.add(groupId);
+
+				qPos.add(classNameId);
+
+				qPos.add(visible);
+
+				if (!pagination) {
+					list = (List<AssetEntry>)QueryUtil.list(q, getDialect(),
+							start, end, false);
+
+					Collections.sort(list);
+
+					list = Collections.unmodifiableList(list);
+				}
+				else {
+					list = (List<AssetEntry>)QueryUtil.list(q, getDialect(),
+							start, end);
+				}
+
+				cacheResult(list);
+
+				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+			}
+			catch (Exception e) {
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
+
+				throw processException(e);
+			}
+			finally {
+				closeSession(session);
+			}
+		}
+
+		return list;
+	}
+
+	/**
+	 * Returns the first asset entry in the ordered set where groupId = &#63; and classNameId = &#63; and visible = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param classNameId the class name ID
+	 * @param visible the visible
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching asset entry
+	 * @throws NoSuchEntryException if a matching asset entry could not be found
+	 */
+	@Override
+	public AssetEntry findByG_C_V_First(long groupId, long classNameId,
+		boolean visible, OrderByComparator<AssetEntry> orderByComparator)
+		throws NoSuchEntryException {
+		AssetEntry assetEntry = fetchByG_C_V_First(groupId, classNameId,
+				visible, orderByComparator);
+
+		if (assetEntry != null) {
+			return assetEntry;
+		}
+
+		StringBundler msg = new StringBundler(8);
+
+		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+
+		msg.append("groupId=");
+		msg.append(groupId);
+
+		msg.append(", classNameId=");
+		msg.append(classNameId);
+
+		msg.append(", visible=");
+		msg.append(visible);
+
+		msg.append("}");
+
+		throw new NoSuchEntryException(msg.toString());
+	}
+
+	/**
+	 * Returns the first asset entry in the ordered set where groupId = &#63; and classNameId = &#63; and visible = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param classNameId the class name ID
+	 * @param visible the visible
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching asset entry, or <code>null</code> if a matching asset entry could not be found
+	 */
+	@Override
+	public AssetEntry fetchByG_C_V_First(long groupId, long classNameId,
+		boolean visible, OrderByComparator<AssetEntry> orderByComparator) {
+		List<AssetEntry> list = findByG_C_V(groupId, classNameId, visible, 0,
+				1, orderByComparator);
+
+		if (!list.isEmpty()) {
+			return list.get(0);
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns the last asset entry in the ordered set where groupId = &#63; and classNameId = &#63; and visible = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param classNameId the class name ID
+	 * @param visible the visible
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching asset entry
+	 * @throws NoSuchEntryException if a matching asset entry could not be found
+	 */
+	@Override
+	public AssetEntry findByG_C_V_Last(long groupId, long classNameId,
+		boolean visible, OrderByComparator<AssetEntry> orderByComparator)
+		throws NoSuchEntryException {
+		AssetEntry assetEntry = fetchByG_C_V_Last(groupId, classNameId,
+				visible, orderByComparator);
+
+		if (assetEntry != null) {
+			return assetEntry;
+		}
+
+		StringBundler msg = new StringBundler(8);
+
+		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+
+		msg.append("groupId=");
+		msg.append(groupId);
+
+		msg.append(", classNameId=");
+		msg.append(classNameId);
+
+		msg.append(", visible=");
+		msg.append(visible);
+
+		msg.append("}");
+
+		throw new NoSuchEntryException(msg.toString());
+	}
+
+	/**
+	 * Returns the last asset entry in the ordered set where groupId = &#63; and classNameId = &#63; and visible = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param classNameId the class name ID
+	 * @param visible the visible
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching asset entry, or <code>null</code> if a matching asset entry could not be found
+	 */
+	@Override
+	public AssetEntry fetchByG_C_V_Last(long groupId, long classNameId,
+		boolean visible, OrderByComparator<AssetEntry> orderByComparator) {
+		int count = countByG_C_V(groupId, classNameId, visible);
+
+		if (count == 0) {
+			return null;
+		}
+
+		List<AssetEntry> list = findByG_C_V(groupId, classNameId, visible,
+				count - 1, count, orderByComparator);
+
+		if (!list.isEmpty()) {
+			return list.get(0);
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns the asset entries before and after the current asset entry in the ordered set where groupId = &#63; and classNameId = &#63; and visible = &#63;.
+	 *
+	 * @param entryId the primary key of the current asset entry
+	 * @param groupId the group ID
+	 * @param classNameId the class name ID
+	 * @param visible the visible
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next asset entry
+	 * @throws NoSuchEntryException if a asset entry with the primary key could not be found
+	 */
+	@Override
+	public AssetEntry[] findByG_C_V_PrevAndNext(long entryId, long groupId,
+		long classNameId, boolean visible,
+		OrderByComparator<AssetEntry> orderByComparator)
+		throws NoSuchEntryException {
+		AssetEntry assetEntry = findByPrimaryKey(entryId);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			AssetEntry[] array = new AssetEntryImpl[3];
+
+			array[0] = getByG_C_V_PrevAndNext(session, assetEntry, groupId,
+					classNameId, visible, orderByComparator, true);
+
+			array[1] = assetEntry;
+
+			array[2] = getByG_C_V_PrevAndNext(session, assetEntry, groupId,
+					classNameId, visible, orderByComparator, false);
+
+			return array;
+		}
+		catch (Exception e) {
+			throw processException(e);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	protected AssetEntry getByG_C_V_PrevAndNext(Session session,
+		AssetEntry assetEntry, long groupId, long classNameId, boolean visible,
+		OrderByComparator<AssetEntry> orderByComparator, boolean previous) {
+		StringBundler query = null;
+
+		if (orderByComparator != null) {
+			query = new StringBundler(6 +
+					(orderByComparator.getOrderByConditionFields().length * 3) +
+					(orderByComparator.getOrderByFields().length * 3));
+		}
+		else {
+			query = new StringBundler(5);
+		}
+
+		query.append(_SQL_SELECT_ASSETENTRY_WHERE);
+
+		query.append(_FINDER_COLUMN_G_C_V_GROUPID_2);
+
+		query.append(_FINDER_COLUMN_G_C_V_CLASSNAMEID_2);
+
+		query.append(_FINDER_COLUMN_G_C_V_VISIBLE_2);
+
+		if (orderByComparator != null) {
+			String[] orderByConditionFields = orderByComparator.getOrderByConditionFields();
+
+			if (orderByConditionFields.length > 0) {
+				query.append(WHERE_AND);
+			}
+
+			for (int i = 0; i < orderByConditionFields.length; i++) {
+				query.append(_ORDER_BY_ENTITY_ALIAS);
+				query.append(orderByConditionFields[i]);
+
+				if ((i + 1) < orderByConditionFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+					}
+					else {
+						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						query.append(WHERE_GREATER_THAN);
+					}
+					else {
+						query.append(WHERE_LESSER_THAN);
+					}
+				}
+			}
+
+			query.append(ORDER_BY_CLAUSE);
+
+			String[] orderByFields = orderByComparator.getOrderByFields();
+
+			for (int i = 0; i < orderByFields.length; i++) {
+				query.append(_ORDER_BY_ENTITY_ALIAS);
+				query.append(orderByFields[i]);
+
+				if ((i + 1) < orderByFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						query.append(ORDER_BY_ASC_HAS_NEXT);
+					}
+					else {
+						query.append(ORDER_BY_DESC_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						query.append(ORDER_BY_ASC);
+					}
+					else {
+						query.append(ORDER_BY_DESC);
+					}
+				}
+			}
+		}
+		else {
+			query.append(AssetEntryModelImpl.ORDER_BY_JPQL);
+		}
+
+		String sql = query.toString();
+
+		Query q = session.createQuery(sql);
+
+		q.setFirstResult(0);
+		q.setMaxResults(2);
+
+		QueryPos qPos = QueryPos.getInstance(q);
+
+		qPos.add(groupId);
+
+		qPos.add(classNameId);
+
+		qPos.add(visible);
+
+		if (orderByComparator != null) {
+			Object[] values = orderByComparator.getOrderByConditionValues(assetEntry);
+
+			for (Object value : values) {
+				qPos.add(value);
+			}
+		}
+
+		List<AssetEntry> list = q.list();
+
+		if (list.size() == 2) {
+			return list.get(1);
+		}
+		else {
+			return null;
+		}
+	}
+
+	/**
+	 * Removes all the asset entries where groupId = &#63; and classNameId = &#63; and visible = &#63; from the database.
+	 *
+	 * @param groupId the group ID
+	 * @param classNameId the class name ID
+	 * @param visible the visible
+	 */
+	@Override
+	public void removeByG_C_V(long groupId, long classNameId, boolean visible) {
+		for (AssetEntry assetEntry : findByG_C_V(groupId, classNameId, visible,
+				QueryUtil.ALL_POS, QueryUtil.ALL_POS, null)) {
+			remove(assetEntry);
+		}
+	}
+
+	/**
+	 * Returns the number of asset entries where groupId = &#63; and classNameId = &#63; and visible = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param classNameId the class name ID
+	 * @param visible the visible
+	 * @return the number of matching asset entries
+	 */
+	@Override
+	public int countByG_C_V(long groupId, long classNameId, boolean visible) {
+		FinderPath finderPath = FINDER_PATH_COUNT_BY_G_C_V;
+
+		Object[] finderArgs = new Object[] { groupId, classNameId, visible };
+
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs,
+				this);
+
+		if (count == null) {
+			StringBundler query = new StringBundler(4);
+
+			query.append(_SQL_COUNT_ASSETENTRY_WHERE);
+
+			query.append(_FINDER_COLUMN_G_C_V_GROUPID_2);
+
+			query.append(_FINDER_COLUMN_G_C_V_CLASSNAMEID_2);
+
+			query.append(_FINDER_COLUMN_G_C_V_VISIBLE_2);
+
+			String sql = query.toString();
+
+			Session session = null;
+
+			try {
+				session = openSession();
+
+				Query q = session.createQuery(sql);
+
+				QueryPos qPos = QueryPos.getInstance(q);
+
+				qPos.add(groupId);
+
+				qPos.add(classNameId);
+
+				qPos.add(visible);
+
+				count = (Long)q.uniqueResult();
+
+				FinderCacheUtil.putResult(finderPath, finderArgs, count);
+			}
+			catch (Exception e) {
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
+
+				throw processException(e);
+			}
+			finally {
+				closeSession(session);
+			}
+		}
+
+		return count.intValue();
+	}
+
+	private static final String _FINDER_COLUMN_G_C_V_GROUPID_2 = "assetEntry.groupId = ? AND ";
+	private static final String _FINDER_COLUMN_G_C_V_CLASSNAMEID_2 = "assetEntry.classNameId = ? AND ";
+	private static final String _FINDER_COLUMN_G_C_V_VISIBLE_2 = "assetEntry.visible = ?";
+	public static final FinderPath FINDER_PATH_WITH_PAGINATION_FIND_BY_G_C_P_E = new FinderPath(AssetEntryModelImpl.ENTITY_CACHE_ENABLED,
+			AssetEntryModelImpl.FINDER_CACHE_ENABLED, AssetEntryImpl.class,
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C_P_E",
+			new String[] {
+				Long.class.getName(), Long.class.getName(), Date.class.getName(),
+				Date.class.getName(),
+				
+			Integer.class.getName(), Integer.class.getName(),
+				OrderByComparator.class.getName()
+			});
+	public static final FinderPath FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_P_E =
+		new FinderPath(AssetEntryModelImpl.ENTITY_CACHE_ENABLED,
+			AssetEntryModelImpl.FINDER_CACHE_ENABLED, AssetEntryImpl.class,
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_C_P_E",
+			new String[] {
+				Long.class.getName(), Long.class.getName(), Date.class.getName(),
+				Date.class.getName()
+			},
+			AssetEntryModelImpl.GROUPID_COLUMN_BITMASK |
+			AssetEntryModelImpl.CLASSNAMEID_COLUMN_BITMASK |
+			AssetEntryModelImpl.PUBLISHDATE_COLUMN_BITMASK |
+			AssetEntryModelImpl.EXPIRATIONDATE_COLUMN_BITMASK);
+	public static final FinderPath FINDER_PATH_COUNT_BY_G_C_P_E = new FinderPath(AssetEntryModelImpl.ENTITY_CACHE_ENABLED,
+			AssetEntryModelImpl.FINDER_CACHE_ENABLED, Long.class,
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_C_P_E",
+			new String[] {
+				Long.class.getName(), Long.class.getName(), Date.class.getName(),
+				Date.class.getName()
+			});
+
+	/**
+	 * Returns all the asset entries where groupId = &#63; and classNameId = &#63; and publishDate = &#63; and expirationDate = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param classNameId the class name ID
+	 * @param publishDate the publish date
+	 * @param expirationDate the expiration date
+	 * @return the matching asset entries
+	 */
+	@Override
+	public List<AssetEntry> findByG_C_P_E(long groupId, long classNameId,
+		Date publishDate, Date expirationDate) {
+		return findByG_C_P_E(groupId, classNameId, publishDate, expirationDate,
+			QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
+	}
+
+	/**
+	 * Returns a range of all the asset entries where groupId = &#63; and classNameId = &#63; and publishDate = &#63; and expirationDate = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link AssetEntryModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param classNameId the class name ID
+	 * @param publishDate the publish date
+	 * @param expirationDate the expiration date
+	 * @param start the lower bound of the range of asset entries
+	 * @param end the upper bound of the range of asset entries (not inclusive)
+	 * @return the range of matching asset entries
+	 */
+	@Override
+	public List<AssetEntry> findByG_C_P_E(long groupId, long classNameId,
+		Date publishDate, Date expirationDate, int start, int end) {
+		return findByG_C_P_E(groupId, classNameId, publishDate, expirationDate,
+			start, end, null);
+	}
+
+	/**
+	 * Returns an ordered range of all the asset entries where groupId = &#63; and classNameId = &#63; and publishDate = &#63; and expirationDate = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link AssetEntryModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param classNameId the class name ID
+	 * @param publishDate the publish date
+	 * @param expirationDate the expiration date
+	 * @param start the lower bound of the range of asset entries
+	 * @param end the upper bound of the range of asset entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching asset entries
+	 */
+	@Override
+	public List<AssetEntry> findByG_C_P_E(long groupId, long classNameId,
+		Date publishDate, Date expirationDate, int start, int end,
+		OrderByComparator<AssetEntry> orderByComparator) {
+		return findByG_C_P_E(groupId, classNameId, publishDate, expirationDate,
+			start, end, orderByComparator, true);
+	}
+
+	/**
+	 * Returns an ordered range of all the asset entries where groupId = &#63; and classNameId = &#63; and publishDate = &#63; and expirationDate = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link AssetEntryModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param classNameId the class name ID
+	 * @param publishDate the publish date
+	 * @param expirationDate the expiration date
+	 * @param start the lower bound of the range of asset entries
+	 * @param end the upper bound of the range of asset entries (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @return the ordered range of matching asset entries
+	 */
+	@Override
+	public List<AssetEntry> findByG_C_P_E(long groupId, long classNameId,
+		Date publishDate, Date expirationDate, int start, int end,
+		OrderByComparator<AssetEntry> orderByComparator,
+		boolean retrieveFromCache) {
+		boolean pagination = true;
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
+
+		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
+				(orderByComparator == null)) {
+			pagination = false;
+			finderPath = FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_P_E;
+			finderArgs = new Object[] {
+					groupId, classNameId, _getTime(publishDate),
+					_getTime(expirationDate)
+				};
+		}
+		else {
+			finderPath = FINDER_PATH_WITH_PAGINATION_FIND_BY_G_C_P_E;
+			finderArgs = new Object[] {
+					groupId, classNameId, _getTime(publishDate),
+					_getTime(expirationDate),
+					
+					start, end, orderByComparator
+				};
+		}
+
+		List<AssetEntry> list = null;
+
+		if (retrieveFromCache) {
+			list = (List<AssetEntry>)FinderCacheUtil.getResult(finderPath,
+					finderArgs, this);
+
+			if ((list != null) && !list.isEmpty()) {
+				for (AssetEntry assetEntry : list) {
+					if ((groupId != assetEntry.getGroupId()) ||
+							(classNameId != assetEntry.getClassNameId()) ||
+							!Objects.equals(publishDate,
+								assetEntry.getPublishDate()) ||
+							!Objects.equals(expirationDate,
+								assetEntry.getExpirationDate())) {
+						list = null;
+
+						break;
+					}
+				}
+			}
+		}
+
+		if (list == null) {
+			StringBundler query = null;
+
+			if (orderByComparator != null) {
+				query = new StringBundler(6 +
+						(orderByComparator.getOrderByFields().length * 2));
+			}
+			else {
+				query = new StringBundler(6);
+			}
+
+			query.append(_SQL_SELECT_ASSETENTRY_WHERE);
+
+			query.append(_FINDER_COLUMN_G_C_P_E_GROUPID_2);
+
+			query.append(_FINDER_COLUMN_G_C_P_E_CLASSNAMEID_2);
+
+			boolean bindPublishDate = false;
+
+			if (publishDate == null) {
+				query.append(_FINDER_COLUMN_G_C_P_E_PUBLISHDATE_1);
+			}
+			else {
+				bindPublishDate = true;
+
+				query.append(_FINDER_COLUMN_G_C_P_E_PUBLISHDATE_2);
+			}
+
+			boolean bindExpirationDate = false;
+
+			if (expirationDate == null) {
+				query.append(_FINDER_COLUMN_G_C_P_E_EXPIRATIONDATE_1);
+			}
+			else {
+				bindExpirationDate = true;
+
+				query.append(_FINDER_COLUMN_G_C_P_E_EXPIRATIONDATE_2);
+			}
+
+			if (orderByComparator != null) {
+				appendOrderByComparator(query, _ORDER_BY_ENTITY_ALIAS,
+					orderByComparator);
+			}
+			else
+			 if (pagination) {
+				query.append(AssetEntryModelImpl.ORDER_BY_JPQL);
+			}
+
+			String sql = query.toString();
+
+			Session session = null;
+
+			try {
+				session = openSession();
+
+				Query q = session.createQuery(sql);
+
+				QueryPos qPos = QueryPos.getInstance(q);
+
+				qPos.add(groupId);
+
+				qPos.add(classNameId);
+
+				if (bindPublishDate) {
+					qPos.add(new Timestamp(publishDate.getTime()));
+				}
+
+				if (bindExpirationDate) {
+					qPos.add(new Timestamp(expirationDate.getTime()));
+				}
+
+				if (!pagination) {
+					list = (List<AssetEntry>)QueryUtil.list(q, getDialect(),
+							start, end, false);
+
+					Collections.sort(list);
+
+					list = Collections.unmodifiableList(list);
+				}
+				else {
+					list = (List<AssetEntry>)QueryUtil.list(q, getDialect(),
+							start, end);
+				}
+
+				cacheResult(list);
+
+				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+			}
+			catch (Exception e) {
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
+
+				throw processException(e);
+			}
+			finally {
+				closeSession(session);
+			}
+		}
+
+		return list;
+	}
+
+	/**
+	 * Returns the first asset entry in the ordered set where groupId = &#63; and classNameId = &#63; and publishDate = &#63; and expirationDate = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param classNameId the class name ID
+	 * @param publishDate the publish date
+	 * @param expirationDate the expiration date
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching asset entry
+	 * @throws NoSuchEntryException if a matching asset entry could not be found
+	 */
+	@Override
+	public AssetEntry findByG_C_P_E_First(long groupId, long classNameId,
+		Date publishDate, Date expirationDate,
+		OrderByComparator<AssetEntry> orderByComparator)
+		throws NoSuchEntryException {
+		AssetEntry assetEntry = fetchByG_C_P_E_First(groupId, classNameId,
+				publishDate, expirationDate, orderByComparator);
+
+		if (assetEntry != null) {
+			return assetEntry;
+		}
+
+		StringBundler msg = new StringBundler(10);
+
+		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+
+		msg.append("groupId=");
+		msg.append(groupId);
+
+		msg.append(", classNameId=");
+		msg.append(classNameId);
+
+		msg.append(", publishDate=");
+		msg.append(publishDate);
+
+		msg.append(", expirationDate=");
+		msg.append(expirationDate);
+
+		msg.append("}");
+
+		throw new NoSuchEntryException(msg.toString());
+	}
+
+	/**
+	 * Returns the first asset entry in the ordered set where groupId = &#63; and classNameId = &#63; and publishDate = &#63; and expirationDate = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param classNameId the class name ID
+	 * @param publishDate the publish date
+	 * @param expirationDate the expiration date
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the first matching asset entry, or <code>null</code> if a matching asset entry could not be found
+	 */
+	@Override
+	public AssetEntry fetchByG_C_P_E_First(long groupId, long classNameId,
+		Date publishDate, Date expirationDate,
+		OrderByComparator<AssetEntry> orderByComparator) {
+		List<AssetEntry> list = findByG_C_P_E(groupId, classNameId,
+				publishDate, expirationDate, 0, 1, orderByComparator);
+
+		if (!list.isEmpty()) {
+			return list.get(0);
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns the last asset entry in the ordered set where groupId = &#63; and classNameId = &#63; and publishDate = &#63; and expirationDate = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param classNameId the class name ID
+	 * @param publishDate the publish date
+	 * @param expirationDate the expiration date
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching asset entry
+	 * @throws NoSuchEntryException if a matching asset entry could not be found
+	 */
+	@Override
+	public AssetEntry findByG_C_P_E_Last(long groupId, long classNameId,
+		Date publishDate, Date expirationDate,
+		OrderByComparator<AssetEntry> orderByComparator)
+		throws NoSuchEntryException {
+		AssetEntry assetEntry = fetchByG_C_P_E_Last(groupId, classNameId,
+				publishDate, expirationDate, orderByComparator);
+
+		if (assetEntry != null) {
+			return assetEntry;
+		}
+
+		StringBundler msg = new StringBundler(10);
+
+		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+
+		msg.append("groupId=");
+		msg.append(groupId);
+
+		msg.append(", classNameId=");
+		msg.append(classNameId);
+
+		msg.append(", publishDate=");
+		msg.append(publishDate);
+
+		msg.append(", expirationDate=");
+		msg.append(expirationDate);
+
+		msg.append("}");
+
+		throw new NoSuchEntryException(msg.toString());
+	}
+
+	/**
+	 * Returns the last asset entry in the ordered set where groupId = &#63; and classNameId = &#63; and publishDate = &#63; and expirationDate = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param classNameId the class name ID
+	 * @param publishDate the publish date
+	 * @param expirationDate the expiration date
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the last matching asset entry, or <code>null</code> if a matching asset entry could not be found
+	 */
+	@Override
+	public AssetEntry fetchByG_C_P_E_Last(long groupId, long classNameId,
+		Date publishDate, Date expirationDate,
+		OrderByComparator<AssetEntry> orderByComparator) {
+		int count = countByG_C_P_E(groupId, classNameId, publishDate,
+				expirationDate);
+
+		if (count == 0) {
+			return null;
+		}
+
+		List<AssetEntry> list = findByG_C_P_E(groupId, classNameId,
+				publishDate, expirationDate, count - 1, count, orderByComparator);
+
+		if (!list.isEmpty()) {
+			return list.get(0);
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns the asset entries before and after the current asset entry in the ordered set where groupId = &#63; and classNameId = &#63; and publishDate = &#63; and expirationDate = &#63;.
+	 *
+	 * @param entryId the primary key of the current asset entry
+	 * @param groupId the group ID
+	 * @param classNameId the class name ID
+	 * @param publishDate the publish date
+	 * @param expirationDate the expiration date
+	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	 * @return the previous, current, and next asset entry
+	 * @throws NoSuchEntryException if a asset entry with the primary key could not be found
+	 */
+	@Override
+	public AssetEntry[] findByG_C_P_E_PrevAndNext(long entryId, long groupId,
+		long classNameId, Date publishDate, Date expirationDate,
+		OrderByComparator<AssetEntry> orderByComparator)
+		throws NoSuchEntryException {
+		AssetEntry assetEntry = findByPrimaryKey(entryId);
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			AssetEntry[] array = new AssetEntryImpl[3];
+
+			array[0] = getByG_C_P_E_PrevAndNext(session, assetEntry, groupId,
+					classNameId, publishDate, expirationDate,
+					orderByComparator, true);
+
+			array[1] = assetEntry;
+
+			array[2] = getByG_C_P_E_PrevAndNext(session, assetEntry, groupId,
+					classNameId, publishDate, expirationDate,
+					orderByComparator, false);
+
+			return array;
+		}
+		catch (Exception e) {
+			throw processException(e);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	protected AssetEntry getByG_C_P_E_PrevAndNext(Session session,
+		AssetEntry assetEntry, long groupId, long classNameId,
+		Date publishDate, Date expirationDate,
+		OrderByComparator<AssetEntry> orderByComparator, boolean previous) {
+		StringBundler query = null;
+
+		if (orderByComparator != null) {
+			query = new StringBundler(7 +
+					(orderByComparator.getOrderByConditionFields().length * 3) +
+					(orderByComparator.getOrderByFields().length * 3));
+		}
+		else {
+			query = new StringBundler(6);
+		}
+
+		query.append(_SQL_SELECT_ASSETENTRY_WHERE);
+
+		query.append(_FINDER_COLUMN_G_C_P_E_GROUPID_2);
+
+		query.append(_FINDER_COLUMN_G_C_P_E_CLASSNAMEID_2);
+
+		boolean bindPublishDate = false;
+
+		if (publishDate == null) {
+			query.append(_FINDER_COLUMN_G_C_P_E_PUBLISHDATE_1);
+		}
+		else {
+			bindPublishDate = true;
+
+			query.append(_FINDER_COLUMN_G_C_P_E_PUBLISHDATE_2);
+		}
+
+		boolean bindExpirationDate = false;
+
+		if (expirationDate == null) {
+			query.append(_FINDER_COLUMN_G_C_P_E_EXPIRATIONDATE_1);
+		}
+		else {
+			bindExpirationDate = true;
+
+			query.append(_FINDER_COLUMN_G_C_P_E_EXPIRATIONDATE_2);
+		}
+
+		if (orderByComparator != null) {
+			String[] orderByConditionFields = orderByComparator.getOrderByConditionFields();
+
+			if (orderByConditionFields.length > 0) {
+				query.append(WHERE_AND);
+			}
+
+			for (int i = 0; i < orderByConditionFields.length; i++) {
+				query.append(_ORDER_BY_ENTITY_ALIAS);
+				query.append(orderByConditionFields[i]);
+
+				if ((i + 1) < orderByConditionFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+					}
+					else {
+						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						query.append(WHERE_GREATER_THAN);
+					}
+					else {
+						query.append(WHERE_LESSER_THAN);
+					}
+				}
+			}
+
+			query.append(ORDER_BY_CLAUSE);
+
+			String[] orderByFields = orderByComparator.getOrderByFields();
+
+			for (int i = 0; i < orderByFields.length; i++) {
+				query.append(_ORDER_BY_ENTITY_ALIAS);
+				query.append(orderByFields[i]);
+
+				if ((i + 1) < orderByFields.length) {
+					if (orderByComparator.isAscending() ^ previous) {
+						query.append(ORDER_BY_ASC_HAS_NEXT);
+					}
+					else {
+						query.append(ORDER_BY_DESC_HAS_NEXT);
+					}
+				}
+				else {
+					if (orderByComparator.isAscending() ^ previous) {
+						query.append(ORDER_BY_ASC);
+					}
+					else {
+						query.append(ORDER_BY_DESC);
+					}
+				}
+			}
+		}
+		else {
+			query.append(AssetEntryModelImpl.ORDER_BY_JPQL);
+		}
+
+		String sql = query.toString();
+
+		Query q = session.createQuery(sql);
+
+		q.setFirstResult(0);
+		q.setMaxResults(2);
+
+		QueryPos qPos = QueryPos.getInstance(q);
+
+		qPos.add(groupId);
+
+		qPos.add(classNameId);
+
+		if (bindPublishDate) {
+			qPos.add(new Timestamp(publishDate.getTime()));
+		}
+
+		if (bindExpirationDate) {
+			qPos.add(new Timestamp(expirationDate.getTime()));
+		}
+
+		if (orderByComparator != null) {
+			Object[] values = orderByComparator.getOrderByConditionValues(assetEntry);
+
+			for (Object value : values) {
+				qPos.add(value);
+			}
+		}
+
+		List<AssetEntry> list = q.list();
+
+		if (list.size() == 2) {
+			return list.get(1);
+		}
+		else {
+			return null;
+		}
+	}
+
+	/**
+	 * Removes all the asset entries where groupId = &#63; and classNameId = &#63; and publishDate = &#63; and expirationDate = &#63; from the database.
+	 *
+	 * @param groupId the group ID
+	 * @param classNameId the class name ID
+	 * @param publishDate the publish date
+	 * @param expirationDate the expiration date
+	 */
+	@Override
+	public void removeByG_C_P_E(long groupId, long classNameId,
+		Date publishDate, Date expirationDate) {
+		for (AssetEntry assetEntry : findByG_C_P_E(groupId, classNameId,
+				publishDate, expirationDate, QueryUtil.ALL_POS,
+				QueryUtil.ALL_POS, null)) {
+			remove(assetEntry);
+		}
+	}
+
+	/**
+	 * Returns the number of asset entries where groupId = &#63; and classNameId = &#63; and publishDate = &#63; and expirationDate = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param classNameId the class name ID
+	 * @param publishDate the publish date
+	 * @param expirationDate the expiration date
+	 * @return the number of matching asset entries
+	 */
+	@Override
+	public int countByG_C_P_E(long groupId, long classNameId, Date publishDate,
+		Date expirationDate) {
+		FinderPath finderPath = FINDER_PATH_COUNT_BY_G_C_P_E;
+
+		Object[] finderArgs = new Object[] {
+				groupId, classNameId, _getTime(publishDate),
+				_getTime(expirationDate)
+			};
+
+		Long count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs,
+				this);
+
+		if (count == null) {
+			StringBundler query = new StringBundler(5);
+
+			query.append(_SQL_COUNT_ASSETENTRY_WHERE);
+
+			query.append(_FINDER_COLUMN_G_C_P_E_GROUPID_2);
+
+			query.append(_FINDER_COLUMN_G_C_P_E_CLASSNAMEID_2);
+
+			boolean bindPublishDate = false;
+
+			if (publishDate == null) {
+				query.append(_FINDER_COLUMN_G_C_P_E_PUBLISHDATE_1);
+			}
+			else {
+				bindPublishDate = true;
+
+				query.append(_FINDER_COLUMN_G_C_P_E_PUBLISHDATE_2);
+			}
+
+			boolean bindExpirationDate = false;
+
+			if (expirationDate == null) {
+				query.append(_FINDER_COLUMN_G_C_P_E_EXPIRATIONDATE_1);
+			}
+			else {
+				bindExpirationDate = true;
+
+				query.append(_FINDER_COLUMN_G_C_P_E_EXPIRATIONDATE_2);
+			}
+
+			String sql = query.toString();
+
+			Session session = null;
+
+			try {
+				session = openSession();
+
+				Query q = session.createQuery(sql);
+
+				QueryPos qPos = QueryPos.getInstance(q);
+
+				qPos.add(groupId);
+
+				qPos.add(classNameId);
+
+				if (bindPublishDate) {
+					qPos.add(new Timestamp(publishDate.getTime()));
+				}
+
+				if (bindExpirationDate) {
+					qPos.add(new Timestamp(expirationDate.getTime()));
+				}
+
+				count = (Long)q.uniqueResult();
+
+				FinderCacheUtil.putResult(finderPath, finderArgs, count);
+			}
+			catch (Exception e) {
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
+
+				throw processException(e);
+			}
+			finally {
+				closeSession(session);
+			}
+		}
+
+		return count.intValue();
+	}
+
+	private static final String _FINDER_COLUMN_G_C_P_E_GROUPID_2 = "assetEntry.groupId = ? AND ";
+	private static final String _FINDER_COLUMN_G_C_P_E_CLASSNAMEID_2 = "assetEntry.classNameId = ? AND ";
+	private static final String _FINDER_COLUMN_G_C_P_E_PUBLISHDATE_1 = "assetEntry.publishDate IS NULL AND ";
+	private static final String _FINDER_COLUMN_G_C_P_E_PUBLISHDATE_2 = "assetEntry.publishDate = ? AND ";
+	private static final String _FINDER_COLUMN_G_C_P_E_EXPIRATIONDATE_1 = "assetEntry.expirationDate IS NULL";
+	private static final String _FINDER_COLUMN_G_C_P_E_EXPIRATIONDATE_2 = "assetEntry.expirationDate = ?";
 
 	public AssetEntryPersistenceImpl() {
 		setModelClass(AssetEntry.class);
@@ -3742,14 +5036,14 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 	 */
 	@Override
 	public void cacheResult(AssetEntry assetEntry) {
-		entityCache.putResult(AssetEntryModelImpl.ENTITY_CACHE_ENABLED,
+		EntityCacheUtil.putResult(AssetEntryModelImpl.ENTITY_CACHE_ENABLED,
 			AssetEntryImpl.class, assetEntry.getPrimaryKey(), assetEntry);
 
-		finderCache.putResult(FINDER_PATH_FETCH_BY_G_CU,
+		FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_G_CU,
 			new Object[] { assetEntry.getGroupId(), assetEntry.getClassUuid() },
 			assetEntry);
 
-		finderCache.putResult(FINDER_PATH_FETCH_BY_C_C,
+		FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_C_C,
 			new Object[] { assetEntry.getClassNameId(), assetEntry.getClassPK() },
 			assetEntry);
 
@@ -3764,7 +5058,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 	@Override
 	public void cacheResult(List<AssetEntry> assetEntries) {
 		for (AssetEntry assetEntry : assetEntries) {
-			if (entityCache.getResult(
+			if (EntityCacheUtil.getResult(
 						AssetEntryModelImpl.ENTITY_CACHE_ENABLED,
 						AssetEntryImpl.class, assetEntry.getPrimaryKey()) == null) {
 				cacheResult(assetEntry);
@@ -3779,43 +5073,43 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 	 * Clears the cache for all asset entries.
 	 *
 	 * <p>
-	 * The {@link EntityCache} and {@link FinderCache} are both cleared by this method.
+	 * The {@link com.liferay.portal.kernel.dao.orm.EntityCache} and {@link com.liferay.portal.kernel.dao.orm.FinderCache} are both cleared by this method.
 	 * </p>
 	 */
 	@Override
 	public void clearCache() {
-		entityCache.clearCache(AssetEntryImpl.class);
+		EntityCacheUtil.clearCache(AssetEntryImpl.class);
 
-		finderCache.clearCache(FINDER_CLASS_NAME_ENTITY);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_ENTITY);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 	}
 
 	/**
 	 * Clears the cache for the asset entry.
 	 *
 	 * <p>
-	 * The {@link EntityCache} and {@link FinderCache} are both cleared by this method.
+	 * The {@link com.liferay.portal.kernel.dao.orm.EntityCache} and {@link com.liferay.portal.kernel.dao.orm.FinderCache} are both cleared by this method.
 	 * </p>
 	 */
 	@Override
 	public void clearCache(AssetEntry assetEntry) {
-		entityCache.removeResult(AssetEntryModelImpl.ENTITY_CACHE_ENABLED,
+		EntityCacheUtil.removeResult(AssetEntryModelImpl.ENTITY_CACHE_ENABLED,
 			AssetEntryImpl.class, assetEntry.getPrimaryKey());
 
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 
 		clearUniqueFindersCache((AssetEntryModelImpl)assetEntry, true);
 	}
 
 	@Override
 	public void clearCache(List<AssetEntry> assetEntries) {
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 
 		for (AssetEntry assetEntry : assetEntries) {
-			entityCache.removeResult(AssetEntryModelImpl.ENTITY_CACHE_ENABLED,
+			EntityCacheUtil.removeResult(AssetEntryModelImpl.ENTITY_CACHE_ENABLED,
 				AssetEntryImpl.class, assetEntry.getPrimaryKey());
 
 			clearUniqueFindersCache((AssetEntryModelImpl)assetEntry, true);
@@ -3829,9 +5123,9 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 				assetEntryModelImpl.getClassUuid()
 			};
 
-		finderCache.putResult(FINDER_PATH_COUNT_BY_G_CU, args, Long.valueOf(1),
-			false);
-		finderCache.putResult(FINDER_PATH_FETCH_BY_G_CU, args,
+		FinderCacheUtil.putResult(FINDER_PATH_COUNT_BY_G_CU, args,
+			Long.valueOf(1), false);
+		FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_G_CU, args,
 			assetEntryModelImpl, false);
 
 		args = new Object[] {
@@ -3839,9 +5133,9 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 				assetEntryModelImpl.getClassPK()
 			};
 
-		finderCache.putResult(FINDER_PATH_COUNT_BY_C_C, args, Long.valueOf(1),
-			false);
-		finderCache.putResult(FINDER_PATH_FETCH_BY_C_C, args,
+		FinderCacheUtil.putResult(FINDER_PATH_COUNT_BY_C_C, args,
+			Long.valueOf(1), false);
+		FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_C_C, args,
 			assetEntryModelImpl, false);
 	}
 
@@ -3853,8 +5147,8 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 					assetEntryModelImpl.getClassUuid()
 				};
 
-			finderCache.removeResult(FINDER_PATH_COUNT_BY_G_CU, args);
-			finderCache.removeResult(FINDER_PATH_FETCH_BY_G_CU, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_G_CU, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_G_CU, args);
 		}
 
 		if ((assetEntryModelImpl.getColumnBitmask() &
@@ -3864,8 +5158,8 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 					assetEntryModelImpl.getOriginalClassUuid()
 				};
 
-			finderCache.removeResult(FINDER_PATH_COUNT_BY_G_CU, args);
-			finderCache.removeResult(FINDER_PATH_FETCH_BY_G_CU, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_G_CU, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_G_CU, args);
 		}
 
 		if (clearCurrent) {
@@ -3874,8 +5168,8 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 					assetEntryModelImpl.getClassPK()
 				};
 
-			finderCache.removeResult(FINDER_PATH_COUNT_BY_C_C, args);
-			finderCache.removeResult(FINDER_PATH_FETCH_BY_C_C, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_C_C, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_C_C, args);
 		}
 
 		if ((assetEntryModelImpl.getColumnBitmask() &
@@ -3885,8 +5179,8 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 					assetEntryModelImpl.getOriginalClassPK()
 				};
 
-			finderCache.removeResult(FINDER_PATH_COUNT_BY_C_C, args);
-			finderCache.removeResult(FINDER_PATH_FETCH_BY_C_C, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_C_C, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_C_C, args);
 		}
 	}
 
@@ -3962,8 +5256,6 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 
 	@Override
 	protected AssetEntry removeImpl(AssetEntry assetEntry) {
-		assetEntry = toUnwrappedModel(assetEntry);
-
 		assetEntryToAssetCategoryTableMapper.deleteLeftPrimaryKeyTableMappings(assetEntry.getPrimaryKey());
 
 		assetEntryToAssetTagTableMapper.deleteLeftPrimaryKeyTableMappings(assetEntry.getPrimaryKey());
@@ -3998,9 +5290,23 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 
 	@Override
 	public AssetEntry updateImpl(AssetEntry assetEntry) {
-		assetEntry = toUnwrappedModel(assetEntry);
-
 		boolean isNew = assetEntry.isNew();
+
+		if (!(assetEntry instanceof AssetEntryModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(assetEntry.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(assetEntry);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in assetEntry proxy " +
+					invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom AssetEntry implementation " +
+				assetEntry.getClass());
+		}
 
 		AssetEntryModelImpl assetEntryModelImpl = (AssetEntryModelImpl)assetEntry;
 
@@ -4047,10 +5353,75 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 			closeSession(session);
 		}
 
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
 
-		if (isNew || !AssetEntryModelImpl.COLUMN_BITMASK_ENABLED) {
-			finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		if (!AssetEntryModelImpl.COLUMN_BITMASK_ENABLED) {
+			FinderCacheUtil.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		}
+		else
+		 if (isNew) {
+			Object[] args = new Object[] { assetEntryModelImpl.getGroupId() };
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_GROUPID, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_GROUPID,
+				args);
+
+			args = new Object[] { assetEntryModelImpl.getCompanyId() };
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_COMPANYID, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_COMPANYID,
+				args);
+
+			args = new Object[] { assetEntryModelImpl.isVisible() };
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_VISIBLE, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_VISIBLE,
+				args);
+
+			args = new Object[] { assetEntryModelImpl.getPublishDate() };
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_PUBLISHDATE, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_PUBLISHDATE,
+				args);
+
+			args = new Object[] { assetEntryModelImpl.getExpirationDate() };
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_EXPIRATIONDATE,
+				args);
+			FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_EXPIRATIONDATE,
+				args);
+
+			args = new Object[] { assetEntryModelImpl.getLayoutUuid() };
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_LAYOUTUUID, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_LAYOUTUUID,
+				args);
+
+			args = new Object[] {
+					assetEntryModelImpl.getGroupId(),
+					assetEntryModelImpl.getClassNameId(),
+					assetEntryModelImpl.isVisible()
+				};
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_G_C_V, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_V,
+				args);
+
+			args = new Object[] {
+					assetEntryModelImpl.getGroupId(),
+					assetEntryModelImpl.getClassNameId(),
+					assetEntryModelImpl.getPublishDate(),
+					assetEntryModelImpl.getExpirationDate()
+				};
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_G_C_P_E, args);
+			FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_P_E,
+				args);
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_ALL,
+				FINDER_ARGS_EMPTY);
+			FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_ALL,
+				FINDER_ARGS_EMPTY);
 		}
 
 		else {
@@ -4060,14 +5431,14 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 						assetEntryModelImpl.getOriginalGroupId()
 					};
 
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_GROUPID, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_GROUPID,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_GROUPID, args);
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_GROUPID,
 					args);
 
 				args = new Object[] { assetEntryModelImpl.getGroupId() };
 
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_GROUPID, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_GROUPID,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_GROUPID, args);
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_GROUPID,
 					args);
 			}
 
@@ -4077,14 +5448,16 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 						assetEntryModelImpl.getOriginalCompanyId()
 					};
 
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_COMPANYID, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_COMPANYID,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_COMPANYID,
+					args);
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_COMPANYID,
 					args);
 
 				args = new Object[] { assetEntryModelImpl.getCompanyId() };
 
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_COMPANYID, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_COMPANYID,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_COMPANYID,
+					args);
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_COMPANYID,
 					args);
 			}
 
@@ -4094,14 +5467,14 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 						assetEntryModelImpl.getOriginalVisible()
 					};
 
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_VISIBLE, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_VISIBLE,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_VISIBLE, args);
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_VISIBLE,
 					args);
 
-				args = new Object[] { assetEntryModelImpl.getVisible() };
+				args = new Object[] { assetEntryModelImpl.isVisible() };
 
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_VISIBLE, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_VISIBLE,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_VISIBLE, args);
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_VISIBLE,
 					args);
 			}
 
@@ -4111,14 +5484,16 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 						assetEntryModelImpl.getOriginalPublishDate()
 					};
 
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_PUBLISHDATE, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_PUBLISHDATE,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_PUBLISHDATE,
+					args);
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_PUBLISHDATE,
 					args);
 
 				args = new Object[] { assetEntryModelImpl.getPublishDate() };
 
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_PUBLISHDATE, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_PUBLISHDATE,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_PUBLISHDATE,
+					args);
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_PUBLISHDATE,
 					args);
 			}
 
@@ -4128,16 +5503,16 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 						assetEntryModelImpl.getOriginalExpirationDate()
 					};
 
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_EXPIRATIONDATE,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_EXPIRATIONDATE,
 					args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_EXPIRATIONDATE,
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_EXPIRATIONDATE,
 					args);
 
 				args = new Object[] { assetEntryModelImpl.getExpirationDate() };
 
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_EXPIRATIONDATE,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_EXPIRATIONDATE,
 					args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_EXPIRATIONDATE,
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_EXPIRATIONDATE,
 					args);
 			}
 
@@ -4147,19 +5522,69 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 						assetEntryModelImpl.getOriginalLayoutUuid()
 					};
 
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_LAYOUTUUID, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_LAYOUTUUID,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_LAYOUTUUID,
+					args);
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_LAYOUTUUID,
 					args);
 
 				args = new Object[] { assetEntryModelImpl.getLayoutUuid() };
 
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_LAYOUTUUID, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_LAYOUTUUID,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_LAYOUTUUID,
+					args);
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_LAYOUTUUID,
+					args);
+			}
+
+			if ((assetEntryModelImpl.getColumnBitmask() &
+					FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_V.getColumnBitmask()) != 0) {
+				Object[] args = new Object[] {
+						assetEntryModelImpl.getOriginalGroupId(),
+						assetEntryModelImpl.getOriginalClassNameId(),
+						assetEntryModelImpl.getOriginalVisible()
+					};
+
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_G_C_V, args);
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_V,
+					args);
+
+				args = new Object[] {
+						assetEntryModelImpl.getGroupId(),
+						assetEntryModelImpl.getClassNameId(),
+						assetEntryModelImpl.isVisible()
+					};
+
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_G_C_V, args);
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_V,
+					args);
+			}
+
+			if ((assetEntryModelImpl.getColumnBitmask() &
+					FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_P_E.getColumnBitmask()) != 0) {
+				Object[] args = new Object[] {
+						assetEntryModelImpl.getOriginalGroupId(),
+						assetEntryModelImpl.getOriginalClassNameId(),
+						assetEntryModelImpl.getOriginalPublishDate(),
+						assetEntryModelImpl.getOriginalExpirationDate()
+					};
+
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_G_C_P_E, args);
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_P_E,
+					args);
+
+				args = new Object[] {
+						assetEntryModelImpl.getGroupId(),
+						assetEntryModelImpl.getClassNameId(),
+						assetEntryModelImpl.getPublishDate(),
+						assetEntryModelImpl.getExpirationDate()
+					};
+
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_G_C_P_E, args);
+				FinderCacheUtil.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_P_E,
 					args);
 			}
 		}
 
-		entityCache.putResult(AssetEntryModelImpl.ENTITY_CACHE_ENABLED,
+		EntityCacheUtil.putResult(AssetEntryModelImpl.ENTITY_CACHE_ENABLED,
 			AssetEntryImpl.class, assetEntry.getPrimaryKey(), assetEntry, false);
 
 		clearUniqueFindersCache(assetEntryModelImpl, false);
@@ -4168,47 +5593,6 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		assetEntry.resetOriginalValues();
 
 		return assetEntry;
-	}
-
-	protected AssetEntry toUnwrappedModel(AssetEntry assetEntry) {
-		if (assetEntry instanceof AssetEntryImpl) {
-			return assetEntry;
-		}
-
-		AssetEntryImpl assetEntryImpl = new AssetEntryImpl();
-
-		assetEntryImpl.setNew(assetEntry.isNew());
-		assetEntryImpl.setPrimaryKey(assetEntry.getPrimaryKey());
-
-		assetEntryImpl.setEntryId(assetEntry.getEntryId());
-		assetEntryImpl.setGroupId(assetEntry.getGroupId());
-		assetEntryImpl.setCompanyId(assetEntry.getCompanyId());
-		assetEntryImpl.setUserId(assetEntry.getUserId());
-		assetEntryImpl.setUserName(assetEntry.getUserName());
-		assetEntryImpl.setCreateDate(assetEntry.getCreateDate());
-		assetEntryImpl.setModifiedDate(assetEntry.getModifiedDate());
-		assetEntryImpl.setClassNameId(assetEntry.getClassNameId());
-		assetEntryImpl.setClassPK(assetEntry.getClassPK());
-		assetEntryImpl.setClassUuid(assetEntry.getClassUuid());
-		assetEntryImpl.setClassTypeId(assetEntry.getClassTypeId());
-		assetEntryImpl.setListable(assetEntry.isListable());
-		assetEntryImpl.setVisible(assetEntry.isVisible());
-		assetEntryImpl.setStartDate(assetEntry.getStartDate());
-		assetEntryImpl.setEndDate(assetEntry.getEndDate());
-		assetEntryImpl.setPublishDate(assetEntry.getPublishDate());
-		assetEntryImpl.setExpirationDate(assetEntry.getExpirationDate());
-		assetEntryImpl.setMimeType(assetEntry.getMimeType());
-		assetEntryImpl.setTitle(assetEntry.getTitle());
-		assetEntryImpl.setDescription(assetEntry.getDescription());
-		assetEntryImpl.setSummary(assetEntry.getSummary());
-		assetEntryImpl.setUrl(assetEntry.getUrl());
-		assetEntryImpl.setLayoutUuid(assetEntry.getLayoutUuid());
-		assetEntryImpl.setHeight(assetEntry.getHeight());
-		assetEntryImpl.setWidth(assetEntry.getWidth());
-		assetEntryImpl.setPriority(assetEntry.getPriority());
-		assetEntryImpl.setViewCount(assetEntry.getViewCount());
-
-		return assetEntryImpl;
 	}
 
 	/**
@@ -4256,7 +5640,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 	 */
 	@Override
 	public AssetEntry fetchByPrimaryKey(Serializable primaryKey) {
-		Serializable serializable = entityCache.getResult(AssetEntryModelImpl.ENTITY_CACHE_ENABLED,
+		Serializable serializable = EntityCacheUtil.getResult(AssetEntryModelImpl.ENTITY_CACHE_ENABLED,
 				AssetEntryImpl.class, primaryKey);
 
 		if (serializable == nullModel) {
@@ -4278,12 +5662,12 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 					cacheResult(assetEntry);
 				}
 				else {
-					entityCache.putResult(AssetEntryModelImpl.ENTITY_CACHE_ENABLED,
+					EntityCacheUtil.putResult(AssetEntryModelImpl.ENTITY_CACHE_ENABLED,
 						AssetEntryImpl.class, primaryKey, nullModel);
 				}
 			}
 			catch (Exception e) {
-				entityCache.removeResult(AssetEntryModelImpl.ENTITY_CACHE_ENABLED,
+				EntityCacheUtil.removeResult(AssetEntryModelImpl.ENTITY_CACHE_ENABLED,
 					AssetEntryImpl.class, primaryKey);
 
 				throw processException(e);
@@ -4333,7 +5717,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		Set<Serializable> uncachedPrimaryKeys = null;
 
 		for (Serializable primaryKey : primaryKeys) {
-			Serializable serializable = entityCache.getResult(AssetEntryModelImpl.ENTITY_CACHE_ENABLED,
+			Serializable serializable = EntityCacheUtil.getResult(AssetEntryModelImpl.ENTITY_CACHE_ENABLED,
 					AssetEntryImpl.class, primaryKey);
 
 			if (serializable != nullModel) {
@@ -4360,14 +5744,14 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		query.append(_SQL_SELECT_ASSETENTRY_WHERE_PKS_IN);
 
 		for (Serializable primaryKey : uncachedPrimaryKeys) {
-			query.append(String.valueOf(primaryKey));
+			query.append((long)primaryKey);
 
-			query.append(StringPool.COMMA);
+			query.append(",");
 		}
 
 		query.setIndex(query.index() - 1);
 
-		query.append(StringPool.CLOSE_PARENTHESIS);
+		query.append(")");
 
 		String sql = query.toString();
 
@@ -4387,7 +5771,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 			}
 
 			for (Serializable primaryKey : uncachedPrimaryKeys) {
-				entityCache.putResult(AssetEntryModelImpl.ENTITY_CACHE_ENABLED,
+				EntityCacheUtil.putResult(AssetEntryModelImpl.ENTITY_CACHE_ENABLED,
 					AssetEntryImpl.class, primaryKey, nullModel);
 			}
 		}
@@ -4480,7 +5864,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		List<AssetEntry> list = null;
 
 		if (retrieveFromCache) {
-			list = (List<AssetEntry>)finderCache.getResult(finderPath,
+			list = (List<AssetEntry>)FinderCacheUtil.getResult(finderPath,
 					finderArgs, this);
 		}
 
@@ -4529,10 +5913,10 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				FinderCacheUtil.putResult(finderPath, finderArgs, list);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				FinderCacheUtil.removeResult(finderPath, finderArgs);
 
 				throw processException(e);
 			}
@@ -4562,7 +5946,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 	 */
 	@Override
 	public int countAll() {
-		Long count = (Long)finderCache.getResult(FINDER_PATH_COUNT_ALL,
+		Long count = (Long)FinderCacheUtil.getResult(FINDER_PATH_COUNT_ALL,
 				FINDER_ARGS_EMPTY, this);
 
 		if (count == null) {
@@ -4575,11 +5959,11 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 
 				count = (Long)q.uniqueResult();
 
-				finderCache.putResult(FINDER_PATH_COUNT_ALL, FINDER_ARGS_EMPTY,
-					count);
+				FinderCacheUtil.putResult(FINDER_PATH_COUNT_ALL,
+					FINDER_ARGS_EMPTY, count);
 			}
 			catch (Exception e) {
-				finderCache.removeResult(FINDER_PATH_COUNT_ALL,
+				FinderCacheUtil.removeResult(FINDER_PATH_COUNT_ALL,
 					FINDER_ARGS_EMPTY);
 
 				throw processException(e);
@@ -5219,10 +6603,10 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 	}
 
 	public void destroy() {
-		entityCache.removeCache(AssetEntryImpl.class.getName());
-		finderCache.removeCache(FINDER_CLASS_NAME_ENTITY);
-		finderCache.removeCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.removeCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		EntityCacheUtil.removeCache(AssetEntryImpl.class.getName());
+		FinderCacheUtil.removeCache(FINDER_CLASS_NAME_ENTITY);
+		FinderCacheUtil.removeCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		FinderCacheUtil.removeCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
 
 		TableMapperFactory.removeTableMapper("AssetEntries_AssetCategories");
 		TableMapperFactory.removeTableMapper("AssetEntries_AssetTags");
@@ -5230,14 +6614,21 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 
 	@BeanReference(type = CompanyProviderWrapper.class)
 	protected CompanyProvider companyProvider;
-	protected EntityCache entityCache = EntityCacheUtil.getEntityCache();
-	protected FinderCache finderCache = FinderCacheUtil.getFinderCache();
 	@BeanReference(type = AssetCategoryPersistence.class)
 	protected AssetCategoryPersistence assetCategoryPersistence;
 	protected TableMapper<AssetEntry, com.liferay.asset.kernel.model.AssetCategory> assetEntryToAssetCategoryTableMapper;
 	@BeanReference(type = AssetTagPersistence.class)
 	protected AssetTagPersistence assetTagPersistence;
 	protected TableMapper<AssetEntry, com.liferay.asset.kernel.model.AssetTag> assetEntryToAssetTagTableMapper;
+
+	private Long _getTime(Date date) {
+		if (date == null) {
+			return null;
+		}
+
+		return date.getTime();
+	}
+
 	private static final String _SQL_SELECT_ASSETENTRY = "SELECT assetEntry FROM AssetEntry assetEntry";
 	private static final String _SQL_SELECT_ASSETENTRY_WHERE_PKS_IN = "SELECT assetEntry FROM AssetEntry assetEntry WHERE entryId IN (";
 	private static final String _SQL_SELECT_ASSETENTRY_WHERE = "SELECT assetEntry FROM AssetEntry assetEntry WHERE ";
