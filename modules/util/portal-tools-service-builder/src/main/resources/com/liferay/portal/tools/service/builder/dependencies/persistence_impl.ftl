@@ -40,6 +40,8 @@ import ${serviceBuilder.getCompatProperty("StringBundler")};
 
 import aQute.bnd.annotation.ProviderType;
 
+import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
+
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
@@ -593,7 +595,7 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 				}
 			}
 
-			if (!${entity.varName}ModelImpl.hasSetModifiedDate()) {
+			if (!${entity.varName}ModelImpl.hasSetModifiedDate() && !ExportImportThreadLocal.isImportInProcess()) {
 				if (serviceContext == null) {
 					${entity.varName}.setModifiedDate(now);
 				}
