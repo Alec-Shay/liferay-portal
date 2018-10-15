@@ -16,6 +16,8 @@ package com.liferay.portal.service.persistence.impl;
 
 import aQute.bnd.annotation.ProviderType;
 
+import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
+
 import com.liferay.petra.string.StringBundler;
 
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
@@ -595,7 +597,8 @@ public class ReleasePersistenceImpl extends BasePersistenceImpl<Release>
 			}
 		}
 
-		if (!releaseModelImpl.hasSetModifiedDate()) {
+		if (!releaseModelImpl.hasSetModifiedDate() &&
+				!ExportImportThreadLocal.isImportInProcess()) {
 			if (serviceContext == null) {
 				release.setModifiedDate(now);
 			}

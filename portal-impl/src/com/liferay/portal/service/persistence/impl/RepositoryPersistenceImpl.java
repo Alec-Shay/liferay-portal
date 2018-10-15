@@ -16,6 +16,8 @@ package com.liferay.portal.service.persistence.impl;
 
 import aQute.bnd.annotation.ProviderType;
 
+import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
+
 import com.liferay.petra.string.StringBundler;
 
 import com.liferay.portal.kernel.bean.BeanReference;
@@ -2605,7 +2607,8 @@ public class RepositoryPersistenceImpl extends BasePersistenceImpl<Repository>
 			}
 		}
 
-		if (!repositoryModelImpl.hasSetModifiedDate()) {
+		if (!repositoryModelImpl.hasSetModifiedDate() &&
+				!ExportImportThreadLocal.isImportInProcess()) {
 			if (serviceContext == null) {
 				repository.setModifiedDate(now);
 			}
