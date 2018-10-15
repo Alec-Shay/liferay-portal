@@ -20,6 +20,8 @@ import com.liferay.document.library.kernel.exception.NoSuchFileEntryException;
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.service.persistence.DLFileEntryPersistence;
 
+import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
+
 import com.liferay.petra.string.StringBundler;
 
 import com.liferay.portal.kernel.bean.BeanReference;
@@ -14871,7 +14873,8 @@ public class DLFileEntryPersistenceImpl extends BasePersistenceImpl<DLFileEntry>
 			}
 		}
 
-		if (!dlFileEntryModelImpl.hasSetModifiedDate()) {
+		if (!dlFileEntryModelImpl.hasSetModifiedDate() &&
+				!ExportImportThreadLocal.isImportInProcess()) {
 			if (serviceContext == null) {
 				dlFileEntry.setModifiedDate(now);
 			}

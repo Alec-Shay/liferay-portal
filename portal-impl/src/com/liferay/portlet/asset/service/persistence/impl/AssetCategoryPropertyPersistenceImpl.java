@@ -20,6 +20,8 @@ import com.liferay.asset.kernel.exception.NoSuchCategoryPropertyException;
 import com.liferay.asset.kernel.model.AssetCategoryProperty;
 import com.liferay.asset.kernel.service.persistence.AssetCategoryPropertyPersistence;
 
+import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
+
 import com.liferay.petra.string.StringBundler;
 
 import com.liferay.portal.kernel.bean.BeanReference;
@@ -2260,7 +2262,8 @@ public class AssetCategoryPropertyPersistenceImpl extends BasePersistenceImpl<As
 			}
 		}
 
-		if (!assetCategoryPropertyModelImpl.hasSetModifiedDate()) {
+		if (!assetCategoryPropertyModelImpl.hasSetModifiedDate() &&
+				!ExportImportThreadLocal.isImportInProcess()) {
 			if (serviceContext == null) {
 				assetCategoryProperty.setModifiedDate(now);
 			}

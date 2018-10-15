@@ -22,6 +22,8 @@ import com.liferay.asset.kernel.service.persistence.AssetCategoryPersistence;
 import com.liferay.asset.kernel.service.persistence.AssetEntryPersistence;
 import com.liferay.asset.kernel.service.persistence.AssetTagPersistence;
 
+import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
+
 import com.liferay.petra.string.StringBundler;
 
 import com.liferay.portal.kernel.bean.BeanReference;
@@ -5323,7 +5325,8 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 			}
 		}
 
-		if (!assetEntryModelImpl.hasSetModifiedDate()) {
+		if (!assetEntryModelImpl.hasSetModifiedDate() &&
+				!ExportImportThreadLocal.isImportInProcess()) {
 			if (serviceContext == null) {
 				assetEntry.setModifiedDate(now);
 			}

@@ -20,6 +20,8 @@ import com.liferay.document.library.kernel.exception.NoSuchFileVersionException;
 import com.liferay.document.library.kernel.model.DLFileVersion;
 import com.liferay.document.library.kernel.service.persistence.DLFileVersionPersistence;
 
+import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
+
 import com.liferay.petra.string.StringBundler;
 
 import com.liferay.portal.kernel.bean.BeanReference;
@@ -6015,7 +6017,8 @@ public class DLFileVersionPersistenceImpl extends BasePersistenceImpl<DLFileVers
 			}
 		}
 
-		if (!dlFileVersionModelImpl.hasSetModifiedDate()) {
+		if (!dlFileVersionModelImpl.hasSetModifiedDate() &&
+				!ExportImportThreadLocal.isImportInProcess()) {
 			if (serviceContext == null) {
 				dlFileVersion.setModifiedDate(now);
 			}

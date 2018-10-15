@@ -20,6 +20,8 @@ import com.liferay.document.library.kernel.exception.NoSuchFileShortcutException
 import com.liferay.document.library.kernel.model.DLFileShortcut;
 import com.liferay.document.library.kernel.service.persistence.DLFileShortcutPersistence;
 
+import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
+
 import com.liferay.petra.string.StringBundler;
 
 import com.liferay.portal.kernel.bean.BeanReference;
@@ -6288,7 +6290,8 @@ public class DLFileShortcutPersistenceImpl extends BasePersistenceImpl<DLFileSho
 			}
 		}
 
-		if (!dlFileShortcutModelImpl.hasSetModifiedDate()) {
+		if (!dlFileShortcutModelImpl.hasSetModifiedDate() &&
+				!ExportImportThreadLocal.isImportInProcess()) {
 			if (serviceContext == null) {
 				dlFileShortcut.setModifiedDate(now);
 			}

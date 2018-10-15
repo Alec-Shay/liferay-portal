@@ -20,6 +20,8 @@ import com.liferay.announcements.kernel.exception.NoSuchEntryException;
 import com.liferay.announcements.kernel.model.AnnouncementsEntry;
 import com.liferay.announcements.kernel.service.persistence.AnnouncementsEntryPersistence;
 
+import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
+
 import com.liferay.petra.string.StringBundler;
 
 import com.liferay.portal.kernel.bean.BeanReference;
@@ -7168,7 +7170,8 @@ public class AnnouncementsEntryPersistenceImpl extends BasePersistenceImpl<Annou
 			}
 		}
 
-		if (!announcementsEntryModelImpl.hasSetModifiedDate()) {
+		if (!announcementsEntryModelImpl.hasSetModifiedDate() &&
+				!ExportImportThreadLocal.isImportInProcess()) {
 			if (serviceContext == null) {
 				announcementsEntry.setModifiedDate(now);
 			}

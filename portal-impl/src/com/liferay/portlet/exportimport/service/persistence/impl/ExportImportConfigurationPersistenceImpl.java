@@ -17,6 +17,7 @@ package com.liferay.portlet.exportimport.service.persistence.impl;
 import aQute.bnd.annotation.ProviderType;
 
 import com.liferay.exportimport.kernel.exception.NoSuchConfigurationException;
+import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.persistence.ExportImportConfigurationPersistence;
 
@@ -3068,7 +3069,8 @@ public class ExportImportConfigurationPersistenceImpl
 			}
 		}
 
-		if (!exportImportConfigurationModelImpl.hasSetModifiedDate()) {
+		if (!exportImportConfigurationModelImpl.hasSetModifiedDate() &&
+				!ExportImportThreadLocal.isImportInProcess()) {
 			if (serviceContext == null) {
 				exportImportConfiguration.setModifiedDate(now);
 			}
