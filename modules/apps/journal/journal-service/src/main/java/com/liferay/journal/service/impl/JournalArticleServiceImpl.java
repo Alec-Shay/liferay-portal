@@ -25,7 +25,9 @@ import com.liferay.portal.kernel.dao.orm.QueryDefinition;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.portlet.PortletRequestModel;
 import com.liferay.portal.kernel.search.Hits;
+import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionFactory;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionHelper;
@@ -1534,6 +1536,31 @@ public class JournalArticleServiceImpl extends JournalArticleServiceBaseImpl {
 
 		_journalArticleModelResourcePermission.check(
 			getPermissionChecker(), article, ActionKeys.VIEW);
+
+		return article;
+	}
+
+	@Override
+	public JournalArticle getLatestArticleByUrlTitle(
+			long groupId, String urlTitle, int status)
+		throws PortalException {
+
+		JournalArticle article =
+			journalArticleLocalService.getLatestArticleByUrlTitle(
+				groupId, urlTitle, status);
+
+		PermissionChecker permissionChecker = getPermissionChecker();
+
+		_journalArticleModelResourcePermission.check(
+			permissionChecker, article, ActionKeys.VIEW);
+
+		if (article.getStatus() != WorkflowConstants.STATUS_APPROVED) {
+			if (!permissionChecker.isContentReviewer(
+				article.getCompanyId(), article.getGroupId())) {
+
+				throw new PrincipalException();
+			}
+		}
 
 		return article;
 	}
