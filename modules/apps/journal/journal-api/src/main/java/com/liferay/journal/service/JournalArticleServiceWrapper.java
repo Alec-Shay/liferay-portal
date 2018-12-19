@@ -1294,6 +1294,14 @@ public class JournalArticleServiceWrapper implements JournalArticleService,
 	}
 
 	@Override
+	public com.liferay.journal.model.JournalArticle getLatestArticleByUrlTitle(
+		long groupId, String urlTitle, int status)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return _journalArticleService.getLatestArticleByUrlTitle(groupId,
+			urlTitle, status);
+	}
+
+	@Override
 	public java.util.List<com.liferay.journal.model.JournalArticle> getLatestArticles(
 		long groupId, int status, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator<com.liferay.journal.model.JournalArticle> obc) {

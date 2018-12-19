@@ -1358,6 +1358,21 @@ public class JournalArticleServiceSoap {
 		}
 	}
 
+	public static com.liferay.journal.model.JournalArticleSoap getLatestArticleByUrlTitle(
+		long groupId, String urlTitle, int status) throws RemoteException {
+		try {
+			com.liferay.journal.model.JournalArticle returnValue = JournalArticleServiceUtil.getLatestArticleByUrlTitle(groupId,
+					urlTitle, status);
+
+			return com.liferay.journal.model.JournalArticleSoap.toSoapModel(returnValue);
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			throw new RemoteException(e.getMessage());
+		}
+	}
+
 	public static com.liferay.journal.model.JournalArticleSoap[] getLatestArticles(
 		long groupId, int status, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator<com.liferay.journal.model.JournalArticle> obc)

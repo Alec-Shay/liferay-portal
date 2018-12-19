@@ -1270,6 +1270,12 @@ public class JournalArticleServiceUtil {
 		return getService().getLatestArticle(groupId, className, classPK);
 	}
 
+	public static com.liferay.journal.model.JournalArticle getLatestArticleByUrlTitle(
+		long groupId, String urlTitle, int status)
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return getService().getLatestArticleByUrlTitle(groupId, urlTitle, status);
+	}
+
 	public static java.util.List<com.liferay.journal.model.JournalArticle> getLatestArticles(
 		long groupId, int status, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator<com.liferay.journal.model.JournalArticle> obc) {
