@@ -122,10 +122,14 @@ public class LayoutPageTemplateEntryLocalServiceImpl
 			plid = layout.getPlid();
 		}
 
+		ServiceContext addEntryServiceContext = new ServiceContext();
+
+		addEntryServiceContext.setUuid(serviceContext.getUuid());
+
 		return addLayoutPageTemplateEntry(
 			userId, groupId, layoutPageTemplateCollectionId, classNameId,
 			classTypeId, name, type, defaultTemplate, 0, 0, plid, status,
-			new ServiceContext());
+			addEntryServiceContext);
 	}
 
 	@Override
