@@ -24,6 +24,8 @@ import com.liferay.portal.kernel.service.http.TunnelUtil;
 import com.liferay.portal.kernel.util.MethodHandler;
 import com.liferay.portal.kernel.util.MethodKey;
 
+import java.net.ConnectException;
+
 /**
  * Provides the HTTP utility for the
  * <code>GroupServiceUtil</code> service
@@ -87,7 +89,9 @@ public class GroupServiceHttp {
 			return (com.liferay.portal.kernel.model.Group)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -126,7 +130,9 @@ public class GroupServiceHttp {
 			return (com.liferay.portal.kernel.model.Group)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -164,7 +170,9 @@ public class GroupServiceHttp {
 			return (com.liferay.portal.kernel.model.Group)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -192,7 +200,9 @@ public class GroupServiceHttp {
 			}
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -220,7 +230,9 @@ public class GroupServiceHttp {
 			}
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -246,7 +258,9 @@ public class GroupServiceHttp {
 			}
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -272,7 +286,9 @@ public class GroupServiceHttp {
 			}
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -298,7 +314,9 @@ public class GroupServiceHttp {
 			}
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -329,7 +347,9 @@ public class GroupServiceHttp {
 			return (com.liferay.portal.kernel.model.Group)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -360,7 +380,9 @@ public class GroupServiceHttp {
 			return (com.liferay.portal.kernel.model.Group)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -392,7 +414,9 @@ public class GroupServiceHttp {
 			return (com.liferay.portal.kernel.model.Group)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -424,7 +448,9 @@ public class GroupServiceHttp {
 			return (String)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -457,7 +483,9 @@ public class GroupServiceHttp {
 			return (java.util.List<com.liferay.portal.kernel.model.Group>)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -490,7 +518,9 @@ public class GroupServiceHttp {
 			return (java.util.List<com.liferay.portal.kernel.model.Group>)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -523,7 +553,9 @@ public class GroupServiceHttp {
 			return (java.util.List<com.liferay.portal.kernel.model.Group>)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -555,7 +587,9 @@ public class GroupServiceHttp {
 			return ((Integer)returnObj).intValue();
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -587,7 +621,9 @@ public class GroupServiceHttp {
 			return ((Integer)returnObj).intValue();
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -619,7 +655,9 @@ public class GroupServiceHttp {
 			return ((Integer)returnObj).intValue();
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -652,7 +690,9 @@ public class GroupServiceHttp {
 			return (java.util.List<com.liferay.portal.kernel.model.Group>)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -686,7 +726,9 @@ public class GroupServiceHttp {
 			return (java.util.List<com.liferay.portal.kernel.model.Group>)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -720,7 +762,9 @@ public class GroupServiceHttp {
 			return (java.util.List<com.liferay.portal.kernel.model.Group>)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -752,7 +796,9 @@ public class GroupServiceHttp {
 			return (com.liferay.portal.kernel.model.Group)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -785,7 +831,9 @@ public class GroupServiceHttp {
 			return (java.util.List<com.liferay.portal.kernel.model.Group>)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -818,7 +866,9 @@ public class GroupServiceHttp {
 			return (java.util.List<com.liferay.portal.kernel.model.Group>)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -849,7 +899,9 @@ public class GroupServiceHttp {
 			return (java.util.List<com.liferay.portal.kernel.model.Group>)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -881,7 +933,9 @@ public class GroupServiceHttp {
 			return (java.util.List<com.liferay.portal.kernel.model.Group>)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -913,7 +967,9 @@ public class GroupServiceHttp {
 			return (java.util.List<com.liferay.portal.kernel.model.Group>)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -944,7 +1000,9 @@ public class GroupServiceHttp {
 			return ((Integer)returnObj).intValue();
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -976,7 +1034,9 @@ public class GroupServiceHttp {
 			return ((Boolean)returnObj).booleanValue();
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -1011,7 +1071,9 @@ public class GroupServiceHttp {
 			return (java.util.List<com.liferay.portal.kernel.model.Group>)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -1048,7 +1110,9 @@ public class GroupServiceHttp {
 			return (java.util.List<com.liferay.portal.kernel.model.Group>)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -1081,7 +1145,9 @@ public class GroupServiceHttp {
 			return (java.util.List<com.liferay.portal.kernel.model.Group>)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -1108,7 +1174,9 @@ public class GroupServiceHttp {
 			return ((Integer)returnObj).intValue();
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -1136,7 +1204,9 @@ public class GroupServiceHttp {
 			}
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -1164,7 +1234,9 @@ public class GroupServiceHttp {
 			}
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -1196,7 +1268,9 @@ public class GroupServiceHttp {
 			return (com.liferay.portal.kernel.model.Group)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -1235,7 +1309,9 @@ public class GroupServiceHttp {
 			return (com.liferay.portal.kernel.model.Group)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -1273,7 +1349,9 @@ public class GroupServiceHttp {
 			return (com.liferay.portal.kernel.model.Group)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -1305,7 +1383,9 @@ public class GroupServiceHttp {
 			return (com.liferay.portal.kernel.model.Group)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}
@@ -1334,7 +1414,9 @@ public class GroupServiceHttp {
 			}
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
-			_log.error(se, se);
+			if (!(se.getCause() instanceof ConnectException)) {
+				_log.error(se, se);
+			}
 
 			throw se;
 		}

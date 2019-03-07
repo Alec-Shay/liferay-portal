@@ -13,6 +13,10 @@ import com.liferay.portal.kernel.service.http.TunnelUtil;
 import com.liferay.portal.kernel.util.MethodHandler;
 import com.liferay.portal.kernel.util.MethodKey;
 
+<#if stringUtil.equals(entity.name, "Group")>
+	import java.net.ConnectException;
+</#if>
+
 /**
  * Provides the HTTP utility for the
  * <code>${apiPackagePath}.service.${entity.name}ServiceUtil</code> service
@@ -136,7 +140,13 @@ public class ${entity.name}ServiceHttp {
 					</#if>
 				}
 				catch (com.liferay.portal.kernel.exception.SystemException se) {
-					_log.error(se, se);
+					<#if stringUtil.equals(entity.name, "Group")>
+						if (!(se.getCause() instanceof ConnectException)) {
+							_log.error(se, se);
+						}
+					<#else>
+						_log.error(se, se);
+					</#if>
 
 					throw se;
 				}
