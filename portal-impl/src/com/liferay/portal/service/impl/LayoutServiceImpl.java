@@ -70,6 +70,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 
 import javax.portlet.PortletPreferences;
 
@@ -1628,9 +1629,20 @@ public class LayoutServiceImpl extends LayoutServiceBaseImpl {
 		GroupPermissionUtil.check(
 			getPermissionChecker(), targetGroupId, ActionKeys.PUBLISH_STAGING);
 
-		Trigger trigger = TriggerFactoryUtil.createTrigger(
-			PortalUUIDUtil.generate(), groupName, schedulerStartDate,
-			schedulerEndDate, cronText);
+		Trigger trigger = null;
+
+		if (MapUtil.getBoolean(parameterMap, "usePortalTimeZone", true)) {
+			trigger = TriggerFactoryUtil.createTrigger(
+				PortalUUIDUtil.generate(), groupName, schedulerStartDate,
+				schedulerEndDate, cronText);
+		}
+		else {
+			String timeZoneId = MapUtil.getString(parameterMap, "timeZoneId");
+
+			trigger = TriggerFactoryUtil.createTrigger(
+				PortalUUIDUtil.generate(), groupName, schedulerStartDate,
+				schedulerEndDate, TimeZone.getTimeZone(timeZoneId), cronText);
+		}
 
 		User user = userPersistence.findByPrimaryKey(getUserId());
 
