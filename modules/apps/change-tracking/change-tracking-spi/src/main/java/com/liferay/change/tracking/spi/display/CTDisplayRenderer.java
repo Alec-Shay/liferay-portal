@@ -34,6 +34,16 @@ import javax.servlet.http.HttpServletRequest;
  */
 public interface CTDisplayRenderer<T> {
 
+	/**
+	 * Returns the html content for the model. The default implementation throws
+	 * an <code>UnsupportedOperationException</code>.
+	 *
+	 * @param  liferayPortletRequest the portlet request
+	 * @param  liferayPortletResponse the portlet response
+	 * @param  model the model for this display renderer
+	 * @return the html content
+	 * @throws Exception if an exception occurred
+	 */
 	public default String getContent(
 			LiferayPortletRequest liferayPortletRequest,
 			LiferayPortletResponse liferayPortletResponse, T model)
@@ -75,6 +85,19 @@ public interface CTDisplayRenderer<T> {
 	 */
 	public Class<T> getModelClass();
 
+	/**
+	 * Returns the html content for the previous versioned model of two
+	 * versioned models. Both the previous and the current versioned models are
+	 * provided to allow correctly determining the locale. The default
+	 * implementation throws an <code>UnsupportedOperationException</code>.
+	 *
+	 * @param  liferayPortletRequest the portlet request
+	 * @param  liferayPortletResponse the portlet response
+	 * @param  currentModel the current versioned model
+	 * @param  previousModel the the previous versioned model
+	 * @return the html content of the previous versioned model
+	 * @throws Exception if an exception occurred
+	 */
 	public default String getPreviousContent(
 			LiferayPortletRequest liferayPortletRequest,
 			LiferayPortletResponse liferayPortletResponse, T currentModel,
@@ -84,6 +107,14 @@ public interface CTDisplayRenderer<T> {
 		throw new UnsupportedOperationException();
 	}
 
+	/**
+	 * Returns the previous version of the provided versioned model. The default
+	 * implementation throws an <code>UnsupportedOperationException</code>.
+	 *
+	 * @param  model the versioned model
+	 * @return the previous versioned model
+	 * @throws PortalException if an exception occurred
+	 */
 	public default T getPreviousVersionedModel(T model) throws PortalException {
 		throw new UnsupportedOperationException();
 	}
@@ -106,10 +137,23 @@ public interface CTDisplayRenderer<T> {
 	 */
 	public String getTypeName(Locale locale);
 
+	/**
+	 * Returns the version name for the model. The default implementation throws
+	 * an <code>UnsupportedOperationException</code>.
+	 *
+	 * @param  model the model for this display renderer
+	 * @return the version name for the model
+	 */
 	public default String getVersionName(T model) {
 		throw new UnsupportedOperationException();
 	}
 
+	/**
+	 * Returns whether the model has an html content. The default implementation
+	 * returns <code>false</code>.
+	 *
+	 * @return whether the model has an html content
+	 */
 	public default boolean hasContent() {
 		return false;
 	}
@@ -125,6 +169,12 @@ public interface CTDisplayRenderer<T> {
 		return false;
 	}
 
+	/**
+	 * Returns whether the model is versioned. The default implementation
+	 * returns <code>false</code>.
+	 *
+	 * @return whether the model is versioned
+	 */
 	public default boolean isVersioned() {
 		return false;
 	}
